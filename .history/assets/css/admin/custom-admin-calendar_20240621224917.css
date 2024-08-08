@@ -1,0 +1,5 @@
+.custom-calendar-book-appointment{
+    height: 500px !important;
+    width: 90%;
+    /* overflow: scroll; */
+}

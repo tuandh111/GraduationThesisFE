@@ -1,0 +1,8 @@
+/* .custom-calendar-book-appointment{
+    height: 100% !important;
+    overflow: scroll;
+} */
+
+td.fc-day{
+   overflow: scroll;
+}

@@ -1,0 +1,7 @@
+/* .custom-calendar-book-appointment{
+    height: 300px !important;
+    overflow: scroll;
+} */
+.btn-create-appoinment,.btn-create-appoinment-collapse{
+    float: right;
+}

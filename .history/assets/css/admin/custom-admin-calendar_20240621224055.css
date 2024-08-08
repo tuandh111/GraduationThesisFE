@@ -1,0 +1,7 @@
+.custom-calendar-book-appointment{
+    height: 500px !important;
+}
+.fc-day{
+    width: 90px !important;
+    height: 90px !important;
+}
