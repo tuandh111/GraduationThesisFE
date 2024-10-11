@@ -1,0 +1,74 @@
+<div ng-controller="RegisterController">
+	<header class="header_area" ng-include="'component/header.html'"></header>
+	<div class="row p-3 justify-content-center">
+		<div class="col-6">
+			<h1 class="h1 mb-3 text-center">Đăng Ký</h1>
+			<div class="row">
+				<div class="col-md-6">
+					<label for="lastname">Họ</label>
+					<input ng-model="formAcc.lastname" style="height: 38px;" type="text" id="lastname" class="form-control" placeholder="Nhập họ">
+				</div>
+				<div class="col-md-6">
+					<label for="firstname">Tên</label>
+					<input ng-model="formAcc.firstname" style="height: 38px;" type="text" id="firstname" class="form-control" placeholder="Nhập tên">
+				</div>
+			</div>
+			<div class="row mt-2">
+				<div class="col-md-6">
+					<label for="email">Email</label>
+					<input ng-model="formAcc.email" style="height: 38px;" type="text" id="email" class="form-control" placeholder="Nhập email">
+				</div>
+				<div class="col-md-6">
+					<label for="phoneNumber">Số điện thoại</label>
+					<input ng-model="formAcc.phoneNumber" style="height: 38px;" type="text" id="phoneNumber" class="form-control" placeholder="Nhập số điện thoại">
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-6 mt-2">
+					<label for="gender">Giới tính</label>
+					<select id="gender" class="form-control select2" ng-model="formAcc.gender"
+						ng-options="ds.genderId as ds.genderName for ds in listGenderTypeDB">
+					</select>
+				</div>
+				<div class="col-md-6 mt-2">
+					<label class="form-label" for="manageDoctorsModaldoctorsBirthday">Ngày
+						sinh</label>
+					<input type="date" style="height: 38px;" id="manageDoctorsModaldoctorsBirthday" ng-model="formAcc.birthday"
+						class="form-control" placeholder="Chọn Ngày sinh">
+				</div>
+			</div>
+			<div class="mt-2">
+				<label for="inputEmail4">Địa chỉ</label>
+				<textarea ng-model="formAcc.address" rows="5" cols="5" class="form-control" placeholder="Nhập địa chỉ"></textarea>
+			</div>
+			<hr class="my-4">
+			<div class="row mb-4">
+				<div class="col-md-6">
+					<div class="">
+						<label for="password">Mật khẩu</label>
+						<input ng-model="formAcc.password" style="height: 38px;" type="password" class="form-control" id="password" placeholder="Nhập mật khẩu">
+					</div>
+					<div class="mt-2">
+						<label for="confirmPassword">Nhập lại mật khẩu</label>
+						<input ng-model="formAcc.confirmPassword" style="height: 38px;" type="password" class="form-control" id="confirmPassword" placeholder="Xác nhận mật khẩu	">
+					</div>
+				</div>
+				<div class="col-md-6">
+					<p class="mb-2">Yêu cầu mật khẩu</p>
+				
+					<ul class="small text-muted pl-4 mb-0">
+						<li>Mật khẩu phải có ít nhất 8 ký tự </li>
+						<li>Mật khẩu chứa cả ký tự in hoa và in thường</li>
+						<li>Mật khẩu chứa ít nhất 1 ký tự đặc biệt</li>
+						<li>Mật khẩu phải chứa số</li>
+					</ul>
+				</div>
+			</div>
+			<button class="btn btn-lg btn-primary btn-block" ng-click="register()">Đăng ký</button>
+		</div>
+	</div>
+
+	<!-- footer Start -->
+	<footer class="footer section gray-bg" ng-include="'component/footer.html'"></footer>
+	<!--================ End footer Area  =================-->
+</div>

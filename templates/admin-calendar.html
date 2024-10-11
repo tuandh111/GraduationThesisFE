@@ -1,6 +1,6 @@
 <div class="vertical  dark ">
   <div class="wrapper">
-    <nav class="topnav navbar navbar-light" ng-include="'component/admin-nav.html'">
+    <nav class="topnav navbar navbar-light justify-content-end" ng-include="'component/admin-nav.html'">
     </nav>
     <aside class="sidebar-left border-right shadow" id="leftSidebar" ng-include="'component/admin-aside.html'"
       data-simplebar>
@@ -12,7 +12,7 @@
       </nav>
       <div class="row justify-content-center mb-3">
         <div class="d-flex flex-items-center flex-justify-between custom-heading">
-          <h3 class="text-secondary">Thống kê cuộc hẹn</h3>
+          <h3 class="text-secondary">Thống kê ca khám</h3>
         </div>
         <div class="custom-hr mb-3"></div>
         <div class="row">
@@ -20,7 +20,7 @@
           <div class="card shadow mb-4">
             <div class="card-body">
               <div class="py-5 text-center">
-                <p class="text-secondary mb-2">Tổng số cuộc hẹn</p>
+                <p class="text-secondary mb-2">Tổng số ca khám</p>
                 <h2 class="mb-1">{{listAppointmentDB.length}}</h2>
               </div>
 
@@ -51,11 +51,11 @@
               </div>
               <div class="row">
                 <div class="col-6 text-center">
-                  <p class="text-secondary mb-0">Số cuộc hẹn đã đặt hôm qua</p>
+                  <p class="text-secondary mb-0">Số ca khám đã đặt hôm qua</p>
                   <h4 class="mb-1">{{listAppointmentDBPast.length}}</h4>
                 </div>
                 <div class="col-6 text-center">
-                  <p class="text-secondary mb-0">Số cuộc hẹn đã đặt hôm nay</p>
+                  <p class="text-secondary mb-0">Số ca khám đã đặt hôm nay</p>
                   <h4 class="mb-1">{{listAppointmentDBToday.length}}</h4>
                   <p class="mb-2"
                     ng-class="{'text-success fe fe-arrow-up': appFluctuate > 0, 'fe fe-arrow-down text-danger': appFluctuate < 0, 'text-mute': appFluctuate === 0}">
@@ -80,7 +80,7 @@
       <div class="row justify-content-center mb-3 p-3"
         style="box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); border-radius: 5px;">
         <div class="d-flex flex-items-center flex-justify-between custom-heading" id="div-register-appointment">
-          <h3 class="text-secondary">Đăng ký lịch hẹn
+          <h3 class="text-secondary">Đăng ký lịch khám
           </h3>
         </div>
         <div class="custom-hr mb-3"></div>
@@ -88,32 +88,33 @@
           <div class="row mb-3">
             <div class="information mb-3">
               <div class="infomation-details" ng-show="isSelectCalendar">
-                <p class="text-secondary" style="padding-left: 3px;">Đăng ký cuộc hẹn ngày
+                <p class="text-secondary" style="padding-left: 3px;">Đăng ký ca khám ngày
                   <span class="text-primary">{{formApp.appointmentDate}}. </span>
                   Bác sĩ <span class="text-primary">{{formApp.fullName}}. </span>
                   Thời gian từ <span class="text-primary">{{formApp.startTime|timeFormat}}</span> đến <span
                     class="text-primary">{{formApp.endTime|timeFormat}}</span>
                 </p>
               </div>
+              <div ng-show="listAppByPatientDB.length!=0&&isSelectCalendar" class="mb-3">
+                <p>Khách hàng đã có lịch khám
+                  <span class="badge badge-warning me-2" ng-repeat="a in listAppByPatientDB">{{a.appointmentDate
+                    | dateFormat}} </span>
+                </p>
+              </div>
             </div>
-            <div class="form-group mb-3">
+            <div class="form-group mb-3 col-6">
               <label for="appointmentPatient">Chọn bệnh nhân</label>
               <button type="button" class="btn btn-outline-primary p-1" ng-click="closeModalAndNavigate()">
                 <i class="fe fe-plus-circle"></i>
-                Thêm
+                Thêm bệnh nhân
               </button>
               <select id="appointmentPatient" class="form-control select2" ng-model="formApp.patientId"
                 ng-options="p.patientId as (p.fullName + ' - ' + p.phoneNumber) for p in listPatientDB">
-              </select>
+              </select>           
             </div>
-            <div ng-show="listAppByPatientDB.length!=0&&isSelectCalendar" class="mb-3">
-              <p>Khách hàng đã có cuộc hẹn trong ngày:
-                <span class="badge badge-warning" ng-repeat="a in listAppByPatientDB">{{a.appointmentDate
-                  | dateFormat}} </span>
-              </p>
-            </div>
+           
             <div class="form-group mb-3 col-6">
-              <label for="appointmentType">Chọn loại cuộc hẹn</label>
+              <label for="appointmentType">Chọn loại ca khám</label>
               <select id="appointmentType" class="form-control select2" ng-model="formApp.appointmentTypeId"
                 ng-options="t.appointment_TypeId as t.typeName for t in listAppointmentTypeDB">
               </select>
@@ -125,21 +126,22 @@
           class="second-step">
           <div class="row mb-3">
             <div class="col form-booking-appointment-col-one">
-              <div class="form-group mb-3">
-                <label for="appointmentTitle" class="col-form-label">Tiêu đề cuộc
-                  hẹn</label>
+              <!-- <div class="form-group mb-3">
+                <label for="appointmentTitle" class="col-form-label">Tiêu đề ca khám</label>
                 <input type="text" class="form-control" id="appointmentTitle" ng-model="formApp.title"
                   autocomplete="off">
-              </div>
+              </div> -->
               <div class="custom-control custom-switch mb-4">
                 <input type="checkbox" class="custom-control-input" id="IsSelectService" ng-model="isSelectByService"
                   ng-checked="isSelectByService">
                 <label class="custom-control-label" for="IsSelectService">Chọn dịch vụ</label>
               </div>
+
               <div ng-show="!isSelectByService">
                 <div class="form-group mb-3">
                   <label for="dental-issues">Nhập triệu chứng</label>
-                  <select id="dental-issues" class="form-control select2-multi" ng-model="formApp.dentalIssuesId"
+                  <select id="dental-issues" class="form-control select2-multi-dentalIssue"
+                    ng-model="formApp.dentalIssuesId"
                     ng-options="ds.dentalIssuesId as ds.name for ds in listDentalIssueDB">
                   </select>
                 </div>
@@ -179,7 +181,7 @@
                       <th>
                         #
                       </th>
-                      <th>ID</th>
+                      <th>Mã dịch vụ</th>
                       <th>Tên dịch vụ</th>
                       <th>Giá</th>
                       <th>Thời lượng</th>
@@ -191,7 +193,7 @@
                         <input type="checkbox" ng-model="s.checked" ng-change="updateSelectedServices(s,false)"
                           ng-click="$event.stopPropagation()">
                       </td>
-                      <td>{{s.serviceId}}</td>
+                      <td>{{(s.serviceName | initialCharacter)+"-"+s.serviceId}}</td>
                       <td>{{s.serviceName}}</td>
                       <td>{{s.price|formatPrice}}</td>
                       <td>{{s.timeEstimate}} phút</td>
@@ -211,6 +213,7 @@
                     đoạn việc điều trị !</p>
                 </div>
               </div>
+
               <div class="continue-book-appoinment float-right" ng-show="isContinueShow()">
                 <button href="#" type="button" class="btn btn-outline-primary p-1" ng-click="isShowFormRegister($event)"
                   ng-disabled="disableContinue" ng-show="!isSelectCalendar"
@@ -219,23 +222,24 @@
             </div>
           </div>
 
-          <div class="row form-booking-appointment p-3" ng-class="{'disabled-div': !showFormRegister}">
+          <div class="row form-booking-appointment" ng-class="{'disabled-div': !showFormRegister}">
 
-            <div class="form-group mb-3" ng-show="!isSelectCalendar">
-              <label for="date-input1">Ngày khám</label>
+            <div class="form-group mb-3 col-6" ng-show="!isSelectCalendar">
+              <label for="appointmentDateRequest">Ngày khám</label>
               <div class="input-group">
                 <div class="input-group-prepend">
-                  <div class="input-group-text" id="button-addon-date"><span class="fe fe-calendar fe-16"></span>
+                  <div class="input-group-text" id="button-addon-date-calendar"><span
+                      class="fe fe-calendar fe-16"></span>
                   </div>
                 </div>
-                <input type="text" class="form-control drgpicker" id="appointmentDateRequest"
+                <input type="text" class="form-control drgpicker-appointmentDate" id="appointmentDateRequest"
                   ng-model="formApp.appointmentDate" autocomplete="off">
               </div>
             </div>
 
             <div ng-show="listAppByPatientDB.length!=0&&!isSelectCalendar" class="mb-3">
-              <p>Khách hàng đã có cuộc hẹn trong ngày:
-                <span class="badge badge-warning" ng-repeat="a in listAppByPatientDB">{{a.appointmentDate
+              <p>Khách hàng đã có lịch khám trong ngày:
+                <span class="badge badge-warning me-2" ng-repeat="a in listAppByPatientDB">{{a.appointmentDate
                   | dateFormat}} </span>
               </p>
             </div>
@@ -276,7 +280,7 @@
                             ng-class="{ 'active show': isSelected(s.shiftId,d.doctorId) }">
 
                             <div class="row overflow-auto" style="height: 150px;">
-                              <div class="inform mb-3 badge badge-warning">
+                              <div class="inform mb-3 badge badge-warning" style="font-size: 15px;">
                                 Số ca được chọn <span
                                   style="color: #ffffff; font-weight: 800;">{{selectedTimeOfShift.length}}/{{getRecommendation()}}</span>
                                 ca khuyến nghị
@@ -311,14 +315,20 @@
             </div>
 
           </div>
-          <button type="button" class="btn mt-3 btn-success btn-create-appoinment" ng-click="saveAppointment()">Đăng
+
+          <button type="button" class="btn mt-3 btn-success btn-create-appoinment" ng-click="saveAppointment()"
+            ng-show="!isLoadingCreate">Đăng
             ký</button>
+          <button class="btn btn-outline-success float-right" type="button" disabled ng-show="isLoadingCreate">
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Đang xử lý...
+          </button>
         </div>
       </div>
 
       <div class="row justify-content-center mb-3">
         <div class="d-flex flex-items-center flex-justify-between custom-heading">
-          <h3 class="text-secondary">Danh sách cuộc hẹn</h3>
+          <h3 class="text-secondary">Danh sách ca khám</h3>
         </div>
         <div class="custom-hr mb-3"></div>
         <div class="d-flex">
@@ -334,18 +344,18 @@
         </div>
         <div class="row">
           <div class="collapse" id="collapseFilterAppoinment">
-            <div class="card card-body">
+            <div class="card card-body mb-3">
               <div class="row mb-3">
 
-                <div class="col-6">
+                <div class="col-12 mb-3">
                   <div class="custom-control custom-switch mb-3">
                     <input type="checkbox" class="custom-control-input" id="IsReExaminationFilter"
                       ng-model="isReExaminationFilter" ng-checked="isReExaminationFilter">
-                    <label class="custom-control-label" for="IsReExaminationFilter">Tái khám</label>
+                    <label class="custom-control-label" for="IsReExaminationFilter">Lọc theo ngày tái khám</label>
                   </div>
                 </div>
 
-                <div class="col-6 overflow-auto">
+                <div class="col-3 overflow-auto">
                   <div class="form-group">
                     <label for="formAppoinmentSearchDate">Lọc theo
                       ngày đăng ký khám
@@ -361,22 +371,31 @@
                   </div>
                 </div>
 
-                <div class="col-6">
-                  <label for="doctorFilterTableApp">Chọn bác sĩ</label>
+                <div class="col-3">
+                  <label for="doctorFilterTableApp">Lọc theo bác sĩ</label>
                   <select id="doctorFilterTableApp" class="form-control select2"
                     ng-model="formAppoinmentFilter.doctorId"
-                    ng-options="d.doctorId as d.fullName for d in listDoctorDB">
+                    ng-options="d.doctorId as d.fullName for d in listDoctorDBFilter">
                   </select>
                 </div>
 
-                <div class="col-6">
-                  <label for="patientFilterTableApp">Chọn bệnh nhân</label>
+                <div class="col-3">
+                  <label for="patientFilterTableApp">Lọc theo bệnh nhân</label>
                   <select id="patientFilterTableApp" class="form-control select2"
                     ng-model="formAppoinmentFilter.patientId"
-                    ng-options="p.patientId as (p.fullName + (p.phoneNumber ? ' - ' + p.phoneNumber : '')) for p in listPatientDB"
+                    ng-options="p.patientId as (p.fullName + (p.phoneNumber ? ' - ' + p.phoneNumber : '')) for p in listPatientDBFilter"
                     style="height: 40px;">
                   </select>
                 </div>
+
+                <div class="col-3">
+                  <label for="appStatusFilterTableApp">Lọc theo trạng thái cuộc hẹn</label>
+                  <select id="appStatusFilterTableApp" class="form-control select2"
+                    ng-model="formAppoinmentFilter.appointment_StatusId"
+                    ng-options="d.appointment_StatusId as d.status for d in listAppointmentStatusBDFilter">
+                  </select>
+                </div>
+
 
               </div>
             </div>
@@ -390,7 +409,7 @@
                 <th>Tên Khách hàng</th>
                 <th>Điện thoại</th>
                 <th>Bác sĩ</th>
-                <th>Ngày hẹn</th>
+                <th>Ngày khám</th>
                 <th>Ngày tái khám</th>
                 <th>Trạng thái</th>
                 <th>Thao tác</th>
@@ -404,14 +423,15 @@
                 </td>
                 <td>{{app.patient?app.patient.phoneNumber:null}}
                 </td>
-                <td>{{app.doctor?app.doctor.fullName:null}}</td>
+                <td>{{app.doctor?app.doctor.fullName:'Chờ sắp bác sĩ'}}</td>
                 <td>{{app.appointmentDate|dateFormat}}</td>
                 <td ng-class="{'text-warning': highlightReExamination(app.appointmentPatientRecord.reExamination)}">{{
                   app.appointmentPatientRecord.reExamination ? app.appointmentPatientRecord.reExamination : '' }}</td>
                 <td>
                   <p class="badge badge-pill m-0" style="cursor: pointer;" ng-attr-title="Click để cập nhật"
                     ng-class="'bg-app-status-' + app.appointmentStatus.appointment_StatusId"
-                    ng-click="updateStatus(app,app.appointmentStatus.status)">
+                    ng-click="updateStatus(app,app.appointmentStatus.status)"
+                    id="{{'appointment' + app.appointmentId}}">
                     {{app.appointmentStatus.status}}</p>
                 </td>
                 <td>
@@ -423,7 +443,7 @@
                   <div style="height: 90vh;" class="offcanvas offcanvas-bottom" tabindex="-1"
                     id="offcanvasAppoimentDetail-{{app.appointmentId}}" aria-labelledby="offcanvasBottomLabel">
                     <div class="offcanvas-header">
-                      <h5 class="offcanvas-title" id="offcanvasAppoimentDetailLabel">Chi tiết cuộc hẹn
+                      <h5 class="offcanvas-title" id="offcanvasAppoimentDetailLabel">Chi tiết ca khám
                         #{{app.appointmentId}}</h5>
                       <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
                         aria-label="Close"></button>
@@ -453,8 +473,7 @@
                               <div class="row mt-2 align-items-center">
                                 <div class="col-md-3 text-center mb-5">
                                   <div class="avatar avatar-xl">
-                                    <img src="/assets/images/avatars/ntt.jpeg" alt="..."
-                                      class="avatar-img rounded-circle">
+                                    <img ng-src="{{app.patient.imageURL}}" alt="..." class="avatar-img rounded-circle">
                                   </div>
                                 </div>
                                 <div class="col">
@@ -510,8 +529,7 @@
                             </div>
                           </div>
                         </div>
-                        <div class="tab-pane" ng-class="{ 'active show': isSelectedLApp(-2) }"
-                          ng-init="bill = getBillByAppointment(app.appointmentId,listBillByAppointmentAndPatientDB)">
+                        <div class="tab-pane" ng-class="{ 'active show': isSelectedLApp(-2) }">
                           <div ng-show="bill.length==0" class="text-warning text-center">Không có bill hiển thị
                           </div>
                           <div ng-show="bill.length!=0" class="row justify-content-center">
@@ -534,8 +552,8 @@
                                   <div class="card-body p-5">
                                     <div class="row mb-5">
                                       <div class="col-12 text-center mb-4">
-                                        <img src="/assets/images/logo2.jpg"
-                                          class="navbar-brand-img brand-sm mx-auto mb-4" alt="...">
+                                        <img src="/assets/images/logo_tt.png" class="navbar-brand-img mx-auto mb-4"
+                                          alt="...">
                                         <h2 class="mb-0 text-uppercase">Hóa Đơn</h2>
                                         <p class="text-secondary">Ngày: {{bill[0].createAt | dateFormat}}<br /></p>
                                       </div>
@@ -553,12 +571,12 @@
                                       <div class="col-md-5">
                                         <p class="small text-secondary text-uppercase mb-2">Khách hàng</p>
                                         <p class="mb-4">
-                                          <strong>{{bill[0].appointment.patient.fullName}}</strong>
+                                          <strong>{{bill[0].appointments.patient.fullName}}</strong>
                                           <br />
                                           Địa chỉ:
-                                          {{bill[0].appointment.patient.citizenIdentificationNumber}}<br />
+                                          {{bill[0].appointments.patient.address}}<br />
                                           Số điện thoại:
-                                          {{bill[0].appointment.patient.phoneNumber|phoneNumberFormat}}<br />
+                                          {{bill[0].appointments.patient.phoneNumber|phoneNumberFormat}}<br />
                                         </p>
                                         <p>
                                           <small class="small text-secondary text-uppercase">Hạn thanh
@@ -619,8 +637,7 @@
                             </div>
                           </div>
                         </div>
-                        <div class="tab-pane" ng-class="{ 'active show': isSelectedLApp(-3) }"
-                          ng-init="prescription = getPrescriptionByAppointment(app,listPrescriptionByAppointmentAndMedicinesDB)">
+                        <div class="tab-pane" ng-class="{ 'active show': isSelectedLApp(-3) }">
                           <div ng-show="prescription.length==0" class="text-warning text-center">Không có đơn thuốc hiển
                             thị
                           </div>
@@ -636,8 +653,9 @@
                                     </p>
                                   </div>
                                   <div class="col-5 text-center mb-4">
-                                    <img src="/assets/images/logo2.jpg" class="navbar-brand-img brand-sm mx-auto mb-4"
-                                      alt="...">
+                                    <p>Mã số người bệnh</p>
+                                    <img ng-src="{{barcodeImage}}" class="navbar-brand-img mx-auto mb-2" alt="...">
+                                    <h5>{{bill[0].appointments.patient.patientId}}</h5>
                                     <h3 class="mb-0 text-uppercase">Đơn thuốc
                                     </h3> <span
                                       class="text-secondary">#{{prescription[0].prescription.prescriptionId}}</span>
@@ -738,8 +756,8 @@
                                         <p>Bác sĩ khám bệnh</p>
                                       </div>
                                       <div class="text-center">
-                                        <img ng-src="{{urlImgDoctorSignatureDisplay(app.doctor.signature)}}"
-                                          class="mb-3" alt="..." width="100" height="100">
+                                        <img ng-src="{{app.doctor.signature}}" class="mb-3" alt="..." width="100"
+                                          height="100">
                                         <p>{{app.doctor.fullName}}</p>
                                       </div>
                                     </div>
@@ -767,7 +785,7 @@
       <!-- Event details -->
       <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#updateAppointment"
         id="btnUpdateAppointment" hidden>
-        Cập nhật cuộc hẹn
+        Cập nhật ca khám
       </button>
       <div class="modal fade" id="updateAppointment" tabindex="-1" aria-labelledby="updateAppointmentLabel"
         aria-hidden="true">
@@ -775,7 +793,7 @@
           <div class="modal-content">
             <div class="modal-header">
               <div class="d-flex flex-items-center flex-justify-between" id="div-register-appointment">
-                <h3 class="text-secondary">Cập nhật lịch hẹn
+                <h3 class="text-secondary">Cập nhật lịch khám
                 </h3>
               </div>
               <div class="custom-hr mb-3"></div>
@@ -796,131 +814,6 @@
       </div>
       <!-- End Event details -->
 
-      <div class="modal fade modal-notif modal-slide" tabindex="-1" role="dialog" aria-labelledby="defaultModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-sm" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="defaultModalLabel">Notifications</h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-            <div class="modal-body">
-              <div class="list-group list-group-flush my-n3">
-                <div class="list-group-item bg-transparent">
-                  <div class="row align-items-center">
-                    <div class="col-auto">
-                      <span class="fe fe-box fe-24"></span>
-                    </div>
-                    <div class="col">
-                      <small><strong>Package has uploaded successfull</strong></small>
-                      <div class="my-0 text-secondary small">Package is zipped and uploaded</div>
-                      <small class="badge badge-pill badge-light text-secondary">1m ago</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="list-group-item bg-transparent">
-                  <div class="row align-items-center">
-                    <div class="col-auto">
-                      <span class="fe fe-download fe-24"></span>
-                    </div>
-                    <div class="col">
-                      <small><strong>Widgets are updated successfull</strong></small>
-                      <div class="my-0 text-secondary small">Just create new layout Index, form, table</div>
-                      <small class="badge badge-pill badge-light text-secondary">2m ago</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="list-group-item bg-transparent">
-                  <div class="row align-items-center">
-                    <div class="col-auto">
-                      <span class="fe fe-inbox fe-24"></span>
-                    </div>
-                    <div class="col">
-                      <small><strong>Notifications have been sent</strong></small>
-                      <div class="my-0 text-secondary small">Fusce dapibus, tellus ac cursus commodo</div>
-                      <small class="badge badge-pill badge-light text-secondary">30m ago</small>
-                    </div>
-                  </div> <!-- / .row -->
-                </div>
-                <div class="list-group-item bg-transparent">
-                  <div class="row align-items-center">
-                    <div class="col-auto">
-                      <span class="fe fe-link fe-24"></span>
-                    </div>
-                    <div class="col">
-                      <small><strong>Link was attached to menu</strong></small>
-                      <div class="my-0 text-secondary small">New layout has been attached to the menu</div>
-                      <small class="badge badge-pill badge-light text-secondary">1h ago</small>
-                    </div>
-                  </div>
-                </div> <!-- / .row -->
-              </div> <!-- / .list-group -->
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary btn-block" data-dismiss="modal">Clear All</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="modal fade modal-shortcut modal-slide" tabindex="-1" role="dialog" aria-labelledby="defaultModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="defaultModalLabel">Shortcuts</h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-            <div class="modal-body px-5">
-              <div class="row align-items-center">
-                <div class="col-6 text-center">
-                  <div class="squircle bg-success justify-content-center">
-                    <i class="fe fe-cpu fe-32 align-self-center text-white"></i>
-                  </div>
-                  <p>Control area</p>
-                </div>
-                <div class="col-6 text-center">
-                  <div class="squircle bg-primary justify-content-center">
-                    <i class="fe fe-activity fe-32 align-self-center text-white"></i>
-                  </div>
-                  <p>Activity</p>
-                </div>
-              </div>
-              <div class="row align-items-center">
-                <div class="col-6 text-center">
-                  <div class="squircle bg-primary justify-content-center">
-                    <i class="fe fe-droplet fe-32 align-self-center text-white"></i>
-                  </div>
-                  <p>Droplet</p>
-                </div>
-                <div class="col-6 text-center">
-                  <div class="squircle bg-primary justify-content-center">
-                    <i class="fe fe-upload-cloud fe-32 align-self-center text-white"></i>
-                  </div>
-                  <p>Upload</p>
-                </div>
-              </div>
-              <div class="row align-items-center">
-                <div class="col-6 text-center">
-                  <div class="squircle bg-primary justify-content-center">
-                    <i class="fe fe-users fe-32 align-self-center text-white"></i>
-                  </div>
-                  <p>Users</p>
-                </div>
-                <div class="col-6 text-center">
-                  <div class="squircle bg-primary justify-content-center">
-                    <i class="fe fe-settings fe-32 align-self-center text-white"></i>
-                  </div>
-                  <p>Settings</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </main> <!-- main -->
   </div>
 </div>

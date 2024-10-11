@@ -1,19 +1,25 @@
 <div class="vertical  dark ">
     <div class="wrapper">
-        <nav class="topnav navbar navbar-light" ng-include="'component/admin-nav.html'">
+        <nav class="topnav navbar navbar-light justify-content-end" ng-include="'component/admin-nav.html'">
         </nav>
         <aside class="sidebar-left border-right shadow" id="leftSidebar" ng-include="'component/admin-aside.html'"
             data-simplebar>
         </aside>
         <main role="main" class="main-content" ng-controller="AdminCTResultController">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                </ol>
-            </nav>
+
             <div class="container-fluid">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                    </ol>
+                </nav>
+                <div class="row justify-content-center mb-3">
+                    <div class="d-flex flex-items-center flex-justify-between custom-heading">
+                        <h3 class="text-secondary">Danh sách film chụp</h3>
+                    </div>
+                    <div class="custom-hr"></div>
+                </div>
                 <div class="row justify-content-center">
                     <div class="col-12">
-                        <h2 class="mb-2 p-0 page-title">Danh sách film chụp</h2>
                         <p class="card-text"></p>
                         <div class="row my-4">
                             <!-- Small table -->
@@ -45,7 +51,7 @@
                                                 <div class="row align-items-center justify-content-center">
                                                     <div class="col-lg col-sm-12 p-3 me-3 d-flex flex-column flex-wrap">
                                                         <div class="row">
-                                                            <div class="col-lg-6 col-md-12">
+                                                            <div class="col-lg-12 col-md-12">
                                                                 <div class="form-outline mb-3">
                                                                     <label class="form-label"
                                                                         for="manageCTResultsModalCTResultsImage">Chọn
@@ -55,45 +61,26 @@
                                                                         id="imageInput" ng-model="formCTResult.image"
                                                                         class="form-control">
                                                                     <div class="p-3 mt-3 d-flex justify-content-center flex-wrap"
-                                                                        style="box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); border-radius: 10px;"
-                                                                        ng-if="filenames.length > 0">
-                                                                        <label class="m-2"
-                                                                            ng-repeat="filename in filenames"
-                                                                            title="Double click để xóa">
-                                                                            <img id="selectedImage"
-                                                                                ng-src="{{urlImage(filename)}}"
-                                                                                ng-dblclick="deleteImg(filename)"
-                                                                                style="width: 100px; height: auto;">
-                                                                            <p>{{filename}}</p>
+                                                                        ng-if="imageUrl" id="sld-js">
+                                                                        <label  id="zoom_img" class="m-2 slide_img" title="Double click để xóa">
+                                                                            <img id="selectedImage" 
+                                                                                ng-src="{{imageUrl}}"
+                                                                                ng-dblclick="deleteImg()"
+                                                                                style="width: 300px; height: auto;">
                                                                         </label>
                                                                     </div>
                                                                 </div>
                                                             </div>
-
-                                                            <!-- Nhân viên chụp  -->
-                                                            <div class="col-lg-6 col-md-12">
-                                                                <div class="form-row">
-                                                                    <div class="form-group col-md-12">
-                                                                        <label for="dentalStaffId">Nhân viên
-                                                                            chụp</label>
-                                                                        <select id="dentalStaffId"
-                                                                            class="form-control select2"
-                                                                            ng-model="formCTResult.dentalStaffId"
-                                                                            ng-options="ds.dentalStaffId as ds.fullname for ds in listDentalStaffsDB">
-                                                                        </select>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-
+                                                          
                                                             <!-- Bệnh nhân -->
                                                             <div class="col-lg-6 col-md-12">
                                                                 <div class="form-row">
                                                                     <div class="form-group col-md-12">
                                                                         <label for="appointmentId">Bệnh nhân</label>
                                                                         <select id="appointmentId"
-                                                                            class="form-control select2"
+                                                                            class="form-control select2-appointment"
                                                                             ng-model="formCTResult.appointmentId"
-                                                                            ng-options="a.appointmentId as (a.patient.fullName + ' - ' + a.AppointmentDate ) for a in listAppointmentsDB">
+                                                                            ng-options="a.appointmentId as (a.patient.fullName + ' - ' + a.patient.phoneNumber + ' - Ngày  ' + (a.appointmentDate | date:'dd-MM-yyyy') ) for a in listAppointmentsDB">
                                                                         </select>
                                                                     </div>
                                                                 </div>
@@ -105,7 +92,7 @@
                                                                     <div class="form-group col-md-12">
                                                                         <label for="imagingPlanesId">Hướng chụp</label>
                                                                         <select id="imagingPlanesId"
-                                                                            class="form-control select2"
+                                                                            class="form-control select2-imagingPlanes"
                                                                             ng-model="formCTResult.imagingPlanesId"
                                                                             ng-options="i.imagingPlanesId as i.name for i in listImagingPlanesDB">
                                                                         </select>
@@ -120,11 +107,21 @@
                                                                         <label for="abnormalityId">Dấu hiệu bất
                                                                             thường</label>
                                                                         <select id="abnormalityId"
-                                                                            class="form-control select2"
+                                                                            class="form-control select2-multi-abnormality"
                                                                             ng-model="formCTResultAbnormality.abnormalityId"
                                                                             ng-options="am.abnormalityId as am.name for am in listAbnormalitiesDB">
                                                                         </select>
                                                                     </div>
+                                                                </div>
+                                                                <div class="form-row"
+                                                                    ng-show="originalCtresultAbnormality.length!=0">
+                                                                    <p>Dấu hiệu trước đây</p>
+                                                                    <ul>
+                                                                        <li
+                                                                            ng-repeat="a in originalCtresultAbnormality">
+                                                                            {{a.abnormality.abnormalityId +"-"+a.abnormality.name
+                                                                            }}</li>
+                                                                    </ul>
                                                                 </div>
                                                             </div>
 
@@ -134,21 +131,36 @@
                                                                     <label class="form-label"
                                                                         for="manageCTResultsModalCTResultDate">Ngày
                                                                         chụp</label>
-                                                                    <input type="date"
+                                                                    <input type="text"
                                                                         id="manageCTResultsModalCTResultDate"
                                                                         ng-model="formCTResult.date"
-                                                                        class="form-control" placeholder="Ngày chụp">
+                                                                        class="form-control drgpicker-ct"
+                                                                        placeholder="Ngày chụp">
                                                                 </div>
                                                             </div>
 
                                                         </div>
                                                         <div class="d-flex justify-content-center mt-3">
                                                             <button ng-click="createCTResult()"
-                                                                class="btn btn-success m-2">Tạo
+                                                                class="btn btn-success m-2"
+                                                                ng-show="!isUpdateCTResult&&!isLoadingCreate">Tạo
                                                                 mới</button>
+                                                            <button class="btn btn-outline-success" type="button"
+                                                                disabled ng-show="isLoadingCreate">
+                                                                <span class="spinner-border spinner-border-sm"
+                                                                    role="status" aria-hidden="true"></span>
+                                                                Đang xử lý...
+                                                            </button>
                                                             <button ng-click="updateCTResult()"
-                                                                class="btn btn-primary m-2">Cập
+                                                                class="btn btn-primary m-2"
+                                                                ng-show="isUpdateCTResult&&!isLoadingUpdate">Cập
                                                                 nhật</button>
+                                                            <button class="btn btn-outline-primary" type="button"
+                                                                disabled ng-show="isLoadingUpdate">
+                                                                <span class="spinner-border spinner-border-sm"
+                                                                    role="status" aria-hidden="true"></span>
+                                                                Đang xử lý...
+                                                            </button>
                                                             <button ng-click="resetForm()" class="btn btn-info m-2">Làm
                                                                 mới</button>
                                                         </div>
@@ -174,12 +186,18 @@
                                                         <tbody>
                                                             <tr ng-repeat="cs in listCTResultsDB">
                                                                 <td>{{cs.appointmentCTResultId}}</td>
-                                                                <td><img ng-src="{{urlImage(cs.imageURL)}}" width="100" height="100"></td>
+                                                                <td><img ng-src="{{cs.imageURL}}" width="100"
+                                                                        height="100"></td>
                                                                 <td>{{cs.dentalStaff.fullname}}</td>
                                                                 <td>{{cs.appointment.patient.fullName}}</td>
                                                                 <td>{{cs.imagingPlanes.name}}</td>
-                                                                <td>{{cs.date}}</td>
-                                                                <td>{{showCTResultAbnormality(cs.appointmentCTResultId).abnormality.name}}
+                                                                <td>{{cs.date|dateFormat}}</td>
+                                                                <td>
+                                                                    <ul>
+                                                                        <li ng-repeat="rs in showCTResultAbnormality(cs.appointmentCTResultId)">
+                                                                            {{rs.abnormality.name}}
+                                                                        </li>
+                                                                    </ul>
                                                                 </td>
                                                                 <td><button
                                                                         class="btn btn-sm dropdown-toggle more-horizontal"
@@ -211,135 +229,6 @@
                     </div> <!-- .col-12 -->
                 </div> <!-- .row -->
             </div> <!-- .container-fluid -->
-            <div class="modal fade modal-notif modal-slide" tabindex="-1" role="dialog"
-                aria-labelledby="defaultModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-sm" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="defaultModalLabel">Notifications</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="list-group list-group-flush my-n3">
-                                <div class="list-group-item bg-transparent">
-                                    <div class="row align-items-center">
-                                        <div class="col-auto">
-                                            <span class="fe fe-box fe-24"></span>
-                                        </div>
-                                        <div class="col">
-                                            <small><strong>Package has uploaded successfull</strong></small>
-                                            <div class="my-0 text-muted small">Package is zipped and uploaded</div>
-                                            <small class="badge badge-pill badge-light text-muted">1m ago</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="list-group-item bg-transparent">
-                                    <div class="row align-items-center">
-                                        <div class="col-auto">
-                                            <span class="fe fe-download fe-24"></span>
-                                        </div>
-                                        <div class="col">
-                                            <small><strong>Widgets are updated successfull</strong></small>
-                                            <div class="my-0 text-muted small">Just create new layout Index, form, table
-                                            </div>
-                                            <small class="badge badge-pill badge-light text-muted">2m ago</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="list-group-item bg-transparent">
-                                    <div class="row align-items-center">
-                                        <div class="col-auto">
-                                            <span class="fe fe-inbox fe-24"></span>
-                                        </div>
-                                        <div class="col">
-                                            <small><strong>Notifications have been sent</strong></small>
-                                            <div class="my-0 text-muted small">Fusce dapibus, tellus ac cursus commodo
-                                            </div>
-                                            <small class="badge badge-pill badge-light text-muted">30m ago</small>
-                                        </div>
-                                    </div> <!-- / .row -->
-                                </div>
-                                <div class="list-group-item bg-transparent">
-                                    <div class="row align-items-center">
-                                        <div class="col-auto">
-                                            <span class="fe fe-link fe-24"></span>
-                                        </div>
-                                        <div class="col">
-                                            <small><strong>Link was attached to menu</strong></small>
-                                            <div class="my-0 text-muted small">New layout has been attached to the menu
-                                            </div>
-                                            <small class="badge badge-pill badge-light text-muted">1h ago</small>
-                                        </div>
-                                    </div>
-                                </div> <!-- / .row -->
-                            </div> <!-- / .list-group -->
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary btn-block" data-dismiss="modal">Clear
-                                All</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal fade modal-shortcut modal-slide" tabindex="-1" role="dialog"
-                aria-labelledby="defaultModalLabel" aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="defaultModalLabel">Shortcuts</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body px-5">
-                            <div class="row align-items-center">
-                                <div class="col-6 text-center">
-                                    <div class="squircle bg-success justify-content-center">
-                                        <i class="fe fe-cpu fe-32 align-self-center text-white"></i>
-                                    </div>
-                                    <p>Control area</p>
-                                </div>
-                                <div class="col-6 text-center">
-                                    <div class="squircle bg-primary justify-content-center">
-                                        <i class="fe fe-activity fe-32 align-self-center text-white"></i>
-                                    </div>
-                                    <p>Activity</p>
-                                </div>
-                            </div>
-                            <div class="row align-items-center">
-                                <div class="col-6 text-center">
-                                    <div class="squircle bg-primary justify-content-center">
-                                        <i class="fe fe-droplet fe-32 align-self-center text-white"></i>
-                                    </div>
-                                    <p>Droplet</p>
-                                </div>
-                                <div class="col-6 text-center">
-                                    <div class="squircle bg-primary justify-content-center">
-                                        <i class="fe fe-upload-cloud fe-32 align-self-center text-white"></i>
-                                    </div>
-                                    <p>Upload</p>
-                                </div>
-                            </div>
-                            <div class="row align-items-center">
-                                <div class="col-6 text-center">
-                                    <div class="squircle bg-primary justify-content-center">
-                                        <i class="fe fe-users fe-32 align-self-center text-white"></i>
-                                    </div>
-                                    <p>Users</p>
-                                </div>
-                                <div class="col-6 text-center">
-                                    <div class="squircle bg-primary justify-content-center">
-                                        <i class="fe fe-settings fe-32 align-self-center text-white"></i>
-                                    </div>
-                                    <p>Settings</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
         </main>
     </div>

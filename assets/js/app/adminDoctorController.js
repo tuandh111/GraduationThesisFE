@@ -1,11 +1,32 @@
-app.controller('AdminDoctorController', function ($scope, $http, $rootScope, $location, $timeout, API, $route, adminBreadcrumbService) {
+app.controller('AdminDoctorController', function ($scope, $http, $rootScope, $location, $timeout, API, $route, adminBreadcrumbService, TimezoneService) {
     let url = API.getBaseUrl();
     let headers = API.getHeaders();
     adminBreadcrumbService.generateBreadcrumb()
     // code here
+    const defaultTimezone = "Asia/Ho_Chi_Minh"
 
-    $scope.filenames = []
-    $scope.fileSignatures = []
+    $scope.initData = () => {
+        $scope.fileDoctorCloudinary = []
+        $scope.fileSignatureCloudinary = []
+        $scope.filenames = []
+        $scope.fileSignatures = []
+        $scope.isUpdateDoctor = false
+        $scope.isLoadingCreate = false
+        $scope.isLoadingUpdate = false
+        $scope.formDoctor = {
+            image: 'default.jpg',
+            doctorId: -1,
+            fullName: '',
+            degrees: '',
+            specialtyId: '',
+            phoneNumber: '',
+            gender: '',
+            address: '',
+            birthday: moment("01/1/1999", "DD/MM/YYYY").format('DD/MM/YYYY'),
+            signature: 'abc',
+            deleted: false
+        }
+    }
 
     $scope.listDegreesTypeDB = [
         { degreesId: 1, degreesName: 'Thạc sĩ' },
@@ -24,25 +45,52 @@ app.controller('AdminDoctorController', function ($scope, $http, $rootScope, $lo
     ];
 
     $scope.initializeUIComponents = () => {
-        $('.select2').select2(
-            {
-                theme: 'bootstrap4',
-            });
-        $('.select2-multi').select2(
-            {
-                multiple: true,
-                theme: 'bootstrap4',
-            });
-        $('.drgpicker').daterangepicker(
-            {
-                singleDatePicker: true,
-                timePicker: false,
-                showDropdowns: true,
-                locale:
+        $timeout(() => {
+            $('.select2-degrees').select2(
                 {
-                    format: 'DD/MM/YYYY'
-                }
+                    theme: 'bootstrap4',
+                    placeholder: '---Chọn cấp bậc---',
+                    allowClear: true
+                }).val(null).trigger('change')
+
+            $('.select2-specialty').select2(
+                {
+                    theme: 'bootstrap4',
+                    placeholder: '---Chọn chuyên khoa---',
+                    allowClear: true
+                }).val(null).trigger('change')
+
+            $('.select2-gender').select2(
+                {
+                    theme: 'bootstrap4',
+                    placeholder: '---Chọn giới tính---',
+                    allowClear: true
+                }).val(null).trigger('change')
+
+            $('.select2-multi').select2(
+                {
+                    multiple: true,
+                    theme: 'bootstrap4',
+                });
+
+
+            $('.drgpicker').daterangepicker(
+                {
+                    singleDatePicker: true,
+                    timePicker: false,
+                    showDropdowns: true,
+                    locale:
+                    {
+                        format: 'DD/MM/YYYY',
+                        applyLabel: 'Áp dụng',
+                        cancelLabel: 'Hủy',
+                    }
+                });
+            $('.drgpicker').on('apply.daterangepicker', function (ev, picker) {
+                let selectedDate = picker.startDate.format('DD/MM/YYYY');
+                $scope.formDoctor.birthday = selectedDate
             });
+        }, 500)
         $('.time-input').timepicker(
             {
                 'scrollDefault': 'now',
@@ -213,19 +261,19 @@ app.controller('AdminDoctorController', function ($scope, $http, $rootScope, $lo
     }
 
     $scope.getListDegrees = () => {
-        $http.get(url + "/specialty").then(response => {
+        $http.get(url + "/specialty", { headers: headers }).then(response => {
             $scope.listSpecialtyTypeDB = response.data
         }).catch(err => {
-            Swal.fire({
-                title: "Thất bại!",
-                html: '<p class="text-danger">Xảy ra lỗi!</p>',
-                icon: "error"
-            })
+            new Noty({
+                text: 'Xảy ra lỗi !',
+                type: 'error',
+                timeout: 3000
+            }).show();
         })
     }
 
     $scope.getListDoctor = () => {
-        $http.get(url + '/doctor').then(respone => {
+        $http.get(url + '/doctor-except-deleted', { headers: headers }).then(respone => {
             $scope.listDoctorDB = respone.data
             if ($.fn.DataTable.isDataTable('#dataTable-list-doctor')) {
                 $('#dataTable-list-doctor').DataTable().clear().destroy();
@@ -254,13 +302,25 @@ app.controller('AdminDoctorController', function ($scope, $http, $rootScope, $lo
                             sLast: "Cuối"
                         }
                     },
-                    "ordering": false
+                    "ordering": false,
+                    autoWidth: false,
+                    columnDefs: [
+                        { width: '10%', targets: 0 },
+                        { width: '10%', targets: 1 },
+                        { width: '20%', targets: 2 },
+                        { width: '15%', targets: 3 },
+                        { width: '10%', targets: 4 },
+                        { width: '15%', targets: 5 },
+                        { width: '10%', targets: 6 },
+                        { width: '10%', targets: 7 }
+                    ]
                 });
             });
         }).catch(err => {
             console.log("Error", err);
         })
     }
+
     $scope.crudDoctor = () => {
         var currentDate = new Date();
         $scope.formDoctor = {
@@ -279,7 +339,8 @@ app.controller('AdminDoctorController', function ($scope, $http, $rootScope, $lo
         $scope.checkAge = function (dateOfBirth) {
             if (!dateOfBirth) return false;
 
-            var birthDate = new Date(dateOfBirth);
+            var birthDate = new Date(moment(dateOfBirth, "DD/MM/YYYY").format("YYYY-MM-DD"));
+
             var age = currentDate.getFullYear() - birthDate.getFullYear();
             if (currentDate.getMonth() < birthDate.getMonth() ||
                 (currentDate.getMonth() === birthDate.getMonth() && currentDate.getDate() < birthDate.getDate())) {
@@ -314,19 +375,7 @@ app.controller('AdminDoctorController', function ($scope, $http, $rootScope, $lo
                 }
             }
 
-            if ($scope.filenames[0] == null) {
-                Swal.fire({
-                    title: "Cảnh báo!",
-                    html: "Vui lòng tải hình ảnh bác sĩ!",
-                    icon: "error"
-                })
-            } else if ($scope.fileSignatures[0] == null) {
-                Swal.fire({
-                    title: "Cảnh báo!",
-                    html: "Vui lòng tải lên chữ ký bác sĩ!",
-                    icon: "error"
-                })
-            } else if ($scope.formDoctor.degrees == "" || $scope.formDoctor.degrees == null) {
+            if ($scope.formDoctor.degrees == "" || $scope.formDoctor.degrees == null) {
                 Swal.fire({
                     title: "Cảnh báo!",
                     html: "Vui lòng chọn bằng cấp!",
@@ -377,6 +426,7 @@ app.controller('AdminDoctorController', function ($scope, $http, $rootScope, $lo
 
         $scope.editDoctor = (doctor, $event) => {
             $event.preventDefault()
+            $scope.isUpdateDoctor = true
             if (doctor != null) {
                 $scope.formDoctor = {
                     image: doctor.image,
@@ -386,19 +436,21 @@ app.controller('AdminDoctorController', function ($scope, $http, $rootScope, $lo
                     phoneNumber: doctor.phoneNumber,
                     gender: doctor.gender,
                     address: doctor.address,
-                    birthday: new Date(doctor.birthday),
+                    birthday: moment(new Date(doctor.birthday)).format("DD/MM/YYYY"),
                     signature: doctor.signature,
                     deleted: doctor.deleted
                 }
                 $scope.formDoctor.specialtyId = doctor.specialty ? doctor.specialty.specialtyId : -1
-
+                $scope.imageUrlDoctor = doctor.image
+                $scope.imageUrlSignature = doctor.signature
             }
 
             const firstTabButtonCreate = document.getElementById('form-tab-doctor');
             firstTabButtonCreate.click();
         }
 
-        $scope.createDoctor = () => {
+        $scope.createDoctor = async () => {
+
             if ($scope.formDoctor.doctorId != -1) {
                 Swal.fire({
                     title: "Cảnh báo!",
@@ -409,65 +461,48 @@ app.controller('AdminDoctorController', function ($scope, $http, $rootScope, $lo
             }
             var valid = $scope.validationForm()
             if (valid) {
-                $scope.formDoctor.image = $scope.filenames[0]
-                $scope.formDoctor.signature = $scope.fileSignatures[0]
-                var requsetDoctorJSON = angular.toJson($scope.formDoctor)
-                $http.post(url + '/doctor', requsetDoctorJSON).then(respone => {
-                    var requsetFileJSON = angular.toJson($scope.filenames)
-                    var requsetFileSignaturesJSON = angular.toJson($scope.fileSignatures)
+                $scope.isLoadingCreate = true
+                $scope.formDoctor.image = $scope.imageUrlDoctor
+                $scope.formDoctor.signature = $scope.imageUrlSignature
+                $scope.formDoctor.birthday = TimezoneService.convertToTimezone(moment($scope.formDoctor.birthday, "DD/MM/YYYY"), defaultTimezone)
+                var requestDoctorJSON = angular.toJson($scope.formDoctor)
 
-                    var request1 = $http.post(url + '/move/tempFolderSignature/imgDoctorSignature', requsetFileSignaturesJSON, {
-                        transformRequest: angular.identity,
-                        headers: {
-                            'Content-Type': undefined,
-                            ...headers
+                try {
+                    const response = await $http.post(url + '/doctor', requestDoctorJSON, { headers: headers });
+                    $timeout(() => {
+                        new Noty({
+                            text: 'Thêm bác sĩ thành công!',
+                            type: 'success',
+                            timeout: 3000
+                        }).show();
+
+                        $scope.resetForm();
+                        $scope.getListDoctor();
+                        const secondTabButtonCreate = document.getElementById('list-tab-doctor');
+                        if (secondTabButtonCreate) {
+                            secondTabButtonCreate.click();
                         }
-                    });
+                    }, 3000);
 
-                    var request2 = $http.post(url + '/move/tempFolder/imgDoctor', requsetFileJSON, {
-                        transformRequest: angular.identity,
-                        headers: {
-                            'Content-Type': undefined,
-                            ...headers
-                        }
-                    });
-
-                    Promise.all([request1, request2])
-                        .then(responses => {
-                            Swal.fire({
-                                title: "Thành công!",
-                                html: "Đã thêm bác sĩ thành công!",
-                                icon: "success"
-                            });
-                            $scope.resetForm();
-                            $scope.getListDoctor();
-                            const secondTabButtonCreate = document.getElementById('list-tab-doctor');
-                            if (secondTabButtonCreate) {
-                                secondTabButtonCreate.click();
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Có lỗi xảy ra:', error);
-                            Swal.fire({
-                                title: "Lỗi!",
-                                html: "Có lỗi xảy ra khi thêm mới.",
-                                icon: "error"
-                            });
-                        });
-                 
-                }).catch(err => {
-                    Swal.fire({
-                        title: "Thất bại!",
-                        html: '<p class="text-danger">Xảy ra lỗi!</p>',
-                        icon: "error"
-                    })
-                });
+                } catch (error) {
+                    console.error('Có lỗi xảy ra:', error);
+                    new Noty({
+                        text: 'Thêm bác sĩ thất bại. Vui lòng thử lại!',
+                        type: 'error',
+                        timeout: 3000
+                    }).show();
+                } finally {
+                    $timeout(() => {
+                        $scope.isLoadingCreate = false;
+                    }, 3000);
+                }
             }
         }
 
-        $scope.updateDoctor = () => {
+        $scope.updateDoctor = async () => {
             if ($scope.formDoctor.doctorId == -1) {
                 Swal.fire({
+                    position: "top-end",
                     title: "Cảnh báo!",
                     html: "Thông tin chưa có trên hệ thống!",
                     icon: "error"
@@ -476,72 +511,53 @@ app.controller('AdminDoctorController', function ($scope, $http, $rootScope, $lo
             }
             var valid = $scope.validationForm()
             if (valid) {
-                if ($scope.filenames[0] != null) {
-                    $scope.formDoctor.image = $scope.filenames[0]
+                $scope.isLoadingUpdate = true
+                if ($scope.imageUrlDoctor != null) {
+                    $scope.formDoctor.image = $scope.imageUrlDoctor
                 }
-                if ($scope.fileSignatures[0] != null) {
-                    $scope.formDoctor.signature = $scope.fileSignatures[0]
+                if ($scope.imageUrlSignature != null) {
+                    $scope.formDoctor.signature = $scope.imageUrlSignature
                 }
-                var requsetDoctorJSON = angular.toJson($scope.formDoctor)
-                var doctorId = $scope.formDoctor.doctorId
-                console.log("requsetDoctorJSON", requsetDoctorJSON);
-                $http.put(url + '/doctor/' + doctorId, requsetDoctorJSON).then(respone => {
-                    var requsetFileJSON = angular.toJson($scope.filenames)
-                    var requsetFileSignaturesJSON = angular.toJson($scope.fileSignatures)
+                $scope.formDoctor.birthday = TimezoneService.convertToTimezone(moment($scope.formDoctor.birthday, "DD/MM/YYYY"), defaultTimezone)
+                var requestDoctorJSON = angular.toJson($scope.formDoctor)
 
-                    var request1 = $http.post(url + '/move/tempFolderSignature/imgDoctorSignature', requsetFileSignaturesJSON, {
-                        transformRequest: angular.identity,
-                        headers: {
-                            'Content-Type': undefined,
-                            ...headers
+                try {
+                    const response = await $http.put(url + '/doctor/' + $scope.formDoctor.doctorId, requestDoctorJSON, { headers: headers });
+
+                    $timeout(() => {
+                        new Noty({
+                            text: 'Cập nhật thông tin thành công !',
+                            type: 'success',
+                            timeout: 3000
+                        }).show();
+
+                        $scope.resetForm();
+                        $scope.getListDoctor();
+                        const secondTabButtonCreate = document.getElementById('list-tab-doctor');
+                        if (secondTabButtonCreate) {
+                            secondTabButtonCreate.click();
                         }
-                    });
+                    }, 3000);
 
-                    var request2 = $http.post(url + '/move/tempFolder/imgDoctor', requsetFileJSON, {
-                        transformRequest: angular.identity,
-                        headers: {
-                            'Content-Type': undefined,
-                            ...headers
-                        }
-                    });
-
-                    Promise.all([request1, request2])
-                        .then(responses => {
-                            Swal.fire({
-                                title: "Thành công!",
-                                html: "Cập nhật thành công!",
-                                icon: "success"
-                            });
-                            $scope.resetForm();
-                            $scope.getListDoctor();
-                            const secondTabButtonCreate = document.getElementById('list-tab-doctor');
-                            if (secondTabButtonCreate) {
-                                secondTabButtonCreate.click();
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Có lỗi xảy ra:', error);
-                            Swal.fire({
-                                title: "Lỗi!",
-                                html: "Có lỗi xảy ra khi cập nhật.",
-                                icon: "error"
-                            });
-                        });
-
-                }).catch(err => {
-                    Swal.fire({
-                        title: "Thất bại!",
-                        html: '<p class="text-danger">Cập nhật thất bại!</p>',
-                        icon: "error"
-                    })
-                })
+                } catch (error) {
+                    console.error('Có lỗi xảy ra:', error);
+                    new Noty({
+                        text: 'Cập nhật thất bại. Vui lòng thử lại!',
+                        type: 'error',
+                        timeout: 3000
+                    }).show();
+                } finally {
+                    $timeout(() => {
+                        $scope.isLoadingUpdate = false;
+                    }, 3000);
+                }
             }
-
         }
+
+
 
         $scope.deleteDoctor = (doctor, $event) => {
             $event.preventDefault()
-            console.log("delete doctor", doctor)
             var doctorId = doctor.doctorId
             Swal.fire({
                 text: "Bạn có muốn xóa Bác sĩ " + doctor.fullName + " ?",
@@ -553,159 +569,129 @@ app.controller('AdminDoctorController', function ($scope, $http, $rootScope, $lo
                 confirmButtonText: 'Có'
             }).then(rs => {
                 if (rs.isConfirmed) {
-                    $http.delete(url + '/sort-delete-doctor/' + doctorId).then(respone => {
-                        Swal.fire({
-                            title: "Thành công!",
-                            html: "Đã xóa thành công!",
-                            icon: "success"
-                        })
+                    $http.delete(url + '/soft-delete-doctor/' + doctorId, { headers: headers }).then(respone => {
+                        new Noty({
+                            text: 'Đã xóa thành công!',
+                            type: 'success',
+                            timeout: 3000
+                        }).show();
                         $scope.getListDoctor()
                     }).catch(err => {
-                        Swal.fire({
-                            title: "Thất bại!",
-                            html: '<p class="text-danger">Xảy ra lỗi!</p>',
-                            icon: "error"
-                        })
+                        console.log("err", err);
+
+                        new Noty({
+                            text: 'Xóa thất bại. Vui lòng thử lại!',
+                            type: 'error',
+                            timeout: 3000
+                        }).show();
                     })
                 }
             })
         }
 
         $scope.resetForm = () => {
-            $scope.formDoctor = {
-                image: 'abc.jpg',
-                doctorId: -1,
-                fullName: '',
-                degrees: '',
-                specialtyId: '',
-                phoneNumber: '',
-                gender: '',
-                address: '',
-                birthday: new Date("1/01/1999"),
-                signature: 'abc'
+            $scope.initData()
+            $scope.deleteImgDoctor()
+            $scope.deleteImgSignature()
+        }
+    }
+
+    $scope.uploadImgDoctorToTempFolder = (files) => {
+
+        if (files == null || files.length === 0) {
+            alert("No files selected for upload.");
+            return;
+        }
+        swal.fire({
+            title: 'Đang tải ảnh lên...',
+            text: 'Vui lòng chờ trong giây lát.',
+            allowOutsideClick: false,
+            didOpen: () => {
+                swal.showLoading();
             }
-        }
-    }
-
-
-
-    $scope.listImg = function () {
-        $http.get(url + '/listImage/imgDoctor', { headers: headers }).then(response => {
-            $scope.filenames = response.data
-        }).catch(error => {
-            console.log("error", error);
-        })
-    }
-
-    $scope.urlImg = (filename) => {
-        let image = url + "/image/tempFolder/" + filename
-        return image
-    }
-
-    $scope.deleteImg = (filename) => {
-        $http.delete(url + "/deleteImage/imgDoctor/" + filename, { headers: headers }).then(resp => {
-            let i = $scope.filenames.findIndex(name => name == filename);
-            $scope.filenames.splice(i, 1);
-        }).catch(err => {
-            console.log("error", err);
-        })
-    }
-
-    $scope.uploadImg = (files) => {
-        if (files == null) {
-            alert("Upload hình chưa thành công")
-            return
-        }
+        });
+        var file = files[0];
         var form = new FormData();
-        for (var i = 0; i < files.length; i++) {
-            form.append("files", files[i]);
-        }
-
-        $http.post(url + "/saveImage/tempFolder", form, {
+        form.append("file", file);
+        $http.post(url + '/upload-cloudinary', form, {
             transformRequest: angular.identity,
-            headers: {
-                'Content-Type': undefined,
-                ...headers
-            }
-        }).then(response => {
-            $scope.filenames.push(...response.data);
-        }).catch(err => {
-            console.log("error: ", err);
-        })
+            headers: { 'Content-Type': undefined }
+        }).then(function (response) {
+            $scope.imageUrlDoctor = response.data.message;
+            swal.close();
+            new Noty({
+                text: 'Tải ảnh lên thành công!',
+                type: 'success',
+                timeout: 3000
+            }).show();
+        }).catch(function (error) {
+            swal.close();
+            new Noty({
+                text: 'Tải ảnh lên thất bại. Vui lòng thử lại!',
+                type: 'error',
+                timeout: 3000
+            }).show();
+            console.log("Upload failed:", error);
+        });
     }
 
-    $scope.listImgDoctor = function () {
-        $http.get(url + '/imgDoctor', { headers: headers }).then(response => {
-            $scope.getImageDoctors = response.data
-        }).catch(error => {
-            console.log("error", error);
-        })
+    $scope.deleteImgDoctor = () => {
+        document.getElementById('filesDoctorCloudinary').value = "";
+        $scope.imageUrlDoctor = null;
     }
 
-    $scope.urlImgDoctor = (filename) => {
-        return url + "/imgDoctor/" + filename;
-    }
 
-    $scope.uploadImgSignature = (files) => {
-        if (files == null) {
-            alert("Upload hình chưa thành công")
-            return
+    $scope.uploadImgSignatureToTempFolder = (files) => {
+
+        if (files == null || files.length === 0) {
+            alert("No files selected for upload.");
+            return;
         }
+        swal.fire({
+            title: 'Đang tải ảnh lên...',
+            text: 'Vui lòng chờ trong giây lát.',
+            allowOutsideClick: false,
+            didOpen: () => {
+                swal.showLoading();
+            }
+        });
+        var file = files[0];
         var form = new FormData();
-        for (var i = 0; i < files.length; i++) {
-            form.append("files", files[i]);
-        }
-
-        $http.post(url + "/saveImage/tempFolderSignature", form, {
+        form.append("file", file);
+        $http.post(url + '/upload-cloudinary', form, {
             transformRequest: angular.identity,
-            headers: {
-                'Content-Type': undefined,
-                ...headers
-            }
-        }).then(response => {
-            $scope.fileSignatures.push(...response.data);
-        }).catch(err => {
-            console.log("error: ", err);
-        })
+            headers: { 'Content-Type': undefined }
+        }).then(function (response) {
+            $scope.imageUrlSignature = response.data.message;
+            $scope.filename = file.name;
+            swal.close();
+            new Noty({
+                text: 'Tải ảnh lên thành công !',
+                type: 'success',
+                timeout: 3000
+            }).show();
+        }).catch(function (error) {
+            swal.close();
+            new Noty({
+                text: 'Tải ảnh lên thất bại. Vui lòng thử lại!',
+                type: 'error',
+                timeout: 3000
+            }).show();
+            console.log("Upload failed:", error);
+        });
     }
 
-    $scope.urlImgSignature = (filename) => {
-        let image = url + "/image/tempFolderSignature/" + filename
-        return image
+
+    $scope.deleteImgSignature = () => {
+        document.getElementById('filesSignatureCloudinary').value = "";
+        $scope.imageUrlSignature = null;
     }
 
-    $scope.listImgSignature = function () {
-        $http.get(url + '/listImage/imgDoctorSignature', { headers: headers }).then(response => {
-            $scope.fileSignatures = response.data
-        }).catch(error => {
-            console.log("error", error);
-        })
-    }
 
-    $scope.deleteImgSignature = (filename) => {
-        $http.delete(url + "/deleteImage/imgDoctorSignature/" + filename, { headers: headers }).then(resp => {
-            let i = $scope.fileSignatures.findIndex(name => name == filename);
-            $scope.fileSignatures.splice(i, 1);
-        }).catch(err => {
-            console.log("error", err);
-        })
-    }
-
-    $scope.urlImgSignatureDisplay = function () {
-        $http.get(url + '/imgDoctorSignature', { headers: headers }).then(response => {
-            $scope.getImageDoctorSignature = response.data
-        }).catch(error => {
-            console.log("error", error);
-        })
-    }
-
-    $scope.urlImgDoctorSignatureDisplay = (filename) => {
-        return url + "/imgDoctorSignature/" + filename;
-    }
 
     $scope.initializeUIComponents()
     $scope.getListDoctor()
     $scope.crudDoctor()
     $scope.getListDegrees()
-    $scope.listImg()
+    $scope.initData()
 })

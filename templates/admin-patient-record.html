@@ -1,6 +1,6 @@
 <div class="vertical  dark ">
   <div class="wrapper">
-    <nav class="topnav navbar navbar-light" ng-include="'component/admin-nav.html'">
+    <nav class="topnav navbar navbar-light justify-content-end" ng-include="'component/admin-nav.html'">
     </nav>
     <aside class="sidebar-left border-right shadow" id="leftSidebar" ng-include="'component/admin-aside.html'"
       data-simplebar>
@@ -12,28 +12,6 @@
       </div>
       <div class="custom-hr"></div>
       <div class="box mt-3">
-        <!-- <div class="box-header mb-3">
-          <div class="row align-items-center justify-content-end">
-            <div class="col-lg-3">
-              <select id="filterCustomer" class="form-control select2" ng-model="formPatientRecord.patientId"
-                ng-options="p.patientId as (p.fullName + (p.phoneNumber ? ' - ' + p.phoneNumber : '')) for p in listPatientDB"
-                style="height: 40px;">
-              </select>
-            </div>
-            <div class="col-lg-3">
-              <div class="input-group">
-                <div class="input-group-prepend">
-                  <div class="input-group-text" id="button-addon-date">
-                    <span class="fe fe-calendar fe-16"></span>
-                  </div>
-                </div>
-                <input type="text" class="form-control drgpickerSingle" id="dateFilterPatientRecord"
-                  ng-model="formPatientRecord.dateFilter" autocomplete="off" style="height: 40px;">
-              </div>
-            </div>
-
-          </div>
-        </div> -->
         <div class="box-content">
           <div class="row justify-content-center">
             <div class="col-12">
@@ -106,9 +84,6 @@
                           <span class="text-muted mx-2">đã
                             {{app.appointmentStatus.status}} cuộc hẹn</span>
                           <strong>{{app.appointmentId}}</strong>
-                          <!-- <button class="float-right btn btn-outline-primary" href="#!" style="margin: 5px;"
-                            ng-click="showDetail(app)">Xem chi
-                            tiết</button> -->
                           <button id="btn-paintient-record-details" class="float-right btn btn-outline-primary"
                             href="#!" style="margin: 5px;" data-bs-toggle="offcanvas"
                             data-bs-target="#offcanvasDetails-{{app.appointmentId}}"
@@ -217,7 +192,7 @@
                                         </table>
                                       </div>
 
-                                    </div> <!-- /.col-12 -->
+                                    </div> 
                                   </div>
                                 </div>
                                 <div class="tab-pane" ng-class="{ 'active show': isSelected(-2) }"
@@ -242,9 +217,7 @@
                                         <div class="card shadow">
                                           <div class="card-body p-5">
                                             <div class="row mb-5">
-                                              <div class="col-12 text-center mb-4">
-                                                <!-- <img src="/assets/images/logo2.jpg"
-                                                  class="navbar-brand-img brand-sm mx-auto mb-4" alt="..."> -->
+                                              <div class="col-12 text-center mb-4">                                             
                                                 <h2 class="mb-0 text-uppercase">BILL</h2>
                                                 <p class="text-muted"> {{bill[0].createAt | dateFormat}}<br /> Nha khoa
                                                   Tooth Teeth</p>
@@ -276,7 +249,7 @@
                                                   <strong>{{bill[0].createAt | dateFormat}}</strong>
                                                 </p>
                                               </div>
-                                            </div> <!-- /.row -->
+                                            </div>
                                             <table class="table table-borderless table-striped">
                                               <thead>
                                                 <tr>
@@ -316,11 +289,11 @@
                                                   </p>
                                                 </div>
                                               </div>
-                                            </div> <!-- /.row -->
-                                          </div> <!-- /.card-body -->
-                                        </div> <!-- /.card -->
+                                            </div> 
+                                          </div> 
+                                        </div>
                                       </div>
-                                    </div> <!-- /.col-12 -->
+                                    </div>
                                   </div>
                                 </div>
                                 <div class="tab-pane" ng-class="{ 'active show': isSelected(-3) }">
@@ -344,23 +317,19 @@
 
                       </div>
                     </div>
-                    <!-- <div class="custom-hr mt-3"></div> -->
                   </div>
 
                   <div class="appointment-pagination mt-3 d-flex justify-content-center">
                     <nav ng-include="'component/pagination.html'"></nav>
                   </div>
 
-                </div> <!-- / .card-body -->
-              </div> <!-- / .card -->
-            </div> <!-- .col-12 -->
+                </div> 
+              </div> 
+            </div> 
           </div>
         </div>
       </div>
 
-
-
-      <div class="admin-notify" ng-include="'component/admin-notify.html'"></div>
-    </main> <!-- main -->
+    </main> 
   </div>
 </div>

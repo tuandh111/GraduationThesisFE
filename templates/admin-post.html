@@ -1,0 +1,175 @@
+<div class="vertical  dark ">
+    <div class="wrapper">
+        <nav class="topnav navbar navbar-light justify-content-end" ng-include="'component/admin-nav.html'">
+        </nav>
+        <aside class="sidebar-left border-right shadow" id="leftSidebar" ng-include="'component/admin-aside.html'"
+            data-simplebar>
+        </aside>
+        <main role="main" class="main-content" ng-controller="AdminPostController">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                </ol>
+            </nav>
+            <div class="container-fluid">
+                <div class="row justify-content-center mb-3">
+                    <div class="col-12">
+                        <div class="d-flex flex-items-center flex-justify-between custom-heading">
+                        </div>
+                        <div class="custom-hr mb-3"></div>
+                        <div class="row align-items-center mb-3">
+                            <div class="col-md-12">
+                                <div class="card shadow">
+                                    <div class="card-body">
+                                        <h1 class="card-title text-secondary">Bài viết</h1>
+                                        <div class="col">
+                                            <div class="form-outline mb-3">
+                                                <label class="form-label" for="adminPost">Tiêu đề bài viết</label>
+                                                <input type="text" id="adminPost" ng-model="postTitle"
+                                                    class="form-control mb-2" placeholder="Tiêu đề bài viết"
+                                                    ng-change="validatePostData()" required>
+                                                <span class="text-danger " ng-if="!isTitleValid">(*) Vui lòng nhập
+                                                    tiêu
+                                                    đề bài viết</span>
+                                            </div>
+                                            <input type="file" accept="image/*" multiple
+                                                onchange="angular.element(this).scope().uploadImg(this.files)"
+                                                id="imageInput" ng-model="formCTResult.image" class="form-control">
+                                            <div class="p-3 mt-3 d-flex justify-content-center flex-wrap"
+                                                style="box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); border-radius: 10px;"
+                                                ng-if="imageUrl">
+                                                <label class="m-2" title="Double click để xóa">
+                                                    <img id="selectedImage" ng-src="{{imageUrl}}"
+                                                        ng-dblclick="deleteImg()" style="width: 100px; height: auto;">
+                                                </label>
+                                            </div>
+                                            <div class="mt-3">
+                                                <!-- Thông báo lỗi cho nội dung bài viết -->
+                                                <span class="text-danger" ng-if="!isBodyValid">(*) Vui lòng nhập nội
+                                                    dung bài viết</span>
+                                            </div>
+                                            <div id="editor" style="min-height:200px;">
+                                            </div>
+                                        </div>
+
+
+
+                                    </div>
+                                    <div class="card-footer">
+                                        <div class="col">
+                                            <button class="btn btn-primary" ng-click="createPost()"
+                                                ng-disabled="isEditing">
+                                                <i class="bi bi-plus-square"></i> Tạo bài viết
+                                            </button>
+
+                                            <!-- Nút Cập Nhật Bài Viết -->
+                                            <button class="btn btn-warning" ng-click="updatePost()"
+                                                ng-disabled="!isEditing">
+                                                <i class="bi bi-pencil"></i> Cập nhật bài viết
+                                            </button>
+
+                                            <!-- Nút Xóa Bài Viết -->
+                                            <button class="btn btn-danger" ng-click="deletePost()"
+                                                ng-disabled="!isEditing">
+                                                <i class="bi bi-trash3"></i> Xóa bài viết
+                                            </button>
+
+                                            <!-- Nút Xem Trước -->
+                                            <button type="button" class="btn btn-info" data-bs-toggle="modal"
+                                                data-bs-target="#exampleModal" ng-click="views()"
+                                                ng-disabled="!isFormValid">
+                                                <i class="bi bi-eye"></i> Xem trước
+                                            </button>
+
+                                            <!-- Nút Làm Mới -->
+                                            <button class="btn btn-secondary" ng-click="clearPost()">
+                                                <i class="bi bi-arrow-clockwise"></i> Làm mới
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Modal -->
+                                <div class="modal fade " id="exampleModal" tabindex="-1"
+                                    aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog  modal-lg">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h1 class="modal-title" id="exampleModalLabel">Thông tin bài đăng
+                                                    #{{postContent.id}}</h1>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                    aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+
+                                                <h1>{{postContent.title}}</h1>
+                                                <img ng-if="postContent.image" ng-src="{{postContent.image}}"
+                                                    class="img-thumbnail" width="100%" height="auto">
+                                                <span ng-if="!postContent.image">Không có ảnh</span>
+                                                <div ng-bind-html="postContent.body"></div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary"
+                                                    data-bs-dismiss="modal">Đóng</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Render post content here -->
+                            </div>
+
+                        </div>
+                        <div class="d-flex flex-items-center flex-justify-between custom-heading">
+                            <h1 class="text-secondary">Danh sách bài viết</h1>
+                        </div>
+                        <div class="custom-hr mb-3"></div>
+                        <div class="row align-items-center mb-3">
+                            <div class="card pt-2">
+                                <table class="table datatables" id="dataTable-list-post">
+                                    <thead>
+                                        <tr>
+                                            <th>Mã bài viết</th>
+                                            <th>Hình ảnh</th>
+                                            <th>Tiêu đề bài viết</th>
+                                            <th>Ngày đăng</th>
+                                            <th>Tài khoản tạo</th>
+                                            <th>Thao tác</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr ng-repeat="p in listPost">
+                                            <td>BV{{p.postId}}</td>
+                                            <td><img ng-if="p.image" ng-src="{{p.image}}" class="img-thumbnail"
+                                                    alt="..." width="70" height="70">
+                                                <span ng-if="!p.image">Không có ảnh</span>
+                                            </td>
+                                            <td>
+                                                <a class="dropdown-item text-primary" ng-click="editPost(p,$event)"
+                                                    href="javasript:void(0)" style="font-size: 18px;"> {{p.title}}</a>
+                                            </td>
+                                            <td>{{p.createDate | dateFormat}}</td>
+                                            <td>{{p.createBy.fullname}}</td>
+                                            <td><button class="btn btn-sm dropdown-toggle more-horizontal" type="button"
+                                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                    <span class="text white">...</span>
+                                                </button>
+                                                <div class="dropdown-menu dropdown-menu-right"
+                                                    style="box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); border-radius: 10px;">
+                                                    <a class="dropdown-item text-primary" ng-click="editPost(p,$event)"
+                                                        href="javasript:void(0)" style="font-size: 18px;">Sửa</a>
+                                                    <a class="dropdown-item text-danger"
+                                                        ng-click="deletePostTable(p,$event)" href="javasript:void(0)"
+                                                        style="font-size: 18px;">Xóa</a>
+                                                </div>
+
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>

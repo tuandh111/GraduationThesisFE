@@ -1,6 +1,6 @@
 <div class="vertical  dark ">
     <div class="wrapper">
-        <nav class="topnav navbar navbar-light" ng-include="'component/admin-nav.html'">
+        <nav class="topnav navbar navbar-light justify-content-end" ng-include="'component/admin-nav.html'">
         </nav>
         <aside class="sidebar-left border-right shadow" id="leftSidebar" ng-include="'component/admin-aside.html'"
             data-simplebar>
@@ -65,12 +65,12 @@
                                         </table>
                                     </div>
                                     <div class="col-6">
-                                        <h5>Thống kê số cuộc hẹn</h5>
+                                        <h5>Thống kê số ca khám</h5>
                                         <table class="table table-hover">
                                             <thead>
                                                 <tr>
-                                                    <th>Tổng số cộc hẹn</th>
-                                                    <th>Số cuộc hẹn hoàn thành</th>
+                                                    <th>Tổng số ca khám</th>
+                                                    <th>Số ca khám hoàn thành</th>
                                                     <th>Phụ cấp</th>
                                                 </tr>
                                             </thead>
@@ -105,7 +105,7 @@
             <!-- Event details -->
             <button type="button" class="btn btn-primary" data-bs-toggle="modal"
                 data-bs-target="#doctorUpdateAppointment" id="btnDoctorUpdateAppointment" hidden>
-                Cập nhật cuộc hẹn
+                Cập nhật lịch khám
             </button>
             <div class="modal fade" id="doctorUpdateAppointment" tabindex="-1"
                 aria-labelledby="doctorUpdateAppointmentLabel" aria-hidden="true">
@@ -113,7 +113,7 @@
                     <div class="modal-content">
                         <div class="modal-header">
                             <div class="d-flex flex-items-center flex-justify-between" id="div-register-appointment">
-                                <h3 class="text-secondary">Cập nhật lịch hẹn
+                                <h3 class="text-secondary">Cập nhật lịch khám
                                 </h3>
                             </div>
                             <div class="custom-hr mb-3"></div>
@@ -141,7 +141,7 @@
             </button>
             <div class="modal fade" id="eventDetailsDoctorScheduleSingle" tabindex="-1"
                 aria-labelledby="eventDetailsDoctorScheduleSingleLabel" aria-hidden="true">
-                <div class="modal-dialog modal-lg">
+                <div class="modal-dialog modal-xl">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title" id="eventDetailsDoctorScheduleSingleLabel">Lịch làm việc của tôi
@@ -193,7 +193,7 @@
 
                                             <div class="card d-inline-flex mb-2 w-100">
                                                 <div class="card-body bg-light py-2 px-3 text-warning"> (*) Ca làm việc
-                                                    có khách hàng đặt hẹn.
+                                                    có khách hàng đặt khám.
                                                 </div>
                                             </div>
                                         </div>

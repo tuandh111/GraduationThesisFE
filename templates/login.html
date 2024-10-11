@@ -1,0 +1,57 @@
+<div ng-controller="LoginController">
+	<header class="header_area" ng-include="'component/header.html'"></header>
+	<!--================ End Header Menu Area =================-->
+
+	<div class="row p-3 justify-content-center">
+		<div class="col-4">
+			<h1 class="h1 mb-3 text-center">Đăng Nhập</h1>
+			<div class="form-group">
+				<label for="inputEmail">Email</label>
+				<input type="email" id="inputEmail" class="form-control form-control-lg" placeholder="Email"
+					ng-model="formLogin.email" required="" autofocus="">
+			</div>
+			<div class="form-group">
+				<label for="inputPassword">Mật khẩu</label>
+				<input type="password" id="inputPassword" class="form-control form-control-lg" placeholder="Mật khẩu"
+					ng-model="formLogin.password" required="">
+			</div>
+			<div class="checkbox">
+				<label>
+					<input type="checkbox" id="remember-me" value="remember-me"> Lưu đăng nhập
+				</label>
+			</div>
+			<div class="mb-3 row">
+				<div class="col-6">
+					<a class="text-primary text-sm fst-italic " href="#!forgotPassword">Quên mật khẩu</a>
+				</div>
+				<div class="col-6">
+					<a class="text-danger text-sm fst-italic" style="float: right;" href="#!register">Tạo tài khoản</a>
+				</div>
+
+			</div>
+			<button class="btn btn-lg btn-primary btn-block" ng-click="login()">Đăng nhập</button>
+			<div class="row mt-3 ">
+				<div class="avatar avatar-xl d-flex justify-content-center">
+					<a href="javascript:void(0);" ng-click="loginWithGoogle()">
+						<img src="../assets/images/icon/logoGG.png" alt="Google Login" class="avatar-img rounded-circle"
+							style="height: 60px;width: 60px;">
+					</a>
+				</div>
+				<!-- 
+				<div class="col-6 avatar avatar-xl d-flex justify-content-center">
+					<a href="javascript:void(0);" ng-click="loginWithFacebook()">
+						<img src="../assets/images/icon/logoFB.png" alt="Facebook Login"
+							class="avatar-img rounded-circle" style="height: 60px;width: 60px;">
+					</a>
+				</div> -->
+
+
+			</div>
+		</div>
+
+	</div>
+
+	<!-- footer Start -->
+	<footer class="footer section gray-bg" ng-include="'component/footer.html'"></footer>
+	<!--================ End footer Area  =================-->
+</div>

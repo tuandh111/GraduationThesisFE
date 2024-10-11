@@ -1,19 +1,21 @@
 <div class="vertical  dark ">
     <div class="wrapper">
-        <nav class="topnav navbar navbar-light" ng-include="'component/admin-nav.html'">
+        <nav class="topnav navbar navbar-light justify-content-end" ng-include="'component/admin-nav.html'">
         </nav>
         <aside class="sidebar-left border-right shadow" id="leftSidebar" ng-include="'component/admin-aside.html'"
             data-simplebar>
         </aside>
         <main role="main" class="main-content" ng-controller="AdminListDentalSupplies">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                </ol>
-            </nav>
             <div class="container-fluid">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                    </ol>
+                </nav>
+                <div class="d-flex flex-items-center flex-justify-between custom-heading">
+                    <h3 class="text-secondary">Danh sách vật tư nha khoa</h3>
+                </div>
                 <div class="row justify-content-center">
                     <div class="col-12">
-                        <h2 class="mb-2 p-0 page-title">Danh sách vật tư nha khoa</h2>
                         <p class="card-text"></p>
                         <div class="row my-4">
                             <!-- Small table -->
@@ -32,7 +34,7 @@
                                 <div class="card shadow">
                                     <div class="card-body">
                                         <!-- table -->
-                                        <table class="table datatables" id="dataTable-list-service">
+                                        <table class="table datatables" id="dataTable-list-service1">
                                             <thead>
                                                 <tr>
                                                     <th>Mã loại vật tư</th>
@@ -46,7 +48,8 @@
                                             <tbody>
                                                 <tr ng-repeat="d in listDentalSuppliesFromDB"
                                                     class="dentalSupplies_{{d.suppliesId}}">
-                                                    <td>{{d.suppliesId}}</td>
+                                                    <!-- <td>VT{{d.suppliesId}}</td> -->
+                                                    <td>{{(d.suppliesName | initialCharacter)+"-"+d.suppliesId}}</td>
                                                     <td>{{d.suppliesName}}</td>
                                                     <td>{{d.distributionSupplies.name}}</td>
                                                     <td>{{d.description}}</td>
@@ -111,18 +114,11 @@
                                             phân phối</label>
                                         <div class="row">
                                             <div class="col-lg-12">
-                                                <select id="manageMedicinesModaldistributionName"
-                                                    class="form-control select2"
-                                                    ng-model="editDentalSupplies.distributionSupplies.distributionId">
-                                                    <option ng-repeat="d in listDistributionSuppliesFormDB"
-                                                        value="{{d.distributionId}}"
-                                                        ng-selected="d.distributionId == editDentalSupplies.distributionSupplies.distributionId">
-                                                        {{d.name}}
-                                                    </option>
+                                                <select id="manageMedicinesModaldistributionName" class="form-control "
+                                                    ng-model="editDentalSupplies.distributionSupplies.distributionId"
+                                                    ng-options="d.distributionId as d.name for d in listDistributionSuppliesFormDB">
                                                 </select>
-                                                <span class="text-danger" ng-show="errorDistributionSupplies">(*)
-                                                    Vui
-                                                    lòng chọn nhà phân phối</span>
+
                                             </div>
                                         </div>
                                     </div>
@@ -144,147 +140,11 @@
 
                             <button type="button" class="btn mb-2 btn-primary" ng-click="updateDentalSupply()">Lưu
                                 lại</button>
+                            <button type="button" class="btn mb-2 btn-secondary" data-dismiss="modal">Đóng</button>
                         </div>
                     </div>
                 </div>
             </div> <!-- new dental supply modal -->
-
-
-
-
-
-
-
-            <div class="modal fade modal-notif modal-slide" tabindex="-1" role="dialog"
-                aria-labelledby="defaultModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-sm" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="defaultModalLabel">Notifications</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="list-group list-group-flush my-n3">
-                                <div class="list-group-item bg-transparent">
-                                    <div class="row align-items-center">
-                                        <div class="col-auto">
-                                            <span class="fe fe-box fe-24"></span>
-                                        </div>
-                                        <div class="col">
-                                            <small><strong>Package has uploaded successfull</strong></small>
-                                            <div class="my-0 text-muted small">Package is zipped and uploaded</div>
-                                            <small class="badge badge-pill badge-light text-muted">1m ago</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="list-group-item bg-transparent">
-                                    <div class="row align-items-center">
-                                        <div class="col-auto">
-                                            <span class="fe fe-download fe-24"></span>
-                                        </div>
-                                        <div class="col">
-                                            <small><strong>Widgets are updated successfull</strong></small>
-                                            <div class="my-0 text-muted small">Just create new layout Index, form, table
-                                            </div>
-                                            <small class="badge badge-pill badge-light text-muted">2m ago</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="list-group-item bg-transparent">
-                                    <div class="row align-items-center">
-                                        <div class="col-auto">
-                                            <span class="fe fe-inbox fe-24"></span>
-                                        </div>
-                                        <div class="col">
-                                            <small><strong>Notifications have been sent</strong></small>
-                                            <div class="my-0 text-muted small">Fusce dapibus, tellus ac cursus commodo
-                                            </div>
-                                            <small class="badge badge-pill badge-light text-muted">30m ago</small>
-                                        </div>
-                                    </div> <!-- / .row -->
-                                </div>
-                                <div class="list-group-item bg-transparent">
-                                    <div class="row align-items-center">
-                                        <div class="col-auto">
-                                            <span class="fe fe-link fe-24"></span>
-                                        </div>
-                                        <div class="col">
-                                            <small><strong>Link was attached to menu</strong></small>
-                                            <div class="my-0 text-muted small">New layout has been attached to the menu
-                                            </div>
-                                            <small class="badge badge-pill badge-light text-muted">1h ago</small>
-                                        </div>
-                                    </div>
-                                </div> <!-- / .row -->
-                            </div> <!-- / .list-group -->
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary btn-block" data-dismiss="modal">Clear
-                                All</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal fade modal-shortcut modal-slide" tabindex="-1" role="dialog"
-                aria-labelledby="defaultModalLabel" aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="defaultModalLabel">Shortcuts</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body px-5">
-                            <div class="row align-items-center">
-                                <div class="col-6 text-center">
-                                    <div class="squircle bg-success justify-content-center">
-                                        <i class="fe fe-cpu fe-32 align-self-center text-white"></i>
-                                    </div>
-                                    <p>Control area</p>
-                                </div>
-                                <div class="col-6 text-center">
-                                    <div class="squircle bg-primary justify-content-center">
-                                        <i class="fe fe-activity fe-32 align-self-center text-white"></i>
-                                    </div>
-                                    <p>Activity</p>
-                                </div>
-                            </div>
-                            <div class="row align-items-center">
-                                <div class="col-6 text-center">
-                                    <div class="squircle bg-primary justify-content-center">
-                                        <i class="fe fe-droplet fe-32 align-self-center text-white"></i>
-                                    </div>
-                                    <p>Droplet</p>
-                                </div>
-                                <div class="col-6 text-center">
-                                    <div class="squircle bg-primary justify-content-center">
-                                        <i class="fe fe-upload-cloud fe-32 align-self-center text-white"></i>
-                                    </div>
-                                    <p>Upload</p>
-                                </div>
-                            </div>
-                            <div class="row align-items-center">
-                                <div class="col-6 text-center">
-                                    <div class="squircle bg-primary justify-content-center">
-                                        <i class="fe fe-users fe-32 align-self-center text-white"></i>
-                                    </div>
-                                    <p>Users</p>
-                                </div>
-                                <div class="col-6 text-center">
-                                    <div class="squircle bg-primary justify-content-center">
-                                        <i class="fe fe-settings fe-32 align-self-center text-white"></i>
-                                    </div>
-                                    <p>Settings</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
         </main>
     </div>
 </div>

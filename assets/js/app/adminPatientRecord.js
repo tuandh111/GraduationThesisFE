@@ -148,13 +148,11 @@ app.controller('AdminPatientRecord', function ($scope, $http, $rootScope, $locat
         $('#filterDoctor').val(null).trigger('change');
         $('#filterPatient').val(null).trigger('change');
         $scope.getAllAppGroupByDate($scope.selectedDates, $scope.selectPatientIds, $scope.selectDoctorIds)
-        Swal.fire({
-            position: "top-end",
-            icon: "success",
-            title: "Đã làm mới dữ liệu !",
-            showConfirmButton: false,
-            timer: 1500
-        });
+        new Noty({
+            text: 'Đã làm mới dữ liệu !',
+            type: 'success',
+            timeout: 3000
+        }).show() ;
     }
 
     $scope.getBillByAppointmentAndPatient = (appointmentIdParam, patientIdParam) => {

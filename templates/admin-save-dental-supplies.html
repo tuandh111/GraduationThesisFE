@@ -1,13 +1,23 @@
 <div class="vertical dark">
     <div class="wrapper">
-        <nav class="topnav navbar navbar-light" ng-include="'component/admin-nav.html'"></nav>
+        <nav class="topnav navbar navbar-light justify-content-end" ng-include="'component/admin-nav.html'">
+        </nav>
         <aside class="sidebar-left border-right shadow" id="leftSidebar" ng-include="'component/admin-aside.html'"
             data-simplebar></aside>
         <main role="main" class="main-content" ng-controller="AdminListDentalSupplies">
             <div class="container-fluid">
                 <div class="row justify-content-center">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                        </ol>
+                    </nav>
+                    <div class="row justify-content-center mb-3">
+                        <div class="d-flex flex-items-center flex-justify-between custom-heading">
+                            <h3 class="text-secondary">Quản lý vật tư nha khoa</h3>
+                        </div>
+                        <div class="custom-hr"></div>
+                    </div>
                     <div class="col-12">
-                        <h2 class="mb-2 p-0 page-title">Quản lý vật tư</h2>
                         <p class="card-text"></p>
                         <div class="row my-4">
                             <div class="col-md-12">
@@ -36,7 +46,8 @@
                                                             <div class="col-lg-6 col-md-12">
                                                                 <div class="form-outline mb-3">
                                                                     <label class="form-label"
-                                                                        for="manageMedicinesModalmedicineName">Tên vật tư
+                                                                        for="manageMedicinesModalmedicineName">Tên vật
+                                                                        tư
                                                                     </label>
                                                                     <input type="text"
                                                                         id="manageMedicinesModalmedicineName"
@@ -56,7 +67,7 @@
                                                                         <div class="col-lg-9">
                                                                             <select
                                                                                 id="manageMedicinesModaldistributionName"
-                                                                                class="form-control select2"
+                                                                                class="form-control "
                                                                                 ng-model="distributionSuppliesId">
                                                                                 <option
                                                                                     ng-repeat="d in listDistributionSuppliesFormDB"
@@ -184,7 +195,7 @@
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="exampleModalLabel">Thêm mới nhà phân phối</h5>
+                            <h5 class="modal-title" id="exampleModalLabel">Thêm mới vật tư</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">

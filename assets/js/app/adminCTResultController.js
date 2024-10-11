@@ -1,58 +1,67 @@
-app.controller('AdminCTResultController', function ($scope, $http, $rootScope, $location, $timeout,API,adminBreadcrumbService) {
+app.controller('AdminCTResultController', function ($scope, $http, $rootScope, $location, TimezoneService, $timeout, API, adminBreadcrumbService, processSelect2Service) {
     let url = API.getBaseUrl();
     let headers = API.getHeaders();
+    const defaultTimezone = "Asia/Ho_Chi_Minh";
     adminBreadcrumbService.generateBreadcrumb()
-    //code here
-    $scope.listDentalStaffsDB = [
-        // Các nhân viên trong nha khoa
-    ];
+    let dentalStaffLogin = API.getUser() ? parseInt(API.getUser().split("-")[0]) : null
 
-    $scope.listAppointmentsDB = [
-        // Các cuộc hẹn trong nha khoa
-    ];
-
-    $scope.listImagingPlanesDB = [
-        // Các hướng chụp trong nha khoa
-    ];
-
-    $scope.listCTResultsDB = [
-        // Các ảnh chụp CT trong nha khoa
-    ]
-
-    $scope.listAbnormalitiesDB = [
-        // Các dấu hiệu bất thường từ ảnh chụp
-    ]
-
-    $scope.listCTResultAbnormalitiesDB = [
-        // Các phim chụp và bất thường tương ứng
-    ]
-
-    $scope.urlImg = (filename) => {
-        return "http://localhost:8080/api/v1/auth/twobee/images/" + filename;
-    }
-
-
+    $scope.listDentalStaffsDB = []
+    $scope.listAppointmentsDB = []
+    $scope.listImagingPlanesDB = []
+    $scope.listCTResultsDB = []
+    $scope.listAbnormalitiesDB = []
+    $scope.listCTResultAbnormalitiesDB = []
+    $scope.isUpdateCTResult = false
+    $scope.isLoadingCreate = false
+    $scope.isLoadingUpdate = false
+    $scope.selectedAbnormalityId = []
+    $scope.selectedTempAbnormalityId = []
+    $scope.originalCtresultAbnormality = []
+    $scope.originalAppointmentCTResult = []
+    $scope.imageUrl = null
 
     $scope.initializeUIComponents = () => {
-        $('.select2').select2(
-            {
-                theme: 'bootstrap4',
-            });
-        $('.select2-multi').select2(
-            {
-                multiple: true,
-                theme: 'bootstrap4',
-            });
-        $('.drgpicker').daterangepicker(
+
+        $timeout(() => {
+            $('.select2-appointment').select2(
+                {
+                    theme: 'bootstrap4',
+                    placeholder: '---Chọn thông tin bệnh nhân---',
+                    allowClear: true
+                }).val(null).trigger('change')
+            $('.select2-imagingPlanes').select2(
+                {
+                    theme: 'bootstrap4',
+                    placeholder: '---Chọn hướng chụp---',
+                    allowClear: true
+                }).val(null).trigger('change')
+            $('.select2-multi-abnormality').select2(
+                {
+                    multiple: true,
+                    theme: 'bootstrap4',
+                    placeholder: '---Nhập dấu hiệu bất thường---',
+                    allowClear: true
+                }).val(null).trigger('change')
+        }, 500)
+
+        $('.drgpicker-ct').daterangepicker(
             {
                 singleDatePicker: true,
                 timePicker: false,
                 showDropdowns: true,
                 locale:
                 {
-                    format: 'DD/MM/YYYY'
-                }
+                    format: 'DD/MM/YYYY',
+                    applyLabel: 'Áp dụng',
+                    cancelLabel: 'Hủy',
+                },
+                maxDate: moment().format('DD/MM/YYYY'),
+                minDate: moment().subtract(5, 'days').format('DD/MM/YYYY')
             });
+        $('.drgpicker-ct').on('apply.daterangepicker', function (ev, picker) {
+            let selectedDate = picker.startDate.format('DD/MM/YYYY');
+            $scope.formCTResult.date = selectedDate
+        });
         $('.time-input').timepicker(
             {
                 'scrollDefault': 'now',
@@ -186,7 +195,6 @@ app.controller('AdminCTResultController', function ($scope, $http, $rootScope, $
                     theme: 'snow'
                 });
         }
-        // Example starter JavaScript for disabling form submissions if there are invalid fields
         (function () {
             'use strict';
             window.addEventListener('load', function () {
@@ -205,12 +213,6 @@ app.controller('AdminCTResultController', function ($scope, $http, $rootScope, $
             }, false);
         })();
 
-        $('#dentalStaffId').on('change', function () {
-            $timeout(function () {
-                $scope.formCTResult.dentalStaffId = $('#dentalStaffId').val();
-                console.log("dental staff id: ", $scope.formCTResult.dentalStaffId);
-            });
-        });
         $('#appointmentId').on('change', function () {
             $timeout(function () {
                 $scope.formCTResult.appointmentId = $('#appointmentId').val();
@@ -223,155 +225,125 @@ app.controller('AdminCTResultController', function ($scope, $http, $rootScope, $
         });
         $('#abnormalityId').on('change', function () {
             $timeout(function () {
-                $scope.formCTResultAbnormality.abnormalityId = $('#abnormalityId').val();
+                let selectedVals = $('#abnormalityId').val()
+                $scope.selectedAbnormalityId = processSelect2Service.processSelect2Data(selectedVals)
             });
         });
     }
-    // Lấy danh sách cuộc hẹn từ DB
+
     $scope.getListAppointments = () => {
-        $http.get(url + "/appointment-except-deleted").then(response => {
-            $scope.listAppointmentsDB = response.data
-            console.log("$scope.listAppointmentsDB", $scope.listAppointmentsDB);
+        $http.get(url + "/appointment-without-ctresult", { headers: headers }).then(response => {
+            const status = ['đã xác nhận', 'đang diễn ra']
+            $scope.listAppointmentsDB = response.data.filter(app => status.includes(app.appointmentStatus.status.toLowerCase()))
         }).catch(err => {
-            Swal.fire({
-                title: "Thất bại!",
-                html: '<p class="text-danger">Xảy ra lỗi!</p>',
-                icon: "error"
-            })
+            new Noty({
+                text: 'Đã xảy ra lỗi!',
+                type: 'error',
+                timeout: 3000
+            }).show();
         })
     }
-    // Lấy danh sách nhân viên từ DB
-    $scope.getListDentalStaffs = () => {
-        $http.get(url + "/dental-staff-except-deleted").then(response => {
-            $scope.listDentalStaffsDB = response.data
-            console.log("$scope.listDentalStaffsDB", $scope.listDentalStaffsDB);
-        }).catch(err => {
-            Swal.fire({
-                title: "Thất bại!",
-                html: '<p class="text-danger">Xảy ra lỗi!</p>',
-                icon: "error"
-            })
-        })
-    }
-    // Lấy danh sách hướng chụp từ DB
+
+
     $scope.getListImagingPlanes = () => {
-        $http.get(url + "/imaging-planes-except-deleted").then(response => {
+        $http.get(url + "/imaging-planes-except-deleted", { headers: headers }).then(response => {
             $scope.listImagingPlanesDB = response.data
-            console.log("$scope.listImagingPlanesDB", $scope.listImagingPlanesDB);
         }).catch(err => {
-            Swal.fire({
-                title: "Thất bại!",
-                html: '<p class="text-danger">Xảy ra lỗi!</p>',
-                icon: "error"
-            })
+            new Noty({
+                text: 'Đã xảy ra lỗi!',
+                type: 'error',
+                timeout: 3000
+            }).show();
         })
     }
-    // Lấy danh sách các dấu hiệu bất thường
+
     $scope.getListAbnormalities = () => {
-        $http.get(url + "/abnormality-except-deleted").then(response => {
+        $http.get(url + "/abnormality-except-deleted", { headers: headers }).then(response => {
             $scope.listAbnormalitiesDB = response.data
-            console.log("$scope.listAbnormalitiesDB", $scope.listAbnormalitiesDB);
         }).catch(err => {
-            Swal.fire({
-                title: "Thất bại!",
-                html: '<p class="text-danger">Xảy ra lỗi!</p>',
-                icon: "error"
-            })
+            new Noty({
+                text: 'Đã xảy ra lỗi!',
+                type: 'error',
+                timeout: 3000
+            }).show();
         })
     }
-    // Lấy danh sách film chụp và vấn để bất thường
+
     $scope.getListCTResultAbnormalities = () => {
-        $http.get(url + "/ct-result-abnormality-except-deleted").then(response => {
+        $http.get(url + "/ct-result-abnormality-except-deleted", { headers: headers }).then(response => {
             $scope.listCTResultAbnormalitiesDB = response.data
-            console.log("$scope.listCTResultAbnormalitiesDB", $scope.listCTResultAbnormalitiesDB);
         }).catch(err => {
-            Swal.fire({
-                title: "Thất bại!",
-                html: '<p class="text-danger">Xảy ra lỗi!</p>',
-                icon: "error"
-            })
+            new Noty({
+                text: 'Đã xảy ra lỗi!',
+                type: 'error',
+                timeout: 3000
+            }).show();
         })
     };
 
-    //
-    $scope.showCTResultAbnormality = (appointmentCTResultId) => {
-        const result = $scope.listCTResultAbnormalitiesDB.find(item =>
-            item.appointmentCTResult.appointmentCTResultId === appointmentCTResultId
-        );
 
+    $scope.showCTResultAbnormality = (appointmentCTResultId) => {
+        const result = $scope.listCTResultAbnormalitiesDB.filter(item => {
+            if (item.appointmentCTResult != null) {
+                return item.appointmentCTResult.appointmentCTResultId === appointmentCTResultId
+            }
+        }
+        );
         return result;
     };
 
-    // Start Xử lý hình ảnh
-    $scope.filenames = []
-    $scope.listImg = function () {
-        $http.get(url + '/images', { headers: headers }).then(response => {
-            $scope.filenames = response.data
-            // lưu ảnh
-        }).catch(error => {
-            console.log("error", error);
-        })
-    }
-
-    $scope.urlImage = (filename) => {
-        console.log("this is urlImage")
-        return "http://localhost:8081/api/v1/auth/uploadImage/" + filename;
-    }
-
-    $scope.uploadImg = (files) => {
-
-        if (files == null) {
-            alert("Upload hình chưa thành công")
-            return
+    $scope.uploadImg = function (files) {
+        if (files == null || files.length === 0) {
+            alert("No files selected for upload.");
+            return;
         }
-        var form = new FormData();
-        for (var i = 0; i < files.length; i++) {
-            form.append("files", files[i]);
-        }
-
-        $http.post(url + "/saveImage/uploads", form, {
-            transformRequest: angular.identity,
-            headers: {
-                'Content-Type': undefined,
-                ...headers
+        swal.fire({
+            title: 'Đang tải ảnh lên...',
+            text: 'Vui lòng chờ trong giây lát.',
+            allowOutsideClick: false,
+            didOpen: () => {
+                swal.showLoading();
             }
-        }).then(response => {
-            var uploadedFilenames = response.data;
+        });
 
-            // Lưu imageURL
-            $scope.formCTResult.image = uploadedFilenames[0] ;
-            
-            // Lưu các tên file vào mảng $scope.filenames
-            $scope.filenames.push(...uploadedFilenames);
+        var file = files[0];
+        var form = new FormData();
+        form.append("file", file);
 
-            // Hiển thị hình ảnh từ các tên file này trên giao diện người dùng
-            $scope.images = $scope.filenames.map(filename => {
-                return {
-                    url: 'assets/images/' + filename,
-                    alt: 'Hình ảnh ' + filename
-                };
-            });
-        }).catch(err => {
-            console.log("error: ", err);
-        })
+        $http.post(url + '/upload-cloudinary', form, {
+            transformRequest: angular.identity,
+            headers: { 'Content-Type': undefined }
+        }).then(function (response) {
+            $scope.imageUrl = response.data.message;
+            $scope.zoomInImage()
+            swal.close();
+            new Noty({
+                text: 'Tải ảnh lên thành công!',
+                type: 'success',
+                timeout: 3000
+            }).show();
+            $scope.formCTResult.image = $scope.imageUrl;
+        }).catch(function (error) {
+            swal.close();
+            new Noty({
+                text: 'Tải ảnh lên thất bại. Vui lòng thử lại !',
+                type: 'error',
+                timeout: 3000
+            }).show();
+
+            console.log("Upload failed:", error);
+        });
+    };
+
+
+    $scope.deleteImg = () => {
+        document.getElementById('imageInput').value = "";
+        $scope.imageUrl = null;
     }
 
-    $scope.deleteImg = (filename) => {
-        $http.delete(url + "/deleteImage/images/" + filename, { headers: headers }).then(resp => {
-            let i = $scope.filenames.findIndex(name => name == filename);
-            $scope.filenames.splice(i, 1);
-        }).catch(err => {
-            console.log("error", err);
-        })
-    }
-
-    // End Xử lý hình ảnh
-
-    // Lấy danh sách ảnh chụp CT từ DB
     $scope.getListCTResults = () => {
-        $http.get(url + '/appointment-ct-result-except-deleted').then(respone => {
+        $http.get(url + '/appointment-ct-result-except-deleted', { headers: headers }).then(respone => {
             $scope.listCTResultsDB = respone.data
-            // console.log("listDoctorDB",respone.data);
             if ($.fn.DataTable.isDataTable('#dataTable-list-ct-result')) {
                 $('#dataTable-list-ct-result').DataTable().clear().destroy();
             }
@@ -398,7 +370,8 @@ app.controller('AdminCTResultController', function ($scope, $http, $rootScope, $
                             sNext: "Tiếp",
                             sLast: "Cuối"
                         }
-                    }
+                    },
+                    "ordering": false
                 });
             });
         }).catch(err => {
@@ -410,10 +383,10 @@ app.controller('AdminCTResultController', function ($scope, $http, $rootScope, $
         $scope.formCTResult = {
             appointmentCTResultId: -1,
             image: '',
-            dentalStaffId: '',
-            AppointmentId: '',
+            dentalStaffId: dentalStaffLogin,
+            appointmentId: '',
             imagingPlanesId: '',
-            date: new Date("01/01/2024"),
+            date: moment().format('DD/MM/YYYY'),
         }
         $scope.formCTResultAbnormality = {
             ctresultAbnormalityId: -1,
@@ -433,19 +406,10 @@ app.controller('AdminCTResultController', function ($scope, $http, $rootScope, $
             return $scope.checkDate($scope.formCTResult.date);
         };
 
-        // $scope.$watch('formDoctor.birthday', function (newVal, oldVal) {
-        //     if (newVal !== oldVal) {
-        //         $scope.validateBirthday();
-        //     }
-        // });
 
         $scope.validationForm = () => {
             var valid = false
             $scope.processSelect2Data = () => {
-                if (typeof $scope.formCTResult.dentalStaffId === 'string' && $scope.formCTResult.dentalStaffId.includes(':')) {
-                    $scope.formCTResult.dentalStaffId = parseInt($scope.formCTResult.dentalStaffId.split(':')[1]);
-                }
-
                 if (typeof $scope.formCTResult.appointmentId === 'string' && $scope.formCTResult.appointmentId.includes(':')) {
                     $scope.formCTResult.appointmentId = parseInt($scope.formCTResult.appointmentId.split(':')[1]);
                 }
@@ -453,32 +417,14 @@ app.controller('AdminCTResultController', function ($scope, $http, $rootScope, $
                 if (typeof $scope.formCTResult.imagingPlanesId === 'string' && $scope.formCTResult.imagingPlanesId.includes(':')) {
                     $scope.formCTResult.imagingPlanesId = $scope.formCTResult.imagingPlanesId.split(':')[1];
                 }
-
-                if (typeof $scope.formCTResultAbnormality.abnormalityId === 'string' && $scope.formCTResultAbnormality.abnormalityId.includes(':')) {
-                    $scope.formCTResultAbnormality.abnormalityId = $scope.formCTResultAbnormality.abnormalityId.split(':')[1];
-                }
             }
-            if (!$scope.validateDate()) {
+            if ($scope.formCTResult.dentalStaffId == "" || $scope.formCTResult.dentalStaffId == null) {
                 Swal.fire({
                     title: "Cảnh báo!",
-                    html: "Ngày chụp phải nhỏ hơn hoặc bẳng ngày hiện tại!",
+                    html: "Vui lòng đăng nhập!",
                     icon: "error"
                 })
             }
-            else if ($scope.formCTResult.dentalStaffId == "" || $scope.formCTResult.dentalStaffId == null) {
-                Swal.fire({
-                    title: "Cảnh báo!",
-                    html: "Vui lòng chọn nhân viên!",
-                    icon: "error"
-                })
-            }
-            // else if ($scope.formCTResult.appointmentId == "" || $scope.formCTResult.appointmentId == null) {
-            //     Swal.fire({
-            //         title: "Cảnh báo!",
-            //         html: "Vui lòng chọn bệnh nhân!",
-            //         icon: "error"
-            //     })
-            // }
             else if ($scope.formCTResult.imagingPlanesId == "" || $scope.formCTResult.imagingPlanesId == null) {
                 Swal.fire({
                     title: "Cảnh báo!",
@@ -486,7 +432,7 @@ app.controller('AdminCTResultController', function ($scope, $http, $rootScope, $
                     icon: "error"
                 })
             }
-            else if ($scope.formCTResultAbnormality.abnormalityId == "" || $scope.formCTResultAbnormality.abnormalityId == null) {
+            else if ($scope.selectedAbnormalityId.length == 0 && $scope.selectedTempAbnormalityId.length == 0) {
                 Swal.fire({
                     title: "Cảnh báo!",
                     html: "Vui lòng chọn vấn đề bất thường!",
@@ -500,30 +446,94 @@ app.controller('AdminCTResultController', function ($scope, $http, $rootScope, $
             return valid
         }
 
+        $scope.generateCTResultAbnormalityRequest = (selectedAbnormalityId, appointmentCTResultId) => {
+            let dataArray = []
+            selectedAbnormalityId.forEach(abnormalityId => {
+                let cTResultAbnormalityRequest = {
+                    description: '',
+                    abnormalityId: abnormalityId,
+                    appointmentCTResult: appointmentCTResultId
+                }
+                dataArray.push(cTResultAbnormalityRequest)
+            })
+            return dataArray
+        }
+
+        $scope.processDataUpdate = (originalArr, reqArr) => {
+            const oL = originalArr.length
+            const rL = reqArr.length
+
+            let updateArr = [];
+            let deleteArr = [];
+            let postArr = [];
+            if (oL > rL) {
+                deleteArr = originalArr.slice(rL)
+                updateArr = [originalArr.slice(0, rL), reqArr]
+            } else if (oL < rL) {
+                updateArr = [originalArr, reqArr.slice(0, oL)]
+                postArr = reqArr.slice(oL)
+            } else {
+                updateArr = [originalArr, reqArr]
+            }
+            return {
+
+                updateArr: [updateArr],
+                deleteArr: [deleteArr],
+                postArr: [postArr]
+            }
+        }
+
+        $scope.getOriginalData = (appointmentId) => {
+            // let params = {
+            //     appId: appointmentId
+            // }           
+            let getOriginalCtresultAbnormalityPromise = $http.get(url + '/ct-result-abnormality-by-appointmnet-id/' + appointmentId, { headers: headers }).then((response) => {
+                $scope.originalCtresultAbnormality = response.data
+                $scope.originalCtresultAbnormality.forEach(item => {
+                    let id = item.abnormality.abnormalityId
+                    $scope.selectedTempAbnormalityId.push(id)
+                })
+            })
+
+            let getOriginalAppointmentCTResultPromise = $http.get(url + '/appointment-ct-result-by-appointment/' + appointmentId, { headers: headers }).then((response) => {
+                $scope.originalAppointmentCTResult = response.data
+            })
+
+
+            Promise.all([getOriginalCtresultAbnormalityPromise, getOriginalAppointmentCTResultPromise])
+        }
+
         $scope.editCTResult = (cs, $event) => {
-            console.log("cs", cs);
             $event.preventDefault()
+            $scope.isUpdateCTResult = true
             if (cs != null) {
                 $scope.formCTResult = {
                     appointmentCTResultId: cs.appointmentCTResultId,
                     image: cs.imageURL,
                     dentalStaffId: cs.dentalStaff.dentalStaffId,
                     imagingPlanesId: cs.imagingPlanes.imagingPlanesId,
-                    date: new Date(cs.date),
+                    appointmentId: cs.appointment.appointmentId,
+                    date: moment(cs.date).format("DD/MM/YYYY")
                 }
-                var cTResultAbnormality = $scope.showCTResultAbnormality(cs.appointmentCTResultId)
-                $scope.formCTResultAbnormality = {
-                    ctresultAbnormalityId: cTResultAbnormality.ctresultAbnormalityId,
-                    abnormalityId: cTResultAbnormality.abnormality.abnormalityId,
-                    appointmentCTResult: cTResultAbnormality.appointmentCTResult.appointmentCTResultId
-                }
+
+                $scope.imageUrl = cs.imageURL
+                // var cTResultAbnormality = $scope.showCTResultAbnormality(cs.appointmentCTResultId)
+                // $scope.formCTResultAbnormality = {
+                //     ctresultAbnormalityId: cTResultAbnormality.ctresultAbnormalityId,
+                //     abnormalityId:"",
+                //     appointmentCTResult: cTResultAbnormality.appointmentCTResult.appointmentCTResultId
+                // }
+
+                let appointmentId = cs.appointment.appointmentId
+                $scope.getOriginalData(appointmentId)
+                $scope.zoomInImage()
             }
+
             const firstTabButtonCreate = document.getElementById('form-tab-ct-result');
             firstTabButtonCreate.click();
         }
 
-        $scope.createCTResult = () => {
-            console.log("id: ", $scope.formCTResult.appointmentCTResultId);
+        $scope.createCTResult = async () => {
             if ($scope.formCTResult.appointmentCTResultId != -1) {
                 Swal.fire({
                     title: "Cảnh báo!",
@@ -533,104 +543,87 @@ app.controller('AdminCTResultController', function ($scope, $http, $rootScope, $
                 return;
             }
 
-            // Thêm hình ảnh
-
-            // var formData = new FormData();
-            // var fileInput = document.getElementById('imageInput');
-
-            // if (fileInput.files.length > 0) {
-            //     formData.append('file', fileInput.files[0]);
-
-            //     // Tải hình ảnh lên server
-            //     $http.post(url+'/uploadImage', formData, {
-            //         headers: { 'Content-Type': undefined },
-            //         transformRequest: angular.identity
-            //     }).then(function (response) {
-            //         // Nhận tên hình ảnh từ server
-            //         $scope.formCTResult.image = response.data; // Giả sử server trả về tên file
-
-            //         // Thực hiện tạo mới CTResult
-            //         $http.post('/api/appointmentCTResult', $scope.formCTResult)
-            //             .then(function (response) {
-            //                 Swal.fire({
-            //                     title: "Thành công!",
-            //                     html: "Kết quả CT đã được tạo mới!",
-            //                     icon: "success"
-            //                 });
-            //                 $scope.resetForm(); // Làm mới form
-            //             }).catch(function (error) {
-            //                 Swal.fire({
-            //                     title: "Lỗi!",
-            //                     html: "Có lỗi xảy ra khi tạo mới kết quả CT.",
-            //                     icon: "error"
-            //                 });
-            //             });
-            //     }).catch(function (error) {
-            //         Swal.fire({
-            //             title: "Lỗi!",
-            //             html: "Có lỗi xảy ra khi tải lên hình ảnh.",
-            //             icon: "error"
-            //         });
-            //     });
-            // } else {
-            //     // Nếu không có hình ảnh thì thực hiện lưu kết quả CT mà không có hình ảnh
-            //     $http.post('/api/appointmentCTResult', $scope.formCTResult)
-            //         .then(function (response) {
-            //             Swal.fire({
-            //                 title: "Thành công!",
-            //                 html: "Kết quả CT đã được tạo mới!",
-            //                 icon: "success"
-            //             });
-            //             $scope.resetForm(); // Làm mới form
-            //         }).catch(function (error) {
-            //             Swal.fire({
-            //                 title: "Lỗi!",
-            //                 html: "Có lỗi xảy ra khi tạo mới kết quả CT.",
-            //                 icon: "error"
-            //             });
-            //         });
-            // }
             var valid = $scope.validationForm();
             if (valid) {
+                $scope.isLoadingCreate = true
+                $scope.formCTResult.date = TimezoneService.convertToTimezone(moment($scope.formCTResult.date, "DD/MM/YYYY"), defaultTimezone)
                 var requestCTResultJSON = angular.toJson($scope.formCTResult);
-                $http.post(url + '/appointment-ct-result', requestCTResultJSON).then(response => {
-                    // Bắt đầu thêm bất thường của film chụp
-                    $scope.formCTResultAbnormality.appointmentCTResult = response.data.appointmentCTResultId;
-                    var requestCTResultAbnormalityJSON = angular.toJson($scope.formCTResultAbnormality);
 
-                    $http.post(url + '/ct-result-abnormality', requestCTResultAbnormalityJSON).then(response => {
-                        // Cả hai lời gọi HTTP đều hoàn thành
-                        Swal.fire({
-                            title: "Thành công!",
-                            html: "Đã thêm phim chụp thành công!",
-                            icon: "success"
-                        });
+                let responseAppCTRS = await $http.post(url + '/appointment-ct-result', requestCTResultJSON, { headers: headers })
+
+                let appointmentCTResultId = responseAppCTRS.data.appointmentCTResultId
+                let abnormalityArr = $scope.generateCTResultAbnormalityRequest($scope.selectedAbnormalityId, appointmentCTResultId)
+
+                let abnormalityRequest = abnormalityArr.map(item => {
+                    let dataAbnormalityRequestJson = angular.toJson(item);
+                    return $http.post(url + '/ct-result-abnormality', dataAbnormalityRequestJson, { headers: headers });
+                })
+
+                await Promise.all([...abnormalityRequest]).then(() => {
+                    $timeout(() => { $scope.isLoadingCreate = false }, 3000)
+                }).finally(() => {
+                    $timeout(() => {
+                        new Noty({
+                            text: 'Thêm phim chụp thành công !',
+                            type: 'success',
+                            timeout: 3000
+                        }).show();
                         $scope.resetForm();
                         $scope.getListCTResultAbnormalities();
                         $scope.getListCTResults();
 
                         const secondTabButtonCreate = document.getElementById('list-tab-ct-result');
                         secondTabButtonCreate.click();
-                    }).catch(err => {
-                        Swal.fire({
-                            title: "Thêm bất thường thất bại!",
-                            html: '<p class="text-danger">Xảy ra lỗi!</p>',
-                            icon: "error"
-                        });
-                    });
-                    // Kết thúc thêm bất thường của film chụp
+                    }, 3000)
                 }).catch(err => {
-                    Swal.fire({
-                        title: "Thất bại!",
-                        html: '<p class="text-danger">Xảy ra lỗi!</p>',
-                        icon: "error"
-                    });
-                });
+                    new Noty({
+                        text: 'Thêm phim chụp thất bại !',
+                        type: 'error',
+                        timeout: 3000
+                    }).show();
+                })
             }
         };
 
+        const handleApiRequest = (deleteUrl, postUrl, putUrl, data, idKey) => {
+            const promises = []
+            const ensureArray = arr => Array.isArray(arr) ? arr : [arr]
+            if (data.deleteArr.length !== 0) {
+                data.deleteArr.forEach(arrReq => {
+                    if (arrReq.length === 0) return
+                    arrReq.forEach(itemReq => {
+                        promises.push($http.delete(`${deleteUrl}/${itemReq[idKey]}`, { headers: headers }))
+                    })
+                });
+            }
 
-        $scope.updateCTResult = () => {
+            if (data.postArr.length !== 0) {
+                data.postArr.forEach(arrReq => {
+                    if (arrReq.length === 0) return
+                    arrReq.forEach(itemReq => {
+                        promises.push($http.post(postUrl, itemReq, { headers: headers }))
+                    })
+                });
+            }
+
+            if (data.updateArr.length !== 0) {
+                data.updateArr.forEach(arrReq => {
+                    if (arrReq.length === 0) return
+                    let oItem = ensureArray(arrReq[0])
+                    let uItem = ensureArray(arrReq[1])
+                    oItem.forEach(o => {
+                        const id = o[idKey]
+                        uItem.forEach(u => {
+                            promises.push($http.put(`${putUrl}/${id}`, u, { headers: headers }))
+                        })
+                    })
+                })
+            }
+
+            return Promise.all(promises)
+        };
+
+        $scope.updateCTResult = async () => {
             if ($scope.formCTResult.appointmentCTResultId == -1) {
                 Swal.fire({
                     title: "Cảnh báo!",
@@ -641,37 +634,63 @@ app.controller('AdminCTResultController', function ($scope, $http, $rootScope, $
             }
             var valid = $scope.validationForm()
             if (valid) {
-                var requestCTResultJSON = angular.toJson($scope.formCTResult)
-                var appointmentCTResultId = $scope.formCTResult.appointmentCTResultId
-                var requestCTResultAbnormalityJSON = angular.toJson($scope.formCTResultAbnormality);
-                $http.put(url + '/ct-result-abnormality/' + $scope.formCTResultAbnormality.ctresultAbnormalityId, requestCTResultAbnormalityJSON).then(function (response) {
+                if ($scope.selectedAbnormalityId.length == 0) {
+                    $scope.selectedAbnormalityId = $scope.selectedTempAbnormalityId
+                }
+                $scope.isLoadingUpdate = true
+                $scope.formCTResult.date = TimezoneService.convertToTimezone(moment($scope.formCTResult.date, "DD/MM/YYYY"), defaultTimezone)
+                // var requestCTResultJSON = angular.toJson($scope.formCTResult)
+                let appointmentCTResultId = $scope.formCTResult.appointmentCTResultId
+                // var requestCTResultAbnormalityJSON = angular.toJson($scope.formCTResultAbnormality);
 
+                let originalAppointmentCTResult = $scope.originalAppointmentCTResult
+
+                let cTAbnormalityId = []
+                let originalCTAbnormality = $scope.originalCtresultAbnormality
+                originalCTAbnormality.forEach(item => {
+                    let id = item.ctresultAbnormalityId
+                    cTAbnormalityId.push(id)
                 })
-                $http.put(url + '/appointment-ct-result/' + appointmentCTResultId, requestCTResultJSON).then(respone => {
-                    Swal.fire({
-                        title: "Thành công!",
-                        html: "Cập nhật thành công!",
-                        icon: "success"
-                    })
-                    $scope.resetForm()
-                    $scope.getListCTResultAbnormalities()
-                    $scope.getListCTResults()
-                    const secondTabButtonCreate = document.getElementById('list-tab-ct-result');
-                    secondTabButtonCreate.click();
+
+                let abnormalityArr = $scope.generateCTResultAbnormalityRequest($scope.selectedAbnormalityId, appointmentCTResultId)
+                let reqCTRSData = $scope.processDataUpdate(originalCTAbnormality, abnormalityArr)
+                const ctrsKey = "ctresultAbnormalityId"
+
+                let appCTRSData = $scope.processDataUpdate(originalAppointmentCTResult, [$scope.formCTResult])
+                const appCTRSKey = "appointmentCTResultId"
+
+                Promise.all([
+                    handleApiRequest(url + "/soft-delete-ct-result-abnormality", url + "/ct-result-abnormality", url + "/ct-result-abnormality", reqCTRSData, ctrsKey),
+                    handleApiRequest(url + "/soft-delete-appointment-ct-result", url + "/appointment-ct-result", url + "/appointment-ct-result", appCTRSData, appCTRSKey)
+                ]).then(() => {
+                    $timeout(() => { $scope.isLoadingUpdate = false }, 3000)
+                }).finally(() => {
+                    $timeout(() => {
+                        new Noty({
+                            text: 'Cập nhật thành công!',
+                            type: 'success',
+                            timeout: 3000
+                        }).show();
+                        $scope.resetForm()
+                        $scope.getListCTResultAbnormalities()
+                        $scope.getListCTResults()
+                        const secondTabButtonCreate = document.getElementById('list-tab-ct-result');
+                        secondTabButtonCreate.click();
+                    }, 3000)
                 }).catch(err => {
-                    Swal.fire({
-                        title: "Thất bại!",
-                        html: '<p class="text-danger">Cập nhật thất bại!</p>',
-                        icon: "error"
-                    })
+                    new Noty({
+                        text: 'Cập nhật thất bại. Vui lòng thử lại !',
+                        type: 'error',
+                        timeout: 3000
+                    }).show();
                 })
+
             }
 
         }
 
         $scope.deleteCTResult = (cs, $event) => {
             $event.preventDefault()
-            console.log("delete ct result", cs)
             var appointmentCTResultId = cs.appointmentCTResultId
             Swal.fire({
                 text: "Bạn có muốn xóa ảnh này ?",
@@ -684,31 +703,36 @@ app.controller('AdminCTResultController', function ($scope, $http, $rootScope, $
             }).then(rs => {
                 if (rs.isConfirmed) {
                     $http.delete(url + '/soft-delete-appointment-ct-result/' + appointmentCTResultId).then(respone => {
-                        Swal.fire({
-                            title: "Thành công!",
-                            html: "Đã xóa thành công!",
-                            icon: "success"
-                        })
+                        new Noty({
+                            text: 'Đã xóa thành công!',
+                            type: 'success',
+                            timeout: 3000
+                        }).show();
                         $scope.getListCTResults()
                     }).catch(err => {
-                        Swal.fire({
-                            title: "Thất bại!",
-                            html: '<p class="text-danger">Xảy ra lỗi!</p>',
-                            icon: "error"
-                        })
+                        new Noty({
+                            text: 'Xóa thất bại. Vui lòng thử lại !',
+                            type: 'error',
+                            timeout: 3000
+                        }).show();
                     })
                 }
             })
         }
+
         $scope.resetForm = () => {
-            console.log("RESET")
+            $scope.imageUrl = null
+            $scope.isUpdateCTResult = false
+            $scope.isLoadingCreate = false
+            $scope.isLoadingUpdate = false
+            document.getElementById('imageInput').value = "";
             $scope.formCTResult = {
-                image: '',
+                image: null,
                 appointmentCTResultId: -1,
                 dentalStaffId: '',
                 AppointmentId: '',
                 imagingPlanesId: '',
-                date: new Date("01/01/2024"),
+                date: '',
             }
             $scope.formCTResultAbnormality = {
                 ctresultAbnormalityId: -1,
@@ -723,10 +747,35 @@ app.controller('AdminCTResultController', function ($scope, $http, $rootScope, $
         }
     }
 
+    $scope.zoomInImage = () => {
+        $timeout(() => {
+            const mousemove = document.getElementById("zoom_img");
+            const imgmove = document.getElementById("selectedImage");
+
+            mousemove.addEventListener("mousemove", (e) => {
+                const rect = mousemove.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                imgmove.style.transformOrigin = `${x}px ${y}px`;
+                imgmove.style.transform = "scale(2)";
+            });
+
+            mousemove.addEventListener("mouseleave", () => {
+                imgmove.style.transform = "scale(1)";
+            });
+        });
+
+    }
+
+
+
+
+
+
     $scope.initializeUIComponents()
     $scope.getListAbnormalities()
     $scope.getListAppointments()
-    $scope.getListDentalStaffs()
     $scope.getListImagingPlanes()
     $scope.getListCTResultAbnormalities()
     $scope.getListCTResults()

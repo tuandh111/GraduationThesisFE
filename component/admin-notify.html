@@ -1,73 +1,68 @@
-<div class="modal fade modal-notif modal-slide" tabindex="-1" role="dialog" aria-labelledby="defaultModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog modal-sm" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="defaultModalLabel">Notifications</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="list-group list-group-flush my-n3">
-                    <div class="list-group-item bg-transparent">
-                        <div class="row align-items-center">
-                            <div class="col-auto">
-                                <span class="fe fe-box fe-24"></span>
-                            </div>
-                            <div class="col">
-                                <small><strong>Package has uploaded successfull</strong></small>
-                                <div class="my-0 text-muted small">Package is zipped and uploaded</div>
-                                <small class="badge badge-pill badge-light text-muted">1m ago</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="list-group-item bg-transparent">
-                        <div class="row align-items-center">
-                            <div class="col-auto">
-                                <span class="fe fe-download fe-24"></span>
-                            </div>
-                            <div class="col">
-                                <small><strong>Widgets are updated successfull</strong></small>
-                                <div class="my-0 text-muted small">Just create new layout Index, form, table</div>
-                                <small class="badge badge-pill badge-light text-muted">2m ago</small>
+<div class="wrapper" ng-controller="AdminNotifications">
+    <div class="modal fade modal-notif modal-slide" tabindex="-1" role="dialog" aria-labelledby="defaultModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="defaultModalLabel"><i class="bi bi-bell-fill"></i>Thông báo cuộc hẹn mới</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="list-group list-group-flush my-n3">
+                        <div class="list-group-item bg-transparent">
+                            <div class="row align-items-center" style="cursor: pointer;" ng-click="updateStatus()">
+                                <div class="col-auto">
+                                    <span class="fe fe-plus-circle fe-16"></span>
+                                </div>
+                                <div class="col">
+                                    <strong>Nguyễn Thành Trung</strong>
+                                    <div class="my-0 text-muted"><span class="badge rounded-pill bg-info text-dark">Đã
+                                            đặt</span> lịch hẹn mới</div>
+                                    <small class="badge badge-pill badge-light text-muted">1 phút trước</small>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="list-group-item bg-transparent">
-                        <div class="row align-items-center">
-                            <div class="col-auto">
-                                <span class="fe fe-inbox fe-24"></span>
-                            </div>
-                            <div class="col">
-                                <small><strong>Notifications have been sent</strong></small>
-                                <div class="my-0 text-muted small">Fusce dapibus, tellus ac cursus commodo</div>
-                                <small class="badge badge-pill badge-light text-muted">30m ago</small>
-                            </div>
-                        </div> <!-- / .row -->
-                    </div>
-                    <div class="list-group-item bg-transparent">
-                        <div class="row align-items-center">
-                            <div class="col-auto">
-                                <span class="fe fe-link fe-24"></span>
-                            </div>
-                            <div class="col">
-                                <small><strong>Link was attached to menu</strong></small>
-                                <div class="my-0 text-muted small">New layout has been attached to the menu</div>
-                                <small class="badge badge-pill badge-light text-muted">1h ago</small>
-                            </div>
-                        </div>
-                    </div> <!-- / .row -->
-                </div> <!-- / .list-group -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary btn-block" data-dismiss="modal">Clear All</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<div class="modal fade modal-shortcut modal-slide" tabindex="-1" role="dialog" aria-labelledby="defaultModalLabel"
+    <!-- Event details -->
+    <!-- <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#updateAppointment"
+        id="btnUpdateAppointmentNotifications" hidden>
+        Cập nhật cuộc hẹn
+    </button>
+    <div class="modal fade" id="updateAppointment" tabindex="-1" aria-labelledby="updateAppointmentLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="d-flex flex-items-center flex-justify-between" id="div-register-appointment">
+                        <h3 class="text-secondary">Cập nhật lịch hẹn
+                        </h3>
+                    </div>
+                    <div class="custom-hr mb-3"></div>
+                    <button type="button" class="btn-close" id="btn-close-form-update-status" data-bs-dismiss="modal"
+                        aria-label="Close" hidden></button>
+                </div>
+                <div class="modal-body" id="updateAppointmentBody">
+                    <div ng-include="'component/form-appointment.html'"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary btn-create-appoinment" ng-click="updateAppointment()"
+                        ng-show="!isDisabledStatus('')">Cập
+                        nhật</button>
+                    <button type="button" class="btn btn-outline-warning" ng-click="closeFormUp()">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div> -->
+    <!-- End Event details -->
+</div>
+<!-- <div class="modal fade modal-shortcut modal-slide" tabindex="-1" role="dialog" aria-labelledby="defaultModalLabel"
     aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -123,4 +118,4 @@
             </div>
         </div>
     </div>
-</div>
+</div> -->

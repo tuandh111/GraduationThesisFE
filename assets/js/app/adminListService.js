@@ -1,12 +1,10 @@
-app.controller('AdminListService', function ($scope, $http, $rootScope, $location, $timeout,API,adminBreadcrumbService) {
+app.controller('AdminListService', function ($scope, $http, $rootScope, $location, $filter, $timeout, API, adminBreadcrumbService) {
     let url = API.getBaseUrl();
     let headers = API.getHeaders();
     adminBreadcrumbService.generateBreadcrumb()
     $scope.listServiceFromDB = [];
-    //code here
-    function sortByIdDesc(data) {
-        return data.sort((a, b) => b.id - a.id);
-    }
+    //code here  
+
     $scope.initializeUIComponents = () => {
         $('.select2').select2(
             {
@@ -74,7 +72,7 @@ app.controller('AdminListService', function ($scope, $http, $rootScope, $locatio
             {
                 placeholder: "____-___"
             });
-        $('.input-money').mask("#.##0,00",
+        $('.input-money').mask("#,##0",
             {
                 reverse: true
             });
@@ -185,8 +183,9 @@ app.controller('AdminListService', function ($scope, $http, $rootScope, $locatio
             });
         });
     }
+
     $scope.listServiceInfo = () => {
-        $http.get(url + '/service').then(response => {
+        $http.get(url + '/service', { headers: headers }).then(response => {
             $scope.listServiceFromDB = response.data
             console.log("$scope.listServiceFromDB", response.data);
             if ($.fn.DataTable.isDataTable('#dataTable-list-service')) {
@@ -215,7 +214,8 @@ app.controller('AdminListService', function ($scope, $http, $rootScope, $locatio
                             sNext: "Tiếp",
                             sLast: "Cuối"
                         }
-                    }
+                    },
+                    "ordering": false
                 });
                 $scope.$apply()
             });
@@ -223,10 +223,11 @@ app.controller('AdminListService', function ($scope, $http, $rootScope, $locatio
             console.log("error", error);
         })
     }
+
+
     $scope.listServiceTypeInfo = () => {
-        $http.get(url + '/service-type').then(response => {
+        $http.get(url + '/service-type', { headers: headers }).then(response => {
             $scope.listServiceTypeDB = response.data
-            //console.log(" $scope.listServiceTypeDB ", $scope.listServiceTypeDB);
         }).catch(error => {
             console.log(("error", error));
         })
@@ -243,15 +244,20 @@ app.controller('AdminListService', function ($scope, $http, $rootScope, $locatio
             description: '',
             deleted: false
         };
+
         $scope.modalMode = (view, service) => {
             $scope.viewMode = view
             if (service != "") {
+
+
                 $scope.formService = angular.copy(service);
+                $scope.formService.price = $filter('number')(service.price);
                 $scope.formService.serviceTypeId = service.serviceType ? service.serviceType.service_TypeId : -1
             } else {
                 $scope.resetForm()
             }
         }
+
         $scope.resetForm = () => {
             $scope.formService = {
                 serviceId: -1,
@@ -262,9 +268,11 @@ app.controller('AdminListService', function ($scope, $http, $rootScope, $locatio
                 description: ''
             };
         }
+
         $scope.refreshData = () => {
             $scope.listServiceInfo()
         }
+
         $scope.validationForm = () => {
             var valid = false
             $scope.processSelect2Data = () => {
@@ -296,56 +304,62 @@ app.controller('AdminListService', function ($scope, $http, $rootScope, $locatio
             }
             return valid
         }
+
         $scope.createService = () => {
             var valid = $scope.validationForm()
+            $scope.formService.price = parseFloat($scope.formService.price.replace(/,/g, ''));
             var requsetServiceJSON = angular.toJson($scope.formService)
-            console.log("requsetServiceJSON", requsetServiceJSON);
-            if(valid){
-                $http.post(url + '/service', requsetServiceJSON).then(response => {
-                    Swal.fire({
-                        title: "Thành công!",
-                        html: "Đã thêm dịch vụ thành công!",
-                        icon: "success"
-                    })
+            if (valid) {
+                $http.post(url + '/service', requsetServiceJSON, { headers: headers }).then(response => {
+                    new Noty({
+                        text: 'Thêm dịch vụ thành công !',
+                        type: 'success',
+                        timeout: 3000
+                    }).show();
                     $scope.resetForm()
                     $scope.listServiceInfo()
                 }).catch(err => {
-                    Swal.fire({
-                        title: "Thất bại!",
-                        html: '<p class="text-danger">Xảy ra lỗi!</p>',
-                        icon: "error"
-                    })
+                    new Noty({
+                        text: 'Thêm dịch vụ thất bại. Vui lòng thử lại!',
+                        type: 'error',
+                        timeout: 3000
+                    }).show();
                 })
-            }          
+            }
         }
+
         $scope.updateService = () => {
             var valid = $scope.validationForm()
+            $scope.formService.price = parseFloat($scope.formService.price.replace(/,/g, ''));
             var requsetServiceJSON = angular.toJson($scope.formService)
             var serviceId = $scope.formService.serviceId
             if (valid) {
-                $http.put(url + '/service/' + serviceId, requsetServiceJSON).then(response => {
-                    Swal.fire({
-                        title: "Thành công!",
-                        html: "Cập nhật dịch vụ thành công!",
-                        icon: "success"
-                    })
-                   // $('#serviceModal').modal('hide');                                    
+                $http.put(url + '/service/' + serviceId, requsetServiceJSON, { headers: headers }).then(response => {
+                    $('#serviceModalllll').modal('hide');
+
+                    new Noty({
+                        text: ' Cập nhật dịch vụ thành công !',
+                        type: 'success',
+                        timeout: 3000
+                    }).show();
+
                     $scope.listServiceInfo()
                     $scope.resetForm()
                 }).catch(error => {
-                    Swal.fire({
-                        title: "Thất bại!",
-                        html: '<p class="text-danger">Xảy ra lỗi!</p>',
-                        icon: "error"
-                    })
+                    new Noty({
+                        text: 'Cập nhật dịch vụ thất bại. Vui lòng thử lại!',
+                        type: 'error',
+                        timeout: 3000
+                    }).show();
                 })
             }
         }
 
         $scope.deleteService = (service, $event) => {
             $event.preventDefault()
-            console.log("delete service", service)
             var serviceId = service.serviceId
+            console.log(serviceId)
+
             Swal.fire({
                 text: "Bạn có muốn xóa dịch vụ ?",
                 icon: 'warning',
@@ -356,19 +370,19 @@ app.controller('AdminListService', function ($scope, $http, $rootScope, $locatio
                 confirmButtonText: 'Có'
             }).then(rs => {
                 if (rs.isConfirmed) {
-                    $http.delete(url + '/sort-delete-service/' + serviceId).then(respone => {
-                        Swal.fire({
-                            title: "Thành công!",
-                            html: "Đã xóa thành công!",
-                            icon: "success"
-                        })
-                        $scope.listServiceInfo()
+                    $http.delete(url + '/soft-delete-service/' + serviceId, { headers: headers }).then(respone => {
+                        new Noty({
+                            text: 'Xóa dịch vụ thành công !',
+                            type: 'success',
+                            timeout: 3000
+                        }).show();
+                        $scope.LoadServiceInfo()
                     }).catch(err => {
-                        Swal.fire({
-                            title: "Thất bại!",
-                            html: '<p class="text-danger">Xảy ra lỗi!</p>',
-                            icon: "error"
-                        })
+                        new Noty({
+                            text: 'Xóa dịch vụ thất bại. Vui lòng thử lại!',
+                            type: 'error',
+                            timeout: 3000
+                        }).show();
                     })
                 }
             })
@@ -376,15 +390,7 @@ app.controller('AdminListService', function ($scope, $http, $rootScope, $locatio
         }
     }
 
-    // $timeout(function () {
-    //     $('#dataTable-list-service').DataTable({
-    //         autoWidth: true,
-    //         "lengthMenu": [
-    //             [16, 32, 64, -1],
-    //             [16, 32, 64, "All"]
-    //         ]
-    //     });
-    // }, 0);
+
     $scope.initializeUIComponents()
     $scope.listServiceInfo();
     $scope.listServiceTypeInfo();

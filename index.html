@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Nha khoa Tooth Teeth</title>
-  <link rel="icon" href="/assets/images/logo.jpg" type="image/png">
+  <link rel="icon" href="/assets/images/logo2.jpg" type="image/png">
 
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
@@ -59,6 +59,10 @@
   <link rel="stylesheet" href="/assets/css/admin/custom-admin-create-account.css">
   <link rel="stylesheet" href="/assets/css/style.css">
 
+  <!-- Notification -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/noty@3.1.4/lib/noty.css">
+
   <!-- AngularJS -->
   <script src="/assets/js/vendor/angular.min.js"></script>
   <script src="/assets/js/vendor/angular-route.min.js"></script>
@@ -73,12 +77,14 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.34/moment-timezone-with-data.min.js"></script>
 
+  <!-- Notification -->
+  <script src="https://cdn.jsdelivr.net/npm/noty@3.1.4/lib/noty.min.js"></script>
 
 
 </head>
 
 <body id="top">
-  <loading-indicator></loading-indicator>
+  <!-- <loading-indicator></loading-indicator> -->
   <main class="site-main" ng-class="{ 'blur-content': isLoading }">
     <ng-view></ng-view>
   </main>
@@ -165,16 +171,125 @@
   <script src="/assets/js/app/adminPatientController.js"></script>
   <script src="/assets/js/app/adminMedicineController.js"></script>
   <script src="/assets/js/app/bookingController.js"></script>
+  <script src="/assets/js/app/blogController.js"></script>
+  <script src="/assets/js/app/serviceController.js"></script>
+  <script src="/assets/js/app/departmentController.js"></script>
+  <script src="/assets/js/app/doctorController.js"></script>
+  <script src="/assets/js/app/customerProfileController.js"></script>
+  <script src="/assets/js/app/customerRecoredController.js"></script>
+  <script src="/assets/js/app/headerController.js"></script>
   <script src="/assets/js/app/adminListDentalSuppliesController.js"></script>
   <script src="/assets/js/app/adminListDistributionSuppliesController.js"></script>
 
   <script src="/assets/js/app/adminListInvoice.js"></script>
-
+  <script src="/assets/js/app/transactionSuccessController.js"></script>
   <script src="/assets/js/app/adminCTResultController.js"></script>
   <script src="/assets/js/app/adminPatientRecord.js"></script>
   <script src="/assets/js/app/adminDoctorCalendarController.js"></script>
   <script src="/assets/js/app/adminCreateAccountController.js"></script>
+  <script src="/assets/js/app/adminPostController.js"></script>
+  <script src="/assets/js/app/adminNotifications.js"></script>
+  <script src="/assets/js/app/adminSideBarController.js"></script>
 
+  <script src="/assets/js/app/loginController.js"></script>
+  <script src="/assets/js/app/registerController.js"></script>
+  <script src="/assets/js/app/forgotPasswordController.js"></script>
+
+
+  <script src="/assets/js/app/adminMyProfileController.js"></script>
+  <script src="/assets/js/app/adminMySettingController.js"></script>
+  <script>
+    function getParameterByName(name, url = window.location.href) {
+      name = name.replace(/[\[\]]/g, '\\$&');
+      let regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+        results = regex.exec(url);
+      if (!results) return null;
+      if (!results[2]) return '';
+      return decodeURIComponent(results[2].replace(/\+/g, ' '));
+    }
+    function getCookie(name) {
+      let value = `; ${document.cookie}`;
+      let parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+      return null;
+    }
+    let code = getParameterByName('code');
+    let loginSource = getCookie('loginSource');
+    // console.log(loginSource)
+    if (code) {
+      // Hàm lấy tham số từ URL
+      function getParameterByName(name, url = window.location.href) {
+        name = name.replace(/[\[\]]/g, '\\$&');
+        const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
+        const results = regex.exec(url);
+        if (!results) return null;
+        if (!results[2]) return '';
+        return decodeURIComponent(results[2].replace(/\+/g, ' '));
+      }
+
+      // Hàm lấy giá trị cookie theo tên
+      function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) {
+          return parts.pop().split(';').shift();
+        }
+        return null;
+      }
+
+      // Lấy mã code từ URL và nguồn đăng nhập từ cookie
+      const code = getParameterByName('code');
+      const loginSource = getCookie('loginSource');
+      // console.log('Login source:', loginSource);
+
+      if (code) {
+        async function handleGoogleCallback(code) {
+          try {
+            const response = await fetch('http://localhost:8081/api/v1/auth/google/callback', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ code: code })
+            });
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            localStorage.setItem('accessToken', data.access_token);
+            localStorage.setItem('refreshToken', data.refresh_token);
+            localStorage.setItem('isLogin', true)
+            let userString = ""
+            if (data.user.role.roleName == 'BENH_NHAN') {
+              userString = data.user.patient.patientId + '-' + data.user.role.roleName + '-' + data.user.email;
+            } else if (data.user.role.roleName == 'BAC_SI') {
+              userString = data.user.doctor.doctorId + '-' + data.user.role.roleName + '-' + data.user.email;
+            } else {
+              userString = data.user.dentalStaff.dentalStaffId + '-' + data.user.role.roleName + '-' + data.user.email;
+            }
+            localStorage.setItem('userLogin', userString);
+            // console.log(localStorage.getItem('userLogin'))
+            window.location.replace('http://localhost:5501/index.html');
+          } catch (error) {
+            Swal.fire({
+              title: "Lỗi!",
+              html: "Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ với nha khoa !",
+              icon: "error"
+            }).then(rp => {
+              if (rp.isConfirmed) {
+                window.location.href = "#!login";
+              }
+            })
+          }
+        }
+        handleGoogleCallback(code);
+      }
+
+    }
+    // console.log(localStorage.getItem('userLogin'))
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.1.4/sockjs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 </body>
 
 </html>

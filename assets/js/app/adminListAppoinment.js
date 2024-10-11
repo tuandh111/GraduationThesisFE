@@ -1,4 +1,4 @@
-app.controller('AdminListAppoinment', function ($scope, $http, $rootScope, $location, $timeout, TimezoneService, $route,API,adminBreadcrumbService) {
+app.controller('AdminListAppoinment', function ($scope, $http, $rootScope, $location, $timeout, TimezoneService, $route, API, adminBreadcrumbService) {
     let url = API.getBaseUrl();
     let headers = API.getHeaders();
     adminBreadcrumbService.generateBreadcrumb()
@@ -25,7 +25,7 @@ app.controller('AdminListAppoinment', function ($scope, $http, $rootScope, $loca
             return timePart.slice(0, 5);
         }
         $scope.processDoctorUnavailabilityAllDoctor().then(result => {
-            result=result.filter(rs=>rs.deleted===false)
+            result = result.filter(rs => rs.deleted === false)
             var events = result.map(item => {
                 return {
                     title: item.appointment.patient ? item.appointment.patient.fullName : null,
@@ -423,7 +423,7 @@ app.controller('AdminListAppoinment', function ($scope, $http, $rootScope, $loca
     }
 
     $scope.updateStatus = (app, statusId) => {
-        console.log("app update",app);
+        console.log("app update", app);
         var originalStatus = $scope.listAppointmentStatusBD.find(s => s.status === app.appointment.appointmentStatus.status)//status trong app đã thay đổi id nhưng status chưa thay đổi, dựa vào đây để lấy lại statusId cũ
         var statusUpdate = $scope.listAppointmentStatusBD.find(s => s.appointment_StatusId === statusId)
         if (statusUpdate) {
@@ -442,16 +442,16 @@ app.controller('AdminListAppoinment', function ($scope, $http, $rootScope, $loca
                         cancelButtonText: 'Hủy bỏ'
                     }).then(rs => {
                         if (rs.dismiss === Swal.DismissReason.cancel) {
-                            $scope.$apply(function() {
+                            $scope.$apply(function () {
                                 app.appointment.appointmentStatus.appointment_StatusId = originalStatus.appointment_StatusId
                             })
-                        } else 
-                        if (rs.isConfirmed) {
-                            var isDeleted = true
-                            var currentCondition = ""
-                            var reExamination = ""
-                            $scope.updateAppoinmentToDB(app, statusId, isDeleted, currentCondition, reExamination)
-                        }
+                        } else
+                            if (rs.isConfirmed) {
+                                var isDeleted = true
+                                var currentCondition = ""
+                                var reExamination = ""
+                                $scope.updateAppoinmentToDB(app, statusId, isDeleted, currentCondition, reExamination)
+                            }
                     })
                     break;
                 case 'đang diễn ra':
@@ -468,16 +468,16 @@ app.controller('AdminListAppoinment', function ($scope, $http, $rootScope, $loca
                         cancelButtonText: 'Hủy bỏ'
                     }).then(rs => {
                         if (rs.dismiss === Swal.DismissReason.cancel) {
-                            $scope.$apply(function() {
+                            $scope.$apply(function () {
                                 app.appointment.appointmentStatus.appointment_StatusId = originalStatus.appointment_StatusId
                             })
                         } else
-                        if (rs.isConfirmed) {
-                            var isDeleted = false
-                            var currentCondition = ""
-                            var reExamination = ""
-                            $scope.updateAppoinmentToDB(app, statusId, isDeleted, currentCondition, reExamination)
-                        }
+                            if (rs.isConfirmed) {
+                                var isDeleted = false
+                                var currentCondition = ""
+                                var reExamination = ""
+                                $scope.updateAppoinmentToDB(app, statusId, isDeleted, currentCondition, reExamination)
+                            }
                     })
                     break;
                 case 'hoàn thành':
@@ -492,14 +492,14 @@ app.controller('AdminListAppoinment', function ($scope, $http, $rootScope, $loca
                         cancelButtonText: 'Hủy bỏ'
                     }).then(async (rs) => {
                         if (rs.dismiss === Swal.DismissReason.cancel) {
-                            $scope.$apply(function() {
+                            $scope.$apply(function () {
                                 app.appointment.appointmentStatus.appointment_StatusId = originalStatus.appointment_StatusId
                             })
                         } else
-                        if (rs.isConfirmed) {
-                            const { value: formValues } = await Swal.fire({
-                                title: "Nhập thông tin",
-                                html: `
+                            if (rs.isConfirmed) {
+                                const { value: formValues } = await Swal.fire({
+                                    title: "Nhập thông tin",
+                                    html: `
                                 <div class="row d-flex flex-column flex-wrap">
                                     <div class="col">
                                         <div class="form-floating mb-3">
@@ -516,22 +516,22 @@ app.controller('AdminListAppoinment', function ($scope, $http, $rootScope, $loca
                                     </div>
                                 </div>                              
                                 `,
-                                focusConfirm: false,
-                                preConfirm: () => {
-                                    return [
-                                        document.getElementById("currentCondition").value,
-                                        document.getElementById("reExamination").value
-                                    ];
+                                    focusConfirm: false,
+                                    preConfirm: () => {
+                                        return [
+                                            document.getElementById("currentCondition").value,
+                                            document.getElementById("reExamination").value
+                                        ];
+                                    }
+                                });
+                                if (formValues) {
+                                    //Swal.fire(JSON.stringify(formValues));
+                                    var isDeleted = false
+                                    var currentCondition = formValues[0]
+                                    var reExamination = formValues[1]
+                                    $scope.updateAppoinmentToDB(app, statusId, isDeleted, currentCondition, reExamination)
                                 }
-                            });
-                            if (formValues) {
-                                //Swal.fire(JSON.stringify(formValues));
-                                var isDeleted = false
-                                var currentCondition = formValues[0]
-                                var reExamination = formValues[1]
-                                $scope.updateAppoinmentToDB(app, statusId, isDeleted, currentCondition, reExamination)
                             }
-                        }
                     })
                     break;
                 default:
@@ -560,18 +560,20 @@ app.controller('AdminListAppoinment', function ($scope, $http, $rootScope, $loca
             console.log("response appointment-patient-record", response.data);
             console.log("resp appointment", resp.data);
             console.log("res doctorUnavailability", res.data);
-            Swal.fire({
-                title: 'Cập nhật thành công',
-                text: 'Thông tin cuộc hẹn đã được cập nhật thành công.',
-                icon: 'success',
-                confirmButtonText: 'OK'
-            }).then(rs => {
-                if (rs.isConfirmed) {
-                    $scope.refresh()
-                }
-            })
+            new Noty({
+                text: 'Thông tin cuộc hẹn đã được cập nhật thành công !',
+                type: 'success',
+                timeout: 3000
+            }).show()
+
+            $scope.refresh()
+
         } catch (err) {
-            console.log("Lỗi khi cập nhật trạng thái cuộc hẹn", err);
+            new Noty({
+                text: 'Cập nhật thất bại. Vui lòng thử lại!',
+                type: 'error',
+                timeout: 3000
+            }).show();
         }
     }
 
@@ -592,7 +594,7 @@ app.controller('AdminListAppoinment', function ($scope, $http, $rootScope, $loca
     }
 
     $scope.getDataDoctorUnavailabilityRequest = (app, isDeleted) => {
-        console.log("isDeleted",isDeleted);
+        console.log("isDeleted", isDeleted);
         $scope.formDoctorUnavailabilityRequest = {
             description: app.appointment.description,
             timeOfShiftId: app.timeOfShift.timeOfShiftId,

@@ -1,12 +1,12 @@
 
-app.controller('AdminListDentalSupplies', function ($scope, $http, $rootScope, $location, $timeout,API,adminBreadcrumbService) {
+app.controller('AdminListDentalSupplies', function ($scope, $http, $rootScope, $location, $timeout, API, adminBreadcrumbService, processSelect2Service) {
     let url = API.getBaseUrl();
     let headers = API.getHeaders();
     adminBreadcrumbService.generateBreadcrumb()
     //code here
     $scope.listDistributionSuppliesFormDB = [];
     $scope.listDentalSuppliesFromDB = [];
-    $scope.editDentalSupplies = [];
+    $scope.editDentalSupplies = {};
     //code here
     //clear form dental supplies
     $scope.clearFormDentalSuppliesFormDB = () => {
@@ -16,17 +16,228 @@ app.controller('AdminListDentalSupplies', function ($scope, $http, $rootScope, $
 
         $scope.distributionSuppliesId = ''
     }
+    $scope.initializeUIComponents = () => {
+        $('.select2').select2(
+            {
+                theme: 'bootstrap4',
+            });
+        $('.select2-multi').select2(
+            {
+                multiple: true,
+                theme: 'bootstrap4',
+            });
+        $('.drgpicker').daterangepicker(
+            {
+                singleDatePicker: true,
+                timePicker: false,
+                showDropdowns: true,
+                locale:
+                {
+                    format: 'MM/DD/YYYY'
+                }
+            });
+        $('.time-input').timepicker(
+            {
+                'scrollDefault': 'now',
+                'zindex': '9999' /* fix modal open */
+            });
+        /** date range picker */
+        if ($('.datetimes').length) {
+            $('.datetimes').daterangepicker(
+                {
+                    timePicker: true,
+                    startDate: moment().startOf('hour'),
+                    endDate: moment().startOf('hour').add(32, 'hour'),
+                    locale:
+                    {
+                        format: 'M/DD hh:mm A'
+                    }
+                });
+        }
+        var start = moment().subtract(29, 'days');
+        var end = moment();
 
+        function cb(start, end) {
+            $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+        }
+        $('#reportrange').daterangepicker(
+            {
+                startDate: start,
+                endDate: end,
+                ranges:
+                {
+                    'Today': [moment(), moment()],
+                    'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                    'This Month': [moment().startOf('month'), moment().endOf('month')],
+                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                }
+            }, cb);
+        cb(start, end);
+        $('.input-placeholder').mask("00/00/0000",
+            {
+                placeholder: "__/__/____"
+            });
+        $('.input-zip').mask('00000-000',
+            {
+                placeholder: "____-___"
+            });
+        $('.input-money').mask("#,##0",
+            {
+                reverse: true
+            });
+        $('.input-phoneus').mask('(000) 000-0000');
+        $('.input-mixed').mask('AAA 000-S0S');
+        $('.input-ip').mask('0ZZ.0ZZ.0ZZ.0ZZ',
+            {
+                translation:
+                {
+                    'Z':
+                    {
+                        pattern: /[0-9]/,
+                        optional: true
+                    }
+                },
+                placeholder: "___.___.___.___"
+            });
+        // editor
+        var editor = document.getElementById('editor');
+        if (editor) {
+            var toolbarOptions = [
+                [
+                    {
+                        'font': []
+                    }],
+                [
+                    {
+                        'header': [1, 2, 3, 4, 5, 6, false]
+                    }],
+                ['bold', 'italic', 'underline', 'strike'],
+                ['blockquote', 'code-block'],
+                [
+                    {
+                        'header': 1
+                    },
+                    {
+                        'header': 2
+                    }],
+                [
+                    {
+                        'list': 'ordered'
+                    },
+                    {
+                        'list': 'bullet'
+                    }],
+                [
+                    {
+                        'script': 'sub'
+                    },
+                    {
+                        'script': 'super'
+                    }],
+                [
+                    {
+                        'indent': '-1'
+                    },
+                    {
+                        'indent': '+1'
+                    }], // outdent/indent
+                [
+                    {
+                        'direction': 'rtl'
+                    }], // text direction
+                [
+                    {
+                        'color': []
+                    },
+                    {
+                        'background': []
+                    }], // dropdown with defaults from theme
+                [
+                    {
+                        'align': []
+                    }],
+                ['clean'] // remove formatting button
+            ];
+            var quill = new Quill(editor,
+                {
+                    modules:
+                    {
+                        toolbar: toolbarOptions
+                    },
+                    theme: 'snow'
+                });
+        }
+        // Example starter JavaScript for disabling form submissions if there are invalid fields
+        (function () {
+            'use strict';
+            window.addEventListener('load', function () {
+                // Fetch all the forms we want to apply custom Bootstrap validation styles to
+                var forms = document.getElementsByClassName('needs-validation');
+                // Loop over them and prevent submission
+                var validation = Array.prototype.filter.call(forms, function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (form.checkValidity() === false) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+            }, false);
+        })();
 
-    //dental suppliesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+        $('#manageMedicinesModaldistributionName').on('change', function () {
+            $timeout(function () {
+                let selectedVal = $('#manageMedicinesModaldistributionName').val();
+                $scope.editDentalSupplies.distributionSupplies.distributionId = processSelect2Service.processSelect2Data(selectedVal)[0]
+            });
+        });
+    }
     $scope.listDentalSuppliesFromDB = () => {
-        $http.get(url + '/dental-supplies-except-deleted').then(response => {
+        $http.get(url + '/dental-supplies-except-deleted', { headers: headers }).then(response => {
             $scope.listDentalSuppliesFromDB = response.data
-            if ($.fn.DataTable.isDataTable('#dataTable-list-service')) {
-                $('#dataTable-list-service').DataTable().clear().destroy();
+            if ($.fn.DataTable.isDataTable('#dataTable-list-service1')) {
+                $('#dataTable-list-service1').DataTable().clear().destroy();
             }
             $(document).ready(function () {
-                $('#dataTable-list-service').DataTable({
+                $('#dataTable-list-service1').DataTable({
+                    autoWidth: true,
+                    "lengthMenu": [
+                        [10, 20, 30, -1],
+                        [10, 20, 30, "All"]
+                    ],
+                    language: {
+                        sProcessing: "Đang xử lý...",
+                        sLengthMenu: "Hiển thị _MENU_ mục",
+                        sZeroRecords: "Không tìm thấy dòng nào phù hợp",
+                        sInfo: "Đang hiển thị _START_ đến _END_ trong tổng số _TOTAL_ mục",
+                        sInfoEmpty: "Đang hiển thị 0 đến 0 trong tổng số 0 mục",
+                        sInfoFiltered: "(được lọc từ _MAX_ mục)",
+                        sInfoPostFix: "",
+                        sSearch: "Tìm kiếm:",
+                        sUrl: "",
+                        oPaginate: {
+                            sFirst: "Đầu",
+                            sPrevious: "Trước",
+                            sNext: "Tiếp",
+                            sLast: "Cuối"
+                        }
+                    }
+                });
+                $scope.$apply()
+            });
+        }).catch(error => {
+            console.log("error", error);
+        })
+    }
+    $scope.listDentalSuppliesFromDB1 = () => {
+        $http.get(url + '/dental-supplies-except-deleted', { headers: headers }).then(response => {
+            $scope.listDentalSuppliesFromDB = response.data
+            $('#dataTable-list-service1').DataTable().clear().destroy();
+            $(document).ready(function () {
+                $('#dataTable-list-service1').DataTable({
                     autoWidth: true,
                     "lengthMenu": [
                         [10, 20, 30, -1],
@@ -57,7 +268,7 @@ app.controller('AdminListDentalSupplies', function ($scope, $http, $rootScope, $
         })
     }
 
-    //create dental suppliesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+
     $scope.createDentalSuppliesFromDB = () => {
         $scope.errorSuppliesName = false;
         $scope.errorDistributionSupplies = false;
@@ -65,12 +276,6 @@ app.controller('AdminListDentalSupplies', function ($scope, $http, $rootScope, $
             $scope.errorSuppliesName = true;
         } else {
             $scope.errorSuppliesName = false;
-        }
-        if ($scope.distributionSuppliesId == '' || $scope.distributionSuppliesId == undefined) {
-            $scope.errorDistributionSupplies = true;
-        } else {
-
-            $scope.errorDistributionSupplies = false;
         }
         if ($scope.errorSuppliesName || $scope.errorDistributionSupplies) {
             return;
@@ -82,26 +287,26 @@ app.controller('AdminListDentalSupplies', function ($scope, $http, $rootScope, $
 
             distributionSuppliesId: parseInt($scope.distributionSuppliesId, 10)
         }
-        $http.post(url + '/dental-supplies', angular.toJson(DentalSuppliesRequest)).then(response => {
-            
-            Swal.fire({
-                title: "Thành công!",
-                html: "Đã thêm vật tư thành công!",
-                icon: "success"
-            });
+        $http.post(url + '/dental-supplies', angular.toJson(DentalSuppliesRequest), { headers: headers }).then(response => {
+
+            new Noty({
+                text: 'Thêm vật tư thành công !',
+                type: 'success',
+                timeout: 3000
+            }).show();
             $scope.clearFormDentalSuppliesFormDB();
         }).catch(error => {
-            Swal.fire({
-                title: "Thất bại!",
-                html: '<p class="text-danger">Xảy ra lỗi!</p>',
-                icon: "error"
-            });
+            new Noty({
+                text: 'Thêm vật tư thất bại. Vui lòng thử lại!',
+                type: 'error',
+                timeout: 3000
+            }).show();
             console.log("error", error);
         });
     }
-    //delete dental suppliesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+
     $scope.deleteDentalSupplies = (d) => {
-       
+
         Swal.fire({
             title: "Bạn có chắc?",
             text: "Bạn có muốn xóa " + d.suppliesName + " này không?",
@@ -112,44 +317,33 @@ app.controller('AdminListDentalSupplies', function ($scope, $http, $rootScope, $
             confirmButtonText: "Có"
         }).then((result) => {
             if (result.isConfirmed) {
-                $http.delete(url + '/soft-delete-dental-supplies/' + d.suppliesId).then(response => {
-                    
-                    $(document).ready(function () {
-                        $('.dentalSupplies_' + d.suppliesId).remove();
-                    });
+                $http.delete(url + '/soft-delete-dental-supplies/' + d.suppliesId, { headers: headers }).then(response => {
+                    new Noty({
+                        text: 'Xóa vật tư thành công !',
+                        type: 'success',
+                        timeout: 3000
+                    }).show();
+                    $scope.listDentalSuppliesFromDB1();
                 }).catch(error => {
-                    Swal.fire({
-                        title: "Thất bại!",
-                        html: '<p class="text-danger">Xảy ra lỗi!</p>',
-                        icon: "error"
-                    })
+                    new Noty({
+                        text: 'Xóa vật tư thất bại. Vui lòng thử lại!',
+                        type: 'error',
+                        timeout: 3000
+                    }).show();
                     console.log("error", error);
                 })
-                Swal.fire({
-                    title: "Deleted!",
-                    text: "Your file has been deleted.",
-                    icon: "success"
-                });
+
             }
         });
     }
 
     $scope.editDentalSupply = (d) => {
-        //$scope.editDentalSupplies = angular.copy(d);
-        $http.get(url + '/dental-supplies-id/' + d.suppliesId).then(response => {
-            
-            $scope.editDentalSupplies = response.data
 
-        }).catch(error => {
-            Swal.fire({
-                title: "Thất bại!",
-                html: '<p class="text-danger">Xảy ra lỗi!</p>',
-                icon: "error"
-            });
-            console.log("error", error);
-        });
+
+        $scope.editDentalSupplies = angular.copy(d)
+
     }
-    //update dental supplyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+
     $scope.updateDentalSupply = () => {
         var DentalSuppliesRequest = {
             suppliesName: $scope.editDentalSupplies.suppliesName,
@@ -158,47 +352,38 @@ app.controller('AdminListDentalSupplies', function ($scope, $http, $rootScope, $
 
             distributionSuppliesId: parseInt($scope.editDentalSupplies.distributionSupplies.distributionId, 10)
         }
-        $http.put(url + '/dental-supplies/' + $scope.editDentalSupplies.suppliesId, angular.toJson(DentalSuppliesRequest)).then(response => {
-         
-            $('#dentalSuppliesModel').modal('hide');
-            Swal.fire({
-                title: "Thành công!",
-                html: "Cập nhật dữ liệu thành công!",
-                icon: "success"
-            });
-            var updateDentalSupply = response.data
-            const $row = $(`.dentalSupplies_${updateDentalSupply.suppliesId}`);
-            $row.find('td').eq(0).text(updateDentalSupply.suppliesId);
-            $row.find('td').eq(1).text(updateDentalSupply.suppliesName);
-            $row.find('td').eq(2).text(updateDentalSupply.distributionSupplies.name);
-            $row.find('td').eq(3).text(updateDentalSupply.description);
+        $http.put(url + '/dental-supplies/' + $scope.editDentalSupplies.suppliesId, angular.toJson(DentalSuppliesRequest), { headers: headers }).then(response => {
+
+
+            new Noty({
+                text: 'Cập nhật thành công !',
+                type: 'success',
+                timeout: 3000
+            }).show();
+            $scope.listDentalSuppliesFromDB1();
+
+
+
 
         }).catch(error => {
-            Swal.fire({
-                title: "Thất bại!",
-                html: '<p class="text-danger">Xảy ra lỗi!</p>',
-                icon: "error"
-            });
+            new Noty({
+                text: 'Cập nhật thất bại. Vui lòng thử lại!',
+                type: 'error',
+                timeout: 3000
+            }).show();
             console.log("error", error);
         });
     }
-    //dental suppliesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
 
-    //distribution suppliesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
     $scope.listDistributionSupplies = () => {
-        $http.get(url + '/distribution-supplies').then(response => {
+        $http.get(url + '/distribution-supplies', { headers: headers }).then(response => {
             $scope.listDistributionSuppliesFormDB = response.data
 
         }).catch(error => {
-            Swal.fire({
-                title: "Thất bại!",
-                html: '<p class="text-danger">Xảy ra lỗi!</p>',
-                icon: "error"
-            })
             console.log("error", error);
         })
     }
-    //create distribution suppliessssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+
     $scope.createDistributionSupplies = () => {
         $scope.errorDistribution = false
         $scope.errorName = false
@@ -269,27 +454,28 @@ app.controller('AdminListDentalSupplies', function ($scope, $http, $rootScope, $
 
             taxCode: $scope.taxCode
         }
-        $http.post(url + '/distribution-supplies', DistributionSuppliesRequest).then(response => {
-           
-            Swal.fire({
-                title: "Thành công!",
-                html: "Đã thêm nhà phân phối thành công!",
-                icon: "success"
-            })
+        $http.post(url + '/distribution-supplies', DistributionSuppliesRequest, { headers: headers }).then(response => {
+
+            new Noty({
+                text: 'Thêm nhà phân phối thành công !',
+                type: 'success',
+                timeout: 3000
+            }).show();
             $scope.listDistributionSupplies();
         }).catch(error => {
-            Swal.fire({
-                title: "Thất bại!",
-                html: '<p class="text-danger">Xảy ra lỗi!</p>',
-                icon: "error"
-            })
+            new Noty({
+                text: 'Thêm nhà phân phối thất bại. Vui lòng thử lại!',
+                type: 'error',
+                timeout: 3000
+            }).show();
             console.log("error", error);
         })
     }
 
-    //distribution suppliesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+
 
 
     $scope.listDentalSuppliesFromDB();
     $scope.listDistributionSupplies();
+    $scope.initializeUIComponents();
 })

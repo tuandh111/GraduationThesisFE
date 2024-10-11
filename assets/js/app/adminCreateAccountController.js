@@ -2,11 +2,16 @@ app.controller('AdminCreateAccountController', function ($scope, $http, $rootSco
     let url = API.getBaseUrl();
     let headers = API.getHeaders();
     adminBreadcrumbService.generateBreadcrumb()
+    let roleNameLogin = API.getUser() ? API.getUser().split("-")[1] : null
+    if (roleNameLogin == 'HANH_CHINH') {
+        $scope.HANH_CHINH = true
+    }
     // code here
     $scope.dataObject = []
     $scope.selectedOption = ''
     $scope.isInvalidInput = false;
     $scope.isValidInput = false;
+    $scope.isLoadingBtn = false
 
     $scope.initAccountForm = () => {
         $scope.accForm = {
@@ -39,25 +44,28 @@ app.controller('AdminCreateAccountController', function ($scope, $http, $rootSco
         let op = option.roleName
         switch (op) {
             case 'BENH_NHAN':
-                await $http.get(url + '/patient-except-deleted').then(response => {
+                await $http.get(url + '/patient-except-deleted', { headers: headers }).then(response => {
                     $scope.dataObject = response.data
                     $scope.selectedOption = 'BENH_NHAN'
                 })
 
                 break
             case 'BAC_SI':
-                await $http.get(url + '/doctor-except-deleted').then(response => {
+                await $http.get(url + '/doctor-except-deleted', { headers: headers }).then(response => {
                     $scope.dataObject = response.data
                     $scope.selectedOption = 'BAC_SI'
                 })
 
                 break
             case 'NHAN_VIEN':
+            case 'HANH_CHINH':
+            case 'KY_THUAT':
             case 'ADMIN':
             case 'LE_TAN':
-                await $http.get(url + '/dental-staff-except-deleted').then(response => {
+            case 'QUAN_LY':
+                await $http.get(url + '/dental-staff-except-deleted', { headers: headers }).then(response => {
                     $scope.dataObject = response.data
-                    $scope.selectedOption = 'NHAN_VIEN'
+                    $scope.selectedOption = 'HANH_CHINH'
                 })
                 break
             default:
@@ -70,8 +78,8 @@ app.controller('AdminCreateAccountController', function ($scope, $http, $rootSco
 
     $scope.initializeUIComponents = (option) => {
         let op = option.roleName
-        if (op === 'ADMIN' || op === 'LE_TAN') {
-            op = 'NHAN_VIEN'
+        if (op === 'ADMIN' || op === 'LE_TAN' || op === 'QUAN_LY' || op === 'KY_THUAT' || op === 'NHAN_VIEN') {
+            op = 'HANH_CHINH'
         }
 
         $('.select2').select2(
@@ -89,6 +97,7 @@ app.controller('AdminCreateAccountController', function ($scope, $http, $rootSco
                     doctorId: null,
                     patientId: null,
                     doctorId: null,
+                    isDeleted: false
                 }
                 function updateAndCheckUser(paramName, value) {
                     $scope.accForm[paramName] = value;
@@ -106,30 +115,34 @@ app.controller('AdminCreateAccountController', function ($scope, $http, $rootSco
                         updateAndCheckUser('dentalStaffId', processedValue);
                         break;
                 }
-               
+
             });
         });
     }
 
     $scope.getRole = () => {
-        $http.get(url + '/role-except-deleted').then(response => {
+        $http.get(url + '/role-except-deleted', { headers: headers }).then(response => {
             $scope.listRoleDB = response.data
+            if (roleNameLogin == 'HANH_CHINH') {
+                let data = response.data.find(role => role.roleName == 'BENH_NHAN')
+                $scope.listRoleDB = [data]
+            }
+            console.log(" $scope.listRoleDB", $scope.listRoleDB);
         })
     }
 
-    $scope.checkUserByAnObject = (param) => {    
-        $http.get(url + '/check-exist-user-by-object',{params:param}).then(response => {
+    $scope.checkUserByAnObject = (param) => {
+        $http.get(url + '/check-exist-user-by-object', { params: param, headers: headers }).then(response => {
             $scope.isExistUser = response.data.message
         })
     }
 
-    $scope.checkExistEmail= (email) => {
-        let p={
+    $scope.checkExistEmail = (email) => {
+        let p = {
             email: email
         }
-        $http.get(url + '/check-exist-email',{params:p}).then(response => {
+        $http.get(url + '/check-exist-email', { params: p, headers: headers }).then(response => {
             $scope.isExistEmail = response.data.message
-            console.log("$scope.isExistEmail",$scope.isExistEmail);      
         })
     }
 
@@ -145,7 +158,7 @@ app.controller('AdminCreateAccountController', function ($scope, $http, $rootSco
         var similars_upper = ["I", "L", "O"];
         var similars_numbers = ["1", "0"];
         var similars_symbols = ["|"];
-        var ambiguous = ["\"", "'", "(", ")", ",", ".", "/", ":", ";", "<", "=", ">", "[", "\\", "]", "^", "_", "`", "{", "}", "~"];
+        //  var ambiguous = ["\"", "'", "(", ")", ",", ".", "/", ":", ";", "<", "=", ">", "[", "\\", "]", "^", "_", "`", "{", "}", "~"];
         var passwordLength = 8
 
         var combinedArray = upperChars.concat(
@@ -155,8 +168,8 @@ app.controller('AdminCreateAccountController', function ($scope, $http, $rootSco
             similars_lower,
             similars_upper,
             similars_numbers,
-            similars_symbols,
-            ambiguous
+            similars_symbols
+            // ,ambiguous
         );
 
         var randomIndex;
@@ -185,8 +198,8 @@ app.controller('AdminCreateAccountController', function ($scope, $http, $rootSco
     }
 
     $scope.validateOnFocus = () => {
-        $scope.isInvalid = false;
-        $scope.isValid = false;
+        $scope.isInvalidInput = false;
+        $scope.isValidInput = false;
     }
 
     $scope.validateOnBlur = () => {
@@ -229,42 +242,35 @@ app.controller('AdminCreateAccountController', function ($scope, $http, $rootSco
     }
 
     $scope.createAccount = () => {
+
+        // const passwordEl = document.getElementById('user-password')
+        // passwordEl.classList.add('input-error');
+        const generatePasswordEl = document.getElementById('generatePassword')
+        generatePasswordEl.click();
+        $scope.isLoadingBtn = true
         let checkForm = $scope.validateForm()
-
-        const passwordEl = document.getElementById('user-password')
-        passwordEl.classList.add('input-error');
-
         if (checkForm) {
-            console.log("$scope.accForm", $scope.accForm);
             $scope.mailInfo = {
                 from: 'trung2894@gmail.com',
                 to: $scope.accForm.email,
-                subject: 'Thống báo tạo tài khoản',
+                subject: 'Thông báo tạo tài khoản',
                 body: '<p>Chúc mừng bạn đã tạo tại khoản thành công tại nha khoa Tooth Teeth.</p> <p>Mật khẩu của bạn là: ' + '<bold>' + $scope.accForm.password + '</bold>' + '</p>'
             }
 
-            Swal.fire({
-                title: 'Đang thao tác. </br> Vui lòng chờ trong giây lát !',
-                showConfirmButton: false,
-                allowOutsideClick: false,
-                allowEscapeKey: false,
-                timerProgressBar: true,
-                timer: 0,
-                html: `<div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                        </div>`,
-            });
-
-            let accRequest = $http.post(url + '/register', $scope.accForm)
-            let emailRequest = $http.post(url + '/send-account-info', $scope.mailInfo)
+            let accRequest = $http.post(url + '/register', angular.toJson($scope.accForm), { headers: headers })
+            let emailRequest = $http.post(url + '/send-account-info', angular.toJson($scope.mailInfo), { headers: headers })
             Promise.all([accRequest, emailRequest]).then(() => {
-                Swal.close()
-            }).finally(() => {
-                Swal.fire({
-                    title: "Thành công!",
-                    html: "Tạo tài khoản thành công!",
-                    icon: "success"
-                }).then(() => {
+                $timeout(() => {
+                    $scope.isLoadingBtn = false
+                }, 3000)
+            }).then(() => {
+                $timeout(() => {
+                    new Noty({
+                        text: 'Tạo tài khoản thành công thành công!',
+                        type: 'success',
+                        timeout: 3000
+                    }).show()
+
                     $scope.initAccountForm()
                     const passwordEl = document.getElementById('user-password')
                     passwordEl.classList.remove('input-success');
@@ -272,13 +278,124 @@ app.controller('AdminCreateAccountController', function ($scope, $http, $rootSco
                     const emaildEl = document.getElementById('user-email')
                     emaildEl.classList.remove('input-success');
                     $scope.$apply()
-                })
+
+                }, 3000)
             })
-
-
         }
     }
 
+    // for list account
+
+    $scope.getAllAccount = () => {
+        $http.get(url + "", { headers: headers }).then(response => {
+            $scope.listAccountDB = response.data.map(acc => {
+                if (acc.activity === undefined || acc.activity === null) {
+                    acc.activity = !acc.deleted
+                }
+                return acc
+            })
+            if ($.fn.DataTable.isDataTable('#dataTable-list-account')) {
+                $('#dataTable-list-account').DataTable().clear().destroy();
+            }
+            $(document).ready(function () {
+                $('#dataTable-list-account').DataTable({
+                    autoWidth: true,
+                    "lengthMenu": [
+                        [10, 20, 30, -1],
+                        [10, 20, 30, "All"]
+                    ],
+                    language: {
+                        sProcessing: "Đang xử lý...",
+                        sLengthMenu: "Hiển thị _MENU_ mục",
+                        sZeroRecords: "Không tìm thấy dòng nào phù hợp",
+                        sInfo: "Đang hiển thị _START_ đến _END_ trong tổng số _TOTAL_ mục",
+                        sInfoEmpty: "Đang hiển thị 0 đến 0 trong tổng số 0 mục",
+                        sInfoFiltered: "(được lọc từ _MAX_ mục)",
+                        sInfoPostFix: "",
+                        sSearch: "Tìm kiếm:",
+                        sUrl: "",
+                        oPaginate: {
+                            sFirst: "Đầu",
+                            sPrevious: "Trước",
+                            sNext: "Tiếp",
+                            sLast: "Cuối"
+                        }
+                    },
+                    "ordering": false
+                });
+            });
+        })
+    }
+
+    $scope.getAccountName = (account) => {
+        let roleName = account.role.roleName
+        switch (roleName) {
+            case 'BENH_NHAN':
+                return account.patient ? account.patient.fullName : null
+            case 'BAC_SI':
+                return account.doctor ? account.doctor.fullName : null
+            case 'NHAN_VIEN':
+            case 'HANH_CHINH':
+            case 'KY_THUAT':
+            case 'ADMIN':
+            case 'LE_TAN':
+            case 'QUAN_LY':
+                return account.dentalStaff ? account.dentalStaff.fullname : null
+            default:
+                return null
+        }
+
+    }
+
+    $scope.isCheckboxChecked = (account) => {
+        return !account.deleted;
+    };
+
+    $scope.disabledAccount = async (account) => {
+        let userRequest = {
+            email: account.email,
+            deleted: !account.activity
+        };
+
+        try {
+            const result = await Swal.fire({
+                text: "Bạn có " + (account.activity ? "kích hoạt " : "hủy ") + "tài khoản " + account.email + " ?",
+                icon: (account.activity ? "info" : "warning"),
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                cancelButtonText: 'Trở lại',
+                confirmButtonText: 'Có'
+            });
+
+            if (result.isConfirmed) {
+                await $http.post(url + "/disabled-user", angular.toJson(userRequest), { headers: headers });
+                await new Noty({
+                    text: (account.activity ? "Kích hoạt " : "Hủy ") + "tài khoản thành công!",
+                    type: 'success',
+                    timeout: 3000
+                }).show();
+
+            } else {
+                $scope.getAllAccount();
+                new Noty({
+                    text: "Hành động đã hủy.",
+                    type: 'info',
+                    timeout: 3000
+                }).show();
+            }
+        } catch (error) {
+            console.error(error);
+            await Swal.fire({
+                title: 'Lỗi!',
+                text: 'Đã có lỗi xảy ra, vui lòng thử lại.',
+                icon: 'error'
+            });
+        }
+    };
+
+
     $scope.getRole()
     $scope.initAccountForm()
+    $scope.getAllAccount()
 })

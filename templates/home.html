@@ -11,14 +11,12 @@
 				<div class="block">
 					<div class="divider mb-3"></div>
 					<span class="text-uppercase text-sm letter-spacing ">Giải pháp chăm sóc sức khỏe toàn diện</span>
-					<h1 class="mb-3 mt-3">Đối tác sức khỏe đáng tin cậy nhất của bạn</h1>
+					<h1 class="mb-3 mt-3">Cười tươi mỗi ngày với răng chắc khỏe</h1>
 
-					<p class="mb-4 pr-5">Một sự phản đối chính mình làm việc chính mình những điề	u nghiêm trọng thực sự
-						đó là sự tôn vinh của chúng tôi, cái mà ai đó là lớn hơn rất nhiều, là người chạy trốn, sự khinh
-						miệt, sự ôm ấp.</p>
+					<p class="mb-4 pr-5">Bạn mơ ước về một nụ cười hoàn hảo? Chúng tôi sẽ biến ước mơ đó thành hiện thực. Hãy đến với chúng tôi để trải nghiệm dịch vụ nha khoa chuyên nghiệp, mang đến cho bạn hàm răng chắc khỏe và nụ cười tươi tắn.</p>
 
 					<div class="btn-container ">
-						<button ng-click="openFastBookingModal()" target="_blank" class="btn btn-main-2 btn-icon btn-round-full">Đặt
+						<button ng-show="isAllowedFastBooking" ng-click="openFastBookingModal()" target="_blank" class="btn btn-main-2 btn-icon btn-round-full">Đặt
 							lịch nhanh<i class="icofont-simple-right ml-2  "></i></button>
 					</div>
 				</div>
@@ -36,10 +34,10 @@
 							<i class="icofont-surgeon-alt"></i>
 						</div>
 						<!-- <span>Dịch vụ 24 giờ</span> -->
-						<h4 class="mb-3">Đặt lịch hẹn trực tuyến với bác sĩ</h4>
-						<p class="mb-4">Nhận hỗ trợ khẩn cấp mọi lúc. Chúng tôi đã giới thiệu nguyên tắc y học gia đình. Chọn bác sĩ để đặt hẹn dựa trên chuyên khoa.
+						<h4 class="mb-3">Đặt lịch khám trực tuyến</h4>
+						<p class="mb-4">Đặt lịch khám nha khoa trực tuyến thật đơn giản! Chỉ cần click chuột, bạn đã có thể chọn thời gian khám phù hợp. Tiết kiệm thời gian, không cần chờ đợi, thoải mái sắp xếp lịch trình.
 						</p>
-						<a href="#!/booking" class="btn btn-main btn-round-full">Đặt lịch hẹn với bác sĩ</a>
+						<a href="#!/booking" class="btn btn-main btn-round-full" ng-click="leaveFastBookingModal()" ng-hide="!isPatient || !isLogin">Đặt lịch khám với bác sĩ</a>
 					</div>
 
 					<div class="feature-item mb-5 mb-lg-0">
@@ -48,11 +46,13 @@
 						</div>
 						<!-- <span>Lịch trình</span> -->
 						<h4 class="mb-3">Giờ làm việc</h4>
+						<p class="mb-5">Phòng khám nha khoa <span class="text-primary">Tooth Teeth</span> chính thức hoạt động từ 7h30 đến 21h hàng ngày, nhằm đáp ứng tối đa nhu cầu khám chữa răng miệng của Quý khách.</p>
 						<ul class="w-hours list-unstyled">
-							<li class="d-flex justify-content-between">Thứ hai - Thứ sáu : <span>7:00 - 21:00</span>
-							</li>							
-							<li class="d-flex justify-content-between">Thứ bảy - Chủ nhật : <span>7:00 - 17:00</span>
-							</li>
+							<li class="d-flex justify-content-between">
+								<button class="btn btn-main btn-round-full">
+									Thứ hai - Chủ nhật: <span>7:30 - 21:00</span>
+								</button>								
+							</li>	
 						</ul>
 					</div>
 
@@ -61,109 +61,14 @@
 							<i class="icofont-support"></i>
 						</div>
 						<span>Trường hợp khẩn cấp</span>
-						<h4 class="mb-3">1-800-700-6200</h4>
-						<p>Nhận hỗ trợ mọi lúc cho tình huống khẩn cấp. Chúng tôi đã giới thiệu nguyên tắc y học gia
-							đình. Liên hệ với chúng tôi cho mọi tình huống cấp bách.</p>
+						<h4 class="mb-3">+84 969 281 254</h4>
+						<p>Gặp sự cố về răng miệng ngoài giờ? Đừng lo lắng! Gọi ngay hotline +84 969 281 254. Chúng tôi luôn sẵn sàng hỗ trợ bạn.</p>	
 					</div>
 				</div>
 			</div>
 		</div>
 	</div>
-	<div class="modal fade" id="modalFastBookAppointment" tabindex="-1" aria-hidden="true">
-		<div class="modal-dialog modal-xl modal-dialog-centered" role="document">
-			<div class="modal-content" ng-show="showConfirmForm">
-				<div class="modal-header">
-					<div class="row" style="width: 100%;">
-						<p class="col-lg-3"><img src="/assets/images/logo.png" alt="" class="img-logo-form"></p>
-						<p class="col-lg-6 modal-title fw-bolder" id="modalBookAppointmentLabel">
-							<span class="block-span fs-1" style="color: #e3315e;">ĐẶT LỊCH NHANH</span>
-						</p>
-						<p class="col-lg-3 small" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-
-						</p>
-					</div>
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-				</div>
-				<div class="mt-3 modal-body">
-					<form id="appointmentForm" class="row needs-validatio" novalidate>
-						<div class="overflow-auto col-lg-6 form-group mb-3" style="height: 120px;">
-							<label for="formFullname" class="col-form-label fw-bolder">Họ tên</label>
-							<input id="formFullname" class="form-control" ng-model="inputFullname" placeholder="Nhập đầy đủ họ và tên"></input>
-							<div id="formFullname-feedback" ng-if="formFullnameTrue" style="width: 100%; margin-top: 0.25rem; font-size: 80%; color: #dc3545;">Vui lòng điền đầy đủ họ và tên</div>
-						</div>
-						<div class="overflow-auto col-lg-6 form-group mb-3" style="height: 120px;">
-							<label for="formPhoneNum" class="col-form-label fw-bolder">Số điện thoại</label>
-							<input id="formPhoneNum" class="form-control" ng-model="inputPhoneNum" placeholder="Nhập số điện thoại"></input>
-							<div id="formPhoneNum-feedback" ng-if="formPhoneNumTrue" style="width: 100%; margin-top: 0.25rem; font-size: 80%; color: #dc3545;">Vui lòng nhập số điện thoại</div>
-						</div>
-						<div class="overflow-auto col-lg-6 form-group mb-3" style="height: 120px;">
-							<label for="formSymptom" class="col-form-label fw-bolder">Triệu chứng</label>
-							<select id="formSymptom" class="form-control select2-multi" ng-model="selectedIssues" ng-options="issue.dentalIssuesId as issue.name for issue in listDentalIssuesDB track by issue.dentalIssuesId" ng-change="loadTreatmeantAndServiceByIssue()" multiple>
-							</select>
-							<div id="formSymptom-feedback" ng-if="symtomTrue" style="width: 100%; margin-top: 0.25rem; font-size: 80%; color: #dc3545;">Chọn triệu chứng là bắt buộc</div>
-						</div>
-						<div class="overflow-auto col-lg-6 form-group mb-3" style="height: 120px;">
-							<label class="col-form-label fw-bolder">Khuyến nghị</label>
-							<p class="fst-italic small m-0 ng-binding">{{ getTreatmentNamesString() }}</p>
-						</div>
-						<div class="overflow-auto col-lg-12 form-group mb-3" style="height: 200px;" >
-							<table class="table tableService">
-								<tbody>
-									<tr>   
-										<th></th> 
-										<th class="fw-bolder">Tên dịch vụ</th>
-										<th class="fw-bolder">Giá tiền</th>
-										<th class="fw-bolder">Thời gian ước tính</th>
-									</tr>
-									<tr ng-if="foundServices.length == 0">
-										<td>
-								
-										</td>
-										<td>Chưa có dịch vụ nào</td>
-										<td class="text-end"></td>
-										<td class="text-end"></td>
-									</tr>
-									<tr ng-repeat="service in foundServices" ng-click="toggleRowCheckbox(service)" ng-if="foundServices.length > 0" >
-										<td>
-											<input type="checkbox" ng-model="service.selected" ng-change="updateSelectAll()">
-										</td>
-										<td>{{service.service.serviceName}}</td>
-										<td class="text-end">{{service.service.price | currency:'':0}} VND</td>
-										<td class="text-end">{{service.service.timeEstimate}} phút</td>
-									</tr>
-								</tbody>
-							</table>
-						</div>
-							
-						<div class="col-lg-12 text-center p-3">
-							<p class="textSuggest m-0 fw-bolder">Tổng số tiền dịch vụ đã chọn: {{totalPrice | currency:'':0}} VND</p>
-							<p class="textSuggest m-0 fw-bolder">Thời lượng sử dụng dịch vụ: {{totalTime}} phút</p>
-							<p class="textSuggest m-0 fw-bolder ng-hide" ng-show="getRecommendation() == 0">Bạn cần liên hệ trực tiếp nhân viên để được hướng dẫn kỹ hơn</p>
-							<p class="textSuggest fw-bolder m-0 " ng-show="!getRecommendation() == 0">Lưu ý (*): Khung thời gian khám nên chọn liên tục để tránh làm gián đoạn việc điều trị!</p>
-						</div>
-						<div class="col-lg-6">
-						</div>
-						<div class="col-lg-12 mb-3">
-							<div class="card">
-								<div class="card-body">
-									<p class="fs-5 card-title text-primary-emphasis fw-bolder">Ghi chú</p>
-									<div class="form-floating">
-										<textarea ng-model="formAppointmentRequestNote" class="form-control" placeholder="Nhập triệu chứng" id="formAppointmentRequestNote" style="height: 150px" ng-disabled="!hasSelectedService"></textarea>
-										<label for="formAppointmentRequestNote">Nhập triệu chứng</label>
-									</div>
-								</div>
-							</div>
-						</div>
-						
-						<div class="col-lg-12 mb-2">
-							<button type="button" class="btn btn-success btn-create-appoinment" ng-click="showConfirmModal()" ng-disabled="!hasSelectedService">Lưu lại</button>
-							<button type="button" class="btn btn-warning" ng-click="resetForm()">Làm trống</button>
-						</div>                    
-					</form>
-				</div>
-			</div>
-		</div>
-	</div>
+	<div ng-include="'component/booking-modal.html'"></div>
 </section>
 <section class="section about">
 	<div class="container">
@@ -181,10 +86,8 @@
 			</div>
 			<div class="col-lg-4">
 				<div class="about-content pl-4 mt-4 mt-lg-0">
-					<h2 class="title-color">Chăm sóc cá nhân <br>& cuộc sống lành mạnh</h2>
-					<p class="mt-4 mb-5">Chúng tôi cung cấp dịch vụ y tế hàng đầu. Nulla perferendis veniam deleniti
-						ipsum
-						officia dolores repellat laudantium obcaecati neque.</p>
+					<h2 class="title-color">Đừng để răng đau <br>làm phiền cuộc sống</h2>
+					<p class="mt-4 mb-5">Đừng để cơn đau răng làm bạn mất ngủ, mất ăn. Hãy đến ngay nha khoa để được tư vấn và điều trị kịp thời. Một hàm răng khỏe mạnh sẽ mang đến cho bạn cuộc sống tươi đẹp hơn.</p>
 					<a href="#!service" class="btn btn-main-2 btn-round-full btn-icon">Dịch vụ<i
 							class="icofont-simple-right ml-3"></i></a>
 				</div>
@@ -207,7 +110,7 @@
 					<div class="counter-stat">
 						<i class="icofont-flag"></i>
 						<span class="h3">700</span>+
-						<p>Phẫu thuật đã hoàn thành</p>
+						<p>Đã hoàn thành</p>
 					</div>
 				</div>
 
@@ -244,22 +147,7 @@
 
 		<div class="row">		
 			<div class="col-12">
-				<div class="feature-block d-lg-flex">
-					<!-- <div class="feature-item mb-5 mb-lg-0">
-						<div class="icon d-flex align-items-center">
-							<i class="icofont-laboratory text-lg"></i>
-							<h4 class="mt-3 mb-3">Dịch vụ phòng thí nghiệm</h4>
-						</div>
-						<div class="content">
-							<p class="mb-4">
-								Dịch vụ phòng thí nghiệm của chúng tôi cung cấp các dịch vụ phân tích chất lượng
-								cao để hỗ trợ chẩn đoán và điều trị trong lĩnh vực nha khoa. Với trang thiết bị hiện đại và
-								đội ngũ kỹ thuật viên chuyên nghiệp, chúng tôi cam kết đem lại kết quả chính xác và nhanh
-								chóng cho bệnh nhân.
-							</p>	
-						</div>										
-					</div> -->
-
+				<div class="feature-block d-lg-flex">			
 					<div class="feature-item mb-5 mb-lg-0">
 						<div class="icon d-flex align-items-center">
 							<i class="icofont-heart-beat-alt text-lg"></i>
@@ -293,18 +181,7 @@
 								phải chờ đợi nhiều ngày hoặc tuần như trước đây.</p>
 						</div>
 					</div>
-
-					<!-- <div class="feature-item mb-5 mb-lg-0">
-						<div class="icon d-flex align-items-center">
-							<i class="icofont-brain-alt text-lg"></i>
-							<h4 class="mt-3 mb-3">Nha khoa laser</h4>
-						</div>
-						<div class="content">
-							<p class="mb-4">Sử dụng công nghệ laser để điều trị các vấn đề nha khoa mà không cần phải sử
-								dụng dụng cụ nha khoa truyền thống.</p>
-						</div>
-					</div> -->
-
+			
 					<div class="feature-item mb-5 mb-lg-0">
 						<div class="icon d-flex align-items-center">
 							<i class="icofont-dna-alt-1 text-lg"></i>
@@ -317,66 +194,6 @@
 					</div>
 				</div>
 			</div>			
-		</div>
-	</div>
-</section>
-<section class="section appoinment">
-	<div class="container">
-		<div class="row align-items-center">
-			<div class="col-lg-6 ">
-				<div class="appoinment-content">
-					<img src="/assets/images/about/img-3.jpg" alt="" class="img-fluid">
-					<div class="emergency">
-						<h2 class="text-lg"><i class="icofont-phone-circle text-lg"></i>+84 969 281 254</h2>
-					</div>
-				</div>
-			</div>
-			<div class="col-lg-6 col-md-10 ">
-				<div class="appoinment-wrap mt-5 mt-lg-0">
-					<h2 class="mb-2 title-color">Đặt lịch hẹn</h2>
-					<p class="mb-4">Chăm sóc răng miệng, hạnh phúc từ nụ cười - Đặt hẹn ngay để giữ gìn sức khỏe răng
-						miệng của bạn!.</p>
-					<form id="#" class="appoinment-form" method="post" action="#">
-						<div class="row">
-							<div class="col-lg-6" ng-include="'component/comboboxService.html'"></div>
-							<div class="col-lg-6" ng-include="'component/comboboxDoctor.html'"></div>
-
-							<div class="col-lg-6">
-								<div class="form-group">
-									<input name="date" id="date" type="date" class="form-control"
-										placeholder="dd/mm/yyyy" >
-								</div>
-							</div>
-
-							<div class="col-lg-6">
-								<div class="form-group">
-									<input name="time" id="time" type="text" class="form-control" placeholder="Time">
-								</div>
-							</div>
-							<div class="col-lg-6">
-								<div class="form-group">
-									<input name="name" id="name" type="text" class="form-control"
-										placeholder="Họ và tên">
-								</div>
-							</div>
-
-							<div class="col-lg-6">
-								<div class="form-group">
-									<input name="phone" id="phone" type="text" class="form-control"
-										placeholder="Số điện thoại">
-								</div>
-							</div>
-						</div>
-						<div class="form-group-2 mb-4">
-							<textarea name="message" id="message" class="form-control" rows="6"
-								placeholder="Lời nhắn của bạn"></textarea>
-						</div>
-
-						<a class="btn btn-main btn-round-full" href="#" onclick="event.preventDefault(); alert('Đặt lịch hẹn');">Đặt lịch hẹn <i
-								class="icofont-simple-right ml-2  "></i></a>
-					</form>
-				</div>
-			</div>
 		</div>
 	</div>
 </section>

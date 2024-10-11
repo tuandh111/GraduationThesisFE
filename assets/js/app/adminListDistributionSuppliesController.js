@@ -1,4 +1,4 @@
-app.controller('AdminListDistributionSupplies', function ($scope, $http, $rootScope, $location, $timeout,API,adminBreadcrumbService) {
+app.controller('AdminListDistributionSupplies', function ($scope, $http, $rootScope, $location, $timeout, API, adminBreadcrumbService) {
     let url = API.getBaseUrl();
     let headers = API.getHeaders();
     adminBreadcrumbService.generateBreadcrumb()
@@ -16,9 +16,9 @@ app.controller('AdminListDistributionSupplies', function ($scope, $http, $rootSc
         $scope.note = ''
         $scope.taxCode = ''
     }
-    //distribution suppliesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+
     $scope.listDistributionSupplies = () => {
-        $http.get(url + '/distribution-supplies-except-deleted').then(response => {
+        $http.get(url + '/distribution-supplies-except-deleted', { headers: headers }).then(response => {
             $scope.listDistributionSuppliesFormDB = response.data
             if ($.fn.DataTable.isDataTable('#dataTable-list-service')) {
                 $('#dataTable-list-service').DataTable().clear().destroy();
@@ -51,15 +51,46 @@ app.controller('AdminListDistributionSupplies', function ($scope, $http, $rootSc
                 $scope.$apply()
             });
         }).catch(error => {
-            Swal.fire({
-                title: "Thất bại!",
-                html: '<p class="text-danger">Xảy ra lỗi!</p>',
-                icon: "error"
-            })
             console.log("error", error);
         })
     }
-    //create distribution suppliessssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+
+    $scope.loadDistributionSupplies = () => {
+        $http.get(url + '/distribution-supplies-except-deleted', { headers: headers }).then(response => {
+            $scope.listDistributionSuppliesFormDB = response.data
+            $('#dataTable-list-service').DataTable().clear().destroy();
+            $(document).ready(function () {
+                $('#dataTable-list-service').DataTable({
+                    autoWidth: true,
+                    "lengthMenu": [
+                        [10, 20, 30, -1],
+                        [10, 20, 30, "All"]
+                    ],
+                    language: {
+                        sProcessing: "Đang xử lý...",
+                        sLengthMenu: "Hiển thị _MENU_ mục",
+                        sZeroRecords: "Không tìm thấy dòng nào phù hợp",
+                        sInfo: "Đang hiển thị _START_ đến _END_ trong tổng số _TOTAL_ mục",
+                        sInfoEmpty: "Đang hiển thị 0 đến 0 trong tổng số 0 mục",
+                        sInfoFiltered: "(được lọc từ _MAX_ mục)",
+                        sInfoPostFix: "",
+                        sSearch: "Tìm kiếm:",
+                        sUrl: "",
+                        oPaginate: {
+                            sFirst: "Đầu",
+                            sPrevious: "Trước",
+                            sNext: "Tiếp",
+                            sLast: "Cuối"
+                        }
+                    }
+                });
+                $scope.$apply()
+            });
+        }).catch(error => {
+            console.log("error", error);
+        })
+    }
+
     $scope.createDistributionSupplies = () => {
         $scope.errorDistribution = false
         $scope.errorName = false
@@ -130,24 +161,24 @@ app.controller('AdminListDistributionSupplies', function ($scope, $http, $rootSc
 
             taxCode: $scope.taxCode
         }
-        $http.post(url + '/distribution-supplies', DistributionSuppliesRequest).then(response => {
-            Swal.fire({
-                title: "Thành công!",
-                html: "Đã thêm nhà phân phối thành công!",
-                icon: "success"
-            })
+        $http.post(url + '/distribution-supplies', DistributionSuppliesRequest, { headers: headers }).then(response => {
+            new Noty({
+                text: 'Thêm nhà phân phối thành công !',
+                type: 'success',
+                timeout: 3000
+            }).show() ;
             $scope.clearFormDistributionSupplies();
         }).catch(error => {
-            Swal.fire({
-                title: "Thất bại!",
-                html: '<p class="text-danger">Xảy ra lỗi!</p>',
-                icon: "error"
-            })
+            new Noty({
+                text: 'Thêm nhà phân phối thất bại. Vui lòng thử lại!',
+                type: 'error',
+                timeout: 3000
+            }).show() ;
             console.log("error", error);
         })
     }
 
-    //delete distribution suppliesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+
     $scope.deleteDistribution = (d) => {
         Swal.fire({
             title: "Bạn có chắc?",
@@ -159,20 +190,20 @@ app.controller('AdminListDistributionSupplies', function ($scope, $http, $rootSc
             confirmButtonText: "Có"
         }).then((result) => {
             if (result.isConfirmed) {
-                $http.delete(url + '/soft-delete-distribution-supplies/' + d.distributionId).then(response => {
+                $http.delete(url + '/soft-delete-distribution-supplies/' + d.distributionId, { headers: headers }).then(response => {
 
-                    Swal.fire({
-                        title: "Thành công!",
-                        html: "Đã thêm nhà phân phối thành công!",
-                        icon: "success"
-                    })
-                    $('.distribution_' + d.distributionId).remove();
+                    new Noty({
+                        text: 'Xóa nhà phân phối thành công !',
+                        type: 'success',
+                        timeout: 3000
+                    }).show() ;
+                    $scope.loadDistributionSupplies();
                 }).catch(error => {
-                    Swal.fire({
-                        title: "Thất bại!",
-                        html: '<p class="text-danger">Xảy ra lỗi!</p>',
-                        icon: "error"
-                    })
+                    new Noty({
+                        text: 'Xóa nhà phân phối thất bại. Vui lòng thử lại!',
+                        type: 'error',
+                        timeout: 3000
+                    }).show() ;
                     console.log("error", error);
                 })
             }
@@ -180,23 +211,18 @@ app.controller('AdminListDistributionSupplies', function ($scope, $http, $rootSc
 
     }
 
-    //edit distribution suppliesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+
     $scope.editDistributionSupplies = [];
     $scope.editDistribution = (d) => {
 
-        $http.get(url + '/distribution-supplies-id/' + d.distributionId).then(response => {
-          
+        $http.get(url + '/distribution-supplies-id/' + d.distributionId, { headers: headers }).then(response => {
+
             $scope.editDistributionSupplies = response.data
         }).catch(error => {
-            Swal.fire({
-                title: "Thất bại!",
-                html: '<p class="text-danger">Xảy ra lỗi!</p>',
-                icon: "error"
-            });
             console.log("error", error);
         });
     }
-    //update distribution supplyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+
     $scope.updateDistribution = (d) => {
 
         var DistributionSuppliesRequest = {
@@ -214,34 +240,24 @@ app.controller('AdminListDistributionSupplies', function ($scope, $http, $rootSc
 
             taxCode: $scope.editDistributionSupplies.taxCode
         }
-        $http.put(url + '/distribution-supplies/' + $scope.editDistributionSupplies.distributionId, DistributionSuppliesRequest).then(response => {
-        
+        $http.put(url + '/distribution-supplies/' + $scope.editDistributionSupplies.distributionId, DistributionSuppliesRequest, { headers: headers }).then(response => {
+
             var updatedDistribution = response.data
-            Swal.fire({
-                title: "Thành công!",
-                html: "Đã cập nhật nhà phân phối thành công!",
-                icon: "success"
-            })
-            const $row = $(`.distribution_${updatedDistribution.distributionId}`);
-            $row.find('td').eq(0).text(updatedDistribution.distributionId);
-            $row.find('td').eq(1).text(updatedDistribution.distribution);
-            $row.find('td').eq(2).text(updatedDistribution.name);
-            $row.find('td').eq(3).text(updatedDistribution.address);
-            $row.find('td').eq(4).text(updatedDistribution.email);
-            $row.find('td').eq(5).text(updatedDistribution.contactPerson);
-            $row.find('td').eq(6).text(updatedDistribution.taxCode);
-            $row.find('td').eq(7).text(updatedDistribution.note);
-            //clear
+            new Noty({
+                text: 'Cập nhật nhà phân phối thành công !',
+                type: 'success',
+                timeout: 3000
+            }).show() ;
+            $scope.loadDistributionSupplies();
         }).catch(error => {
-            Swal.fire({
-                title: "Thất bại!",
-                html: '<p class="text-danger">Xảy ra lỗi!</p>',
-                icon: "error"
-            })
+            new Noty({
+                text: 'Cập nhật nhà phân phối thất bại. Vui lòng thử lại!',
+                type: 'error',
+                timeout: 3000
+            }).show() ;
             console.log("error", error);
         })
     }
-    //distribution suppliesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
 
 
     $scope.listDistributionSupplies();

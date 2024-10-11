@@ -1,4 +1,4 @@
-app.controller('AdminDoctorScheduleController', function ($scope, $http, $rootScope, $location, $timeout, $window, processSelect2Service, TimezoneService, $route,API,adminBreadcrumbService) {
+app.controller('AdminDoctorScheduleController', function ($scope, $http, $rootScope, $location, $timeout, $window, processSelect2Service, TimezoneService, $route, API, adminBreadcrumbService) {
     let url = API.getBaseUrl();
     let headers = API.getHeaders();
     adminBreadcrumbService.generateBreadcrumb()
@@ -46,7 +46,7 @@ app.controller('AdminDoctorScheduleController', function ($scope, $http, $rootSc
 
 
     $scope.getListShift = () => {
-        $http.get(url + "/shift").then(respone => {
+        $http.get(url + "/shift", { headers: headers }).then(respone => {
             $scope.listShiftDB = respone.data
         }).catch(err => {
             console.log("error", err);
@@ -54,7 +54,7 @@ app.controller('AdminDoctorScheduleController', function ($scope, $http, $rootSc
     }
 
     $scope.getListDoctor = () => {
-        $http.get(url + '/doctor').then(respone => {
+        $http.get(url + '/doctor', { headers: headers }).then(respone => {
             $scope.listDoctorDB = respone.data
         }).catch(err => {
             console.log("Error", err);
@@ -115,7 +115,18 @@ app.controller('AdminDoctorScheduleController', function ($scope, $http, $rootSc
 
             dsByShift = dsByShift.concat(filteredArr);
         }
-        return dsByShift;
+        
+        let uniqueDsByShift = []
+        let doctorSet = new Set();
+        dsByShift.forEach(ds => {       
+            if (!doctorSet.has(ds.doctor.doctorId)) {
+                uniqueDsByShift.push(ds);
+                doctorSet.add(ds.doctor.doctorId)
+            }
+        });
+        return uniqueDsByShift
+       // return dsByShift;
+
     }
 
     $scope.getSlectedDates = (startStr, endStr) => {
@@ -134,7 +145,7 @@ app.controller('AdminDoctorScheduleController', function ($scope, $http, $rootSc
 
     $scope.processDoctorScheduleAllDoctor = () => {
         return new Promise((resolve, reject) => {
-            $http.get(url + '/doctor-from-doctor-schedule-except-deleted').then((response) => {
+            $http.get(url + '/doctor-from-doctor-schedule-except-deleted', { headers: headers }).then((response) => {
                 resolve(response.data)
             }).catch((error) => reject(error))
         })
@@ -142,7 +153,7 @@ app.controller('AdminDoctorScheduleController', function ($scope, $http, $rootSc
 
     $scope.processDataForTable = () => {
         return new Promise((resolve, reject) => {
-            $http.get(url + '/doctor-schedule-except-deleted').then((response) => {
+            $http.get(url + '/doctor-schedule-except-deleted', { headers: headers }).then((response) => {
                 let filteredData = response.data
                 if ($scope.selectedDateFilterTable.length > 0) {
                     filteredData = filteredData.filter(item => {
@@ -201,7 +212,7 @@ app.controller('AdminDoctorScheduleController', function ($scope, $http, $rootSc
             date: date,
             doctorId: doctorId
         }
-        $http.get(url + '/get-doctor-shifts-excluding-deleted', { params: params }).then(response => {
+        $http.get(url + '/get-doctor-shifts-excluding-deleted', { params: params, headers: headers }).then(response => {
             $scope.listDoctorShiftsDB = response.data
             response.data.forEach(item => {
                 $scope.selectedShifts.push(item[0].shiftId)
@@ -224,16 +235,16 @@ app.controller('AdminDoctorScheduleController', function ($scope, $http, $rootSc
                 startStr: startStr,
                 endStr: endStr
             }
-            $http.get(url + '/map-ds-by-time-range', { params: params }).then(response => {
-                // click chọn thời gian trên lịch
-                $scope.listDoctorScheduleByTimeRangesDB = response.data
+            $http.get(url + '/map-ds-by-time-range', { params: params, headers: headers }).then(response => {
+                // click chọn thời gian trên lịch            
+                $scope.listDoctorScheduleByTimeRangesDB = response.data;
             })
         } else {
             params = {
                 startStr: paramsFiler.startStr,
                 endStr: paramsFiler.endStr
             }
-            $http.get(url + '/map-date-ds-by-time-range', { params: params }).then(response => {
+            $http.get(url + '/map-date-ds-by-time-range', { params: params, headers: headers }).then(response => {
                 //click chọn ngày để xem thống kê
                 $scope.listDSByTimeRangesDB = response.data
                 $scope.isShowDetail = Object.keys($scope.listDSByTimeRangesDB).length != 0
@@ -284,7 +295,7 @@ app.controller('AdminDoctorScheduleController', function ($scope, $http, $rootSc
             date: date,
             doctorId: doctorId
         }
-        $http.get(url + '/get-doctor-shifts-unavailability-excluding-deleted', { params: params }).then(response => {
+        $http.get(url + '/get-doctor-shifts-unavailability-excluding-deleted', { params: params, headers: headers }).then(response => {
             $scope.listDoctorShiftsUnavailabilityDB = response.data
             response.data.forEach(item => {
                 $scope.selectedShiftsUnavailability.push(item[0].shiftId)
@@ -295,7 +306,7 @@ app.controller('AdminDoctorScheduleController', function ($scope, $http, $rootSc
 
     $scope.processDataDateRegistered = (doctorId) => {
         return new Promise((resolve, reject) => {
-            $http.get(url + '/doctor-schedule').then(response => {
+            $http.get(url + '/doctor-schedule', { headers: headers }).then(response => {
                 let dates = response.data
                     .filter(item => item.doctor && item.doctor.doctorId === doctorId && item.deleted == false)
                     .map(item => item.date);
@@ -311,7 +322,7 @@ app.controller('AdminDoctorScheduleController', function ($scope, $http, $rootSc
 
     $scope.processDoctorUnavailabilityByDoctor = (doctorId) => {
         return new Promise((resolve, reject) => {
-            $http.get(url + '/doctorUnavailability-by-doctor', { params: { doctorId: doctorId } }).then((response) => {
+            $http.get(url + '/doctorUnavailability-by-doctor', { params: { doctorId: doctorId }, headers: headers }).then((response) => {
                 resolve(response.data)
             }).catch((error) => reject(error))
         })
@@ -427,20 +438,23 @@ app.controller('AdminDoctorScheduleController', function ($scope, $http, $rootSc
 
         let addPromises = dataArrayAdd.map(dataAdd => {
             let dataAddJSON = angular.toJson(dataAdd);
-            return $http.post(url + '/doctor-schedule', dataAddJSON);
+            return $http.post(url + '/doctor-schedule', dataAddJSON, { headers: headers });
         })
 
         Promise.all(addPromises).then(() => {
-            Swal.fire({
-                title: "Thành công!",
-                html: "Đăng ký lịch làm thành công",
-                icon: "success"
-            }).then(() => {
-                const btnCloseForm = document.getElementById('btnCloseFormRegister')
-                btnCloseForm.click()
-            });
+            new Noty({
+                text: 'Đăng ký lịch làm thành công!',
+                type: 'success',
+                timeout: 3000
+            }).show()
+            const btnCloseForm = document.getElementById('btnCloseFormRegister')
+            btnCloseForm.click()
         }).catch(error => {
-            console.log("Có lỗi khi đăng ký lịch làm việc", error);
+            new Noty({
+                text: 'Đăng ký lịch thất bại. Vui lòng thử lại!',
+                type: 'error',
+                timeout: 3000
+            }).show();
         });
     }
 
@@ -505,81 +519,90 @@ app.controller('AdminDoctorScheduleController', function ($scope, $http, $rootSc
         const handleDeletesAndUpdates = (dataArrayDelete, dataArrayUpdate) => {
             let deletePromises = dataArrayDelete.map(dataDel => {
                 let dataDelJSON = angular.toJson(dataDel);
-                return $http.delete(url + '/soft-delete-doctor-schedule/' + dataDel.doctorScheduleId);
+                return $http.delete(url + '/soft-delete-doctor-schedule/' + dataDel.doctorScheduleId, { headers: headers });
             });
 
             let updatePromises = dataArrayUpdate.map(dataUpdate => {
                 let dataUpdateJSON = angular.toJson(dataUpdate);
-                return $http.put(url + '/doctor-schedule/' + dataUpdate.doctorScheduleId, dataUpdateJSON);
+                return $http.put(url + '/doctor-schedule/' + dataUpdate.doctorScheduleId, dataUpdateJSON, { headers: headers });
             });
 
             Promise.all(deletePromises).then(() => {
                 return Promise.all(updatePromises);
             }).then(() => {
-                Swal.fire({
-                    title: "Thành công!",
-                    html: "Đổi lịch làm thành công",
-                    icon: "success"
-                }).then(() => {
-                    const btnCloseForm = document.getElementById('btnCloseForm')
-                    btnCloseForm.click()
-                });
+                new Noty({
+                    text: 'Đổi lịch làm thành công!',
+                    type: 'success',
+                    timeout: 3000
+                }).show()
+                const btnCloseForm = document.getElementById('btnCloseForm')
+                btnCloseForm.click()
             }).catch(error => {
-                console.log("Có lỗi khi thay đổi lịch làm việc", error);
+                new Noty({
+                    text: 'Đổi lịch làm thất bại. Vui lòng thử lại!',
+                    type: 'error',
+                    timeout: 3000
+                }).show();
             });
         }
 
         const handleAddsAndUpdates = (dataArrayAdd, dataArrayUpdate) => {
             let addPromises = dataArrayAdd.map(dataAdd => {
                 let dataAddJSON = angular.toJson(dataAdd);
-                return $http.post(url + '/doctor-schedule', dataAddJSON);
+                return $http.post(url + '/doctor-schedule', dataAddJSON, { headers: headers });
             });
 
             let updatePromises = dataArrayUpdate.map(dataUpdate => {
                 let dataUpdateJSON = angular.toJson(dataUpdate);
-                return $http.put(url + '/doctor-schedule/' + dataUpdate.doctorScheduleId, dataUpdateJSON);
+                return $http.put(url + '/doctor-schedule/' + dataUpdate.doctorScheduleId, dataUpdateJSON, { headers: headers });
             });
 
             Promise.all(addPromises).then(() => {
                 return Promise.all(updatePromises);
             }).then(() => {
-                Swal.fire({
-                    title: "Thành công!",
-                    html: "Đổi lịch làm thành công",
-                    icon: "success"
-                }).then(() => {
-                    const btnCloseForm = document.getElementById('btnCloseForm')
-                    btnCloseForm.click()
-                });
+                new Noty({
+                    text: 'Đổi lịch làm thành công !',
+                    type: 'success',
+                    timeout: 3000
+                }).show()
+                const btnCloseForm = document.getElementById('btnCloseForm')
+                btnCloseForm.click()
             }).catch(error => {
-                console.log("Có lỗi khi thay đổi lịch làm việc", error);
+                new Noty({
+                    text: 'Đổi lịch làm thất bại. Vui lòng thử lại!',
+                    type: 'error',
+                    timeout: 3000
+                }).show();
             });
         }
 
         const handleAddsAndDelete = (dataArrayAdd, dataArrayDelete) => {
             let addPromises = dataArrayAdd.map(dataAdd => {
                 let dataAddJSON = angular.toJson(dataAdd);
-                return $http.post(url + '/doctor-schedule', dataAddJSON);
+                return $http.post(url + '/doctor-schedule', dataAddJSON, { headers: headers });
             });
 
             let deletePromises = dataArrayDelete.map(dataDel => {
                 let dataDelJSON = angular.toJson(dataDel);
-                return $http.delete(url + '/soft-delete-doctor-schedule/' + dataDel.doctorScheduleId);
+                return $http.delete(url + '/soft-delete-doctor-schedule/' + dataDel.doctorScheduleId, { headers: headers });
             });
 
             Promise.all(addPromises).then(() => {
                 return Promise.all(deletePromises);
             }).then(() => {
-                Swal.fire({
-                    title: "Thành công!",
-                    html: "Đổi lịch làm thành công",
-                    icon: "success"
-                }).then(() => {
-                    const btnCloseForm = document.getElementById('btnCloseForm')
-                    btnCloseForm.click()
-                });
+                new Noty({
+                    text: 'Đổi lịch làm thành công!',
+                    type: 'success',
+                    timeout: 3000
+                }).show()
+                const btnCloseForm = document.getElementById('btnCloseForm')
+                btnCloseForm.click()
             }).catch(error => {
-                console.log("Có lỗi khi thay đổi lịch làm việc", error);
+                new Noty({
+                    text: 'Đổi lịch làm thất bại. Vui lòng thử lại!',
+                    type: 'error',
+                    timeout: 3000
+                }).show();
             });
         }
 
@@ -599,7 +622,7 @@ app.controller('AdminDoctorScheduleController', function ($scope, $http, $rootSc
                     handleAddsAndUpdates(dataArrayAdd, dataArrayUpdate)
                 }
             }
-        } else {       
+        } else {
             if (!checkCondition || originalShiftsLenght == selectedShiftsLenght) {
                 let dataArrayDelete = $scope.generateScheduleArray(doctors, oDates, deleteShifts)
                 let dataArrayAdd = $scope.generateScheduleArray(doctors, dates, addShifts)
@@ -644,7 +667,7 @@ app.controller('AdminDoctorScheduleController', function ($scope, $http, $rootSc
         let validChanges = await $scope.isDoctorUnavailable($scope.selectedDoctors, convertOriginalDate, $scope.selectedShifts)
 
         let isChangeDate = false
-     
+
         if (validChanges.isBooked) {
             if ($scope.originalDate !== $scope.selectedDates) {
                 Swal.fire({
@@ -797,14 +820,14 @@ app.controller('AdminDoctorScheduleController', function ($scope, $http, $rootSc
                 select: function (arg) {
                     let selectedDate = arg.start.toISOString().split('T')[0];
                     let currentDate = new Date().toISOString().split('T')[0];
-                    if (selectedDate <= currentDate) {
+                    if (selectedDate < currentDate) {
                         calendar.unselect();
                         Swal.fire({
-                            position: "top-end",
                             icon: "warning",
-                            title: "Không thể đăng ký ngày ngày",
+                            // title: "Không thể xếp lịch ngày quá khứ!",
+                            html: "<p class='text-warning'>Không thể xếp lịch ngày quá khứ!</p>",
                             showConfirmButton: false,
-                            timer: 1500
+                            timer: 3000
                         });
                         return;
                     }
@@ -891,7 +914,7 @@ app.controller('AdminDoctorScheduleController', function ($scope, $http, $rootSc
     }
 
     $scope.urlImgDoctor = (filename) => {
-        return url+"/imgDoctor/" + filename;
+        return url + "/imgDoctor/" + filename;
     }
 
     $scope.getListShift()

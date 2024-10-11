@@ -1,12 +1,15 @@
-app.controller('AdminDentalStaffController', function ($scope, $http, $rootScope, $location, $timeout,API,adminBreadcrumbService) {
+app.controller('AdminDentalStaffController', function ($scope, $http, $rootScope, $location, $timeout, API, adminBreadcrumbService) {
     let url = API.getBaseUrl();
     let headers = API.getHeaders();
     adminBreadcrumbService.generateBreadcrumb()
     //code here
+    $scope.isEditDentalStaff = false
+    $scope.isLoadingCreate = false
+    $scope.isLoadingUpdate = false
+
     $scope.getListDepartments = () => {
-        $http.get(url + '/department').then(response => {
+        $http.get(url + '/department', { headers: headers }).then(response => {
             $scope.listDepartmentDB = response.data
-            console.log(" $scope.listDepartmentDB", $scope.listDepartmentDB);
         }).catch(error => {
             console.log("Error", error);
         })
@@ -19,25 +22,41 @@ app.controller('AdminDentalStaffController', function ($scope, $http, $rootScope
     ]; //backend xài enum
 
     $scope.initializeUIComponents = () => {
-        $('.select2').select2(
-            {
-                theme: 'bootstrap4',
-            });
-        $('.select2-multi').select2(
-            {
-                multiple: true,
-                theme: 'bootstrap4',
-            });
-        $('.drgpicker').daterangepicker(
-            {
-                singleDatePicker: true,
-                timePicker: false,
-                showDropdowns: true,
-                locale:
+        $timeout(() => {
+            $('.select2-department').select2(
                 {
-                    format: 'DD/MM/YYYY'
-                }
-            });
+                    theme: 'bootstrap4',
+                    placeholder: '---Chọn phòng ban---',
+                    allowClear: true
+                }).val(null).trigger('change')
+
+            $('.select2-gender').select2(
+                {
+                    theme: 'bootstrap4',
+                    placeholder: '---Chọn giới tính---',
+                    allowClear: true
+                }).val(null).trigger('change')
+
+            $('.select2-multi').select2(
+                {
+                    multiple: true,
+                    theme: 'bootstrap4',
+                }).val(null).trigger('change')
+
+
+            $('.drgpicker').daterangepicker(
+                {
+                    singleDatePicker: true,
+                    timePicker: false,
+                    showDropdowns: true,
+                    locale:
+                    {
+                        format: 'DD/MM/YYYY',
+                        applyLabel: 'Áp dụng',
+                        cancelLabel: 'Hủy',
+                    }
+                });
+        }, 500)
         $('.time-input').timepicker(
             {
                 'scrollDefault': 'now',
@@ -90,6 +109,11 @@ app.controller('AdminDentalStaffController', function ($scope, $http, $rootScope
                 reverse: true
             });
         $('.input-phoneus').mask('(000) 000-0000');
+        $('.input-phonevn').mask('000 000 0000', {
+            translation: {
+                '0': { pattern: /\d/ } // Chấp nhận chỉ số
+            }
+        });
         $('.input-mixed').mask('AAA 000-S0S');
         $('.input-ip').mask('0ZZ.0ZZ.0ZZ.0ZZ',
             {
@@ -203,9 +227,8 @@ app.controller('AdminDentalStaffController', function ($scope, $http, $rootScope
     }
 
     $scope.getListdentalStaff = () => {
-        $http.get(url + '/dental-staff').then(respone => {
+        $http.get(url + '/dental-staff', { headers: headers }).then(respone => {
             $scope.listdentalStaffDB = respone.data
-            console.log("listdentalStaffDB", respone.data);
             if ($.fn.DataTable.isDataTable('#dataTable-list-dentalStaff')) {
                 $('#dataTable-list-dentalStaff').DataTable().clear().destroy();
             }
@@ -232,15 +255,17 @@ app.controller('AdminDentalStaffController', function ($scope, $http, $rootScope
                             sNext: "Tiếp",
                             sLast: "Cuối"
                         }
-                    }
+                    },
+                    "ordering": false
                 });
             });
         }).catch(err => {
             console.log("Error", err);
         })
     }
+
     $scope.crudDentalStaff = () => {
-        var currentDate = new Date();    
+        var currentDate = new Date();
 
         $scope.checkAge = function (dateOfBirth) {
             if (!dateOfBirth) return false;
@@ -277,36 +302,42 @@ app.controller('AdminDentalStaffController', function ($scope, $http, $rootScope
             }
             if ($scope.formDentalStaff.departmentId == "" || $scope.formDentalStaff.departmentId == null) {
                 Swal.fire({
+                    position: "top-end",
                     title: "Cảnh báo!",
                     html: "Vui lòng chọn phòng ban!",
                     icon: "error"
                 })
             } else if ($scope.formDentalStaff.gender == "" || $scope.formDentalStaff.gender == null) {
                 Swal.fire({
+                    position: "top-end",
                     title: "Cảnh báo!",
                     html: "Vui lòng chọn giới tính!",
                     icon: "error"
                 })
             } else if ($scope.formDentalStaff.fullName == "" || $scope.formDentalStaff.fullName == null) {
                 Swal.fire({
+                    position: "top-end",
                     title: "Cảnh báo!",
                     html: "Vui lòng nhập họ tên!",
                     icon: "error"
                 })
             } else if (!$scope.validateBirthday()) {
                 Swal.fire({
+                    position: "top-end",
                     title: "Cảnh báo!",
                     html: "Ngày sinh phải đủ 18 tuổi!",
                     icon: "error"
                 })
             } else if ($scope.formDentalStaff.phoneNumber == "") {
                 Swal.fire({
+                    position: "top-end",
                     title: "Cảnh báo!",
                     html: "Vui lòng nhập số điện thoại!",
                     icon: "error"
                 })
             } else if ($scope.formDentalStaff.address == "") {
                 Swal.fire({
+                    position: "top-end",
                     title: "Cảnh báo!",
                     html: "Vui lòng nhập địa chỉ!",
                     icon: "error"
@@ -319,8 +350,8 @@ app.controller('AdminDentalStaffController', function ($scope, $http, $rootScope
         }
 
         $scope.editDentalStaff = (dentalStaff, $event) => {
-            console.log("dentalStaff", dentalStaff);
             $event.preventDefault()
+            $scope.isEditDentalStaff = true
             if (dentalStaff != null) {
                 $scope.formDentalStaff = {
                     imageURL: dentalStaff.imageURL,
@@ -334,6 +365,7 @@ app.controller('AdminDentalStaffController', function ($scope, $http, $rootScope
 
                 }
                 $scope.formDentalStaff.departmentId = dentalStaff.department ? dentalStaff.department.departmentId : -1
+                $scope.imageUrlStaff = dentalStaff.imageURL
             }
             const firstTabButtonCreate = document.getElementById('form-tab-dentalStaff');
             firstTabButtonCreate.click();
@@ -342,6 +374,7 @@ app.controller('AdminDentalStaffController', function ($scope, $http, $rootScope
         $scope.createdentalStaff = () => {
             if ($scope.formDentalStaff.dentalStaffId != -1) {
                 Swal.fire({
+                    position: "top-end",
                     title: "Cảnh báo!",
                     html: "Thông tin đã có trên hệ thống!",
                     icon: "error"
@@ -350,32 +383,41 @@ app.controller('AdminDentalStaffController', function ($scope, $http, $rootScope
             }
             var valid = $scope.validationForm()
             if (valid) {
+                $scope.isLoadingCreate = true
+                $scope.formDentalStaff.imageURL = $scope.imageUrlStaff
                 var requsetdentalStaffJSON = angular.toJson($scope.formDentalStaff)
-                console.log("requsetdentalStaffJSON", requsetdentalStaffJSON);
-                $http.post(url + '/dental-staff', requsetdentalStaffJSON).then(respone => {
-                    Swal.fire({
-                        title: "Thành công!",
-                        html: "Đã thêm nhân viên thành công!",
-                        icon: "success"
-                    })
-                    $scope.resetForm()
-                    $scope.getListdentalStaff()
-                    const secondTabButtonCreate = document.getElementById('list-tab-dentalStaff');
-                    secondTabButtonCreate.click();
-                }).catch(err => {
-                    console.log("Error creating", err);
-                    Swal.fire({
-                        title: "Thất bại!",
-                        html: '<p class="text-danger">Xảy ra lỗi!</p>',
-                        icon: "error"
-                    })
-                });
+                $http.post(url + '/dental-staff', requsetdentalStaffJSON, { headers: headers }).then(respone => {
+                    $timeout(() => {
+                        new Noty({
+                            text: 'Đã thêm nhân viên thành công !',
+                            type: 'success',
+                            timeout: 3000
+                        }).show();
+                        $scope.resetForm()
+                        $scope.getListdentalStaff()
+                        const secondTabButtonCreate = document.getElementById('list-tab-dentalStaff');
+                        secondTabButtonCreate.click();
+                    }, 3000)
+                }).finally(() => {
+                    $timeout(() => {
+                        $scope.isLoadingCreate = false
+                    }, 3000)
+                })
+                    .catch(err => {
+                        console.log("Error creating", err);
+                        new Noty({
+                            text: 'Thêm nhân viên thất bại. Vui lòng thử lại !',
+                            type: 'error',
+                            timeout: 3000
+                        }).show();
+                    });
             }
         }
 
         $scope.updatedentalStaff = () => {
             if ($scope.formDentalStaff.dentalStaffId == -1) {
                 Swal.fire({
+                    position: "top-end",
                     title: "Cảnh báo!",
                     html: "Thông tin chưa có trên hệ thống!",
                     icon: "error"
@@ -384,25 +426,34 @@ app.controller('AdminDentalStaffController', function ($scope, $http, $rootScope
             }
             var valid = $scope.validationForm()
             if (valid) {
+                $scope.isLoadingUpdate = true
+                if ($scope.imageUrlStaff != null) {
+                    $scope.formDentalStaff.imageURL = $scope.imageUrlStaff
+                }
                 var requsetdentalStaffJSON = angular.toJson($scope.formDentalStaff)
                 var dentalStaffId = $scope.formDentalStaff.dentalStaffId
-                console.log("requsetdentalStaffJSON", requsetdentalStaffJSON);
-                $http.put(url + '/dental-staff/' + dentalStaffId, requsetdentalStaffJSON).then(respone => {
-                    Swal.fire({
-                        title: "Thành công!",
-                        html: "Cập nhật thành công!",
-                        icon: "success"
-                    })
-                    $scope.resetForm()
-                    $scope.getListdentalStaff()
-                    const secondTabButtonCreate = document.getElementById('list-tab-dentalStaff');
-                    secondTabButtonCreate.click();
+                $http.put(url + '/dental-staff/' + dentalStaffId, requsetdentalStaffJSON, { headers: headers }).then(respone => {
+                    $timeout(() => {
+                        new Noty({
+                            text: 'Cập nhật thành công!',
+                            type: 'success',
+                            timeout: 3000
+                        }).show();
+                        $scope.resetForm()
+                        $scope.getListdentalStaff()
+                        const secondTabButtonCreate = document.getElementById('list-tab-dentalStaff');
+                        secondTabButtonCreate.click();
+                    }, 3000)
+                }).finally(() => {
+                    $timeout(() => {
+                        $scope.isLoadingUpdate = false
+                    }, 3000)
                 }).catch(err => {
-                    Swal.fire({
-                        title: "Thất bại!",
-                        html: '<p class="text-danger">Cập nhật thất bại!</p>',
-                        icon: "error"
-                    })
+                    new Noty({
+                        text: 'Cập nhật thất bại. Vui lòng thử lại !',
+                        type: 'error',
+                        timeout: 3000
+                    }).show();
                 })
             }
 
@@ -410,7 +461,6 @@ app.controller('AdminDentalStaffController', function ($scope, $http, $rootScope
 
         $scope.deletedentalStaff = (dentalStaff, $event) => {
             $event.preventDefault()
-            console.log("delete dentalStaff", dentalStaff)
             var dentalStaffId = dentalStaff.dentalStaffId
             Swal.fire({
                 text: "Bạn có muốn xóa nhân viên " + dentalStaff.fullname + " ?",
@@ -422,19 +472,19 @@ app.controller('AdminDentalStaffController', function ($scope, $http, $rootScope
                 confirmButtonText: 'Có'
             }).then(rs => {
                 if (rs.isConfirmed) {
-                    $http.delete(url + '/sort-delete-dental-staff/' + dentalStaffId).then(respone => {
-                        Swal.fire({
-                            title: "Thành công!",
-                            html: "Đã xóa thành công!",
-                            icon: "success"
-                        })
+                    $http.delete(url + '/sort-delete-dental-staff/' + dentalStaffId, { headers: headers }).then(respone => {
+                        new Noty({
+                            text: 'Đã xóa thành công!',
+                            type: 'success',
+                            timeout: 3000
+                        }).show();
                         $scope.getListdentalStaff()
                     }).catch(err => {
-                        Swal.fire({
-                            title: "Thất bại!",
-                            html: '<p class="text-danger">Xảy ra lỗi!</p>',
-                            icon: "error"
-                        })
+                        new Noty({
+                            text: 'Xóa thất bại. Vui lòng thử lại!',
+                            type: 'error',
+                            timeout: 3000
+                        }).show();
                     })
                 }
             })
@@ -451,14 +501,61 @@ app.controller('AdminDentalStaffController', function ($scope, $http, $rootScope
                 birthday: new Date("01/01/1999"),
                 deleted: false
             }
+            $scope.deleteImgStaff()
         }
     }
 
-    $scope.getListDepartments()  
+
+
+    $scope.uploadImg = (files) => {
+        if (files == null || files.length === 0) {
+            alert("No files selected for upload.");
+            return;
+        }
+        swal.fire({
+            title: 'Đang tải ảnh lên...',
+            text: 'Vui lòng chờ trong giây lát.',
+            allowOutsideClick: false,
+            didOpen: () => {
+                swal.showLoading();
+            }
+        });
+        var file = files[0];
+        var form = new FormData();
+        form.append("file", file);
+        $http.post(url + '/upload-cloudinary', form, {
+            transformRequest: angular.identity,
+            headers: { 'Content-Type': undefined }
+        }).then(function (response) {
+            $scope.imageUrlStaff = response.data.message;
+            swal.close();
+            new Noty({
+                text: 'Tải ảnh thành công!',
+                type: 'success',
+                timeout: 3000
+            }).show();
+        }).catch(function (error) {
+            swal.close();
+            new Noty({
+                text: 'Tải ảnh thất bại. Vui lòng thử lại!',
+                type: 'error',
+                timeout: 3000
+            }).show();
+            console.log("Upload failed:", error);
+        });
+
+    }
+
+    $scope.deleteImgStaff = () => {
+        document.getElementById('filesStaffCloudinary').value = "";
+        $scope.imageUrlStaff = null;
+    }
+
+
+
+    $scope.getListDepartments()
     $scope.getListdentalStaff()
     $scope.initializeUIComponents()
     $scope.crudDentalStaff()
-    $scope.resetForm() 
-
-    
+    $scope.resetForm()
 })

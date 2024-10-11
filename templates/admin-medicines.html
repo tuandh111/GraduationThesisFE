@@ -1,17 +1,21 @@
 <div class="vertical dark">
     <div class="wrapper">
-        <nav class="topnav navbar navbar-light" ng-include="'component/admin-nav.html'"></nav>
+        <nav class="topnav navbar navbar-light justify-content-end" ng-include="'component/admin-nav.html'">
+        </nav>
         <aside class="sidebar-left border-right shadow" id="leftSidebar" ng-include="'component/admin-aside.html'"
             data-simplebar></aside>
         <main role="main" class="main-content" ng-controller="AdminMedicineController">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                </ol>
-            </nav>
             <div class="container-fluid">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                    </ol>
+                </nav>
+                <div class="d-flex flex-items-center flex-justify-between custom-heading">
+                    <h3 class="text-secondary">Quản lý thuốc</h3>
+                </div>
+                <div class="custom-hr mb-3"></div>
                 <div class="row justify-content-center">
                     <div class="col-12">
-                        <h2 class="mb-2 p-0 page-title">Quản lý thuốc</h2>
                         <p class="card-text"></p>
                         <div class="row my-4">
                             <div class="col-md-12">
@@ -134,27 +138,32 @@
                                             </div>
                                             <div class="tab-pane fade" id="list-tab-pane-medicine" role="tabpanel"
                                                 aria-labelledby="list-tab-medicine" tabindex="0">
-                                                <div class="card">
+                                                <div class="card p-3">
                                                     <table class="table datatables" id="dataTable-list-medicine">
                                                         <thead>
                                                             <tr>
+                                                                <th>Mã thuốc</th>
                                                                 <th>Tên thuốc</th>
                                                                 <th>Loại thuốc</th>
                                                                 <th>Nhà phân phối</th>
                                                                 <th>Liều lượng</th>
                                                                 <th>Đơn vị</th>
                                                                 <th>Trước khi ăn</th>
+                                                                <th>QR</th>
                                                                 <th>Thao tác</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
                                                             <tr ng-repeat="m in listMedicineDB">
+                                                                <td>T{{m.medicinesId}}</td>
                                                                 <td>{{m.medicineName}}</td>
                                                                 <td>{{m.medicineCategory.name}}</td>
                                                                 <td>{{m.distributionMedicines.name}}</td>
                                                                 <td>{{m.medicinesDosageAmount.amount}}</td>
                                                                 <td>{{m.medicinesDosageUnit.unit}}</td>
                                                                 <td>{{m.beforeEating ? 'Có' : 'Không'}}</td>
+                                                                <td><img ng-src="{{m.qrCode}}" alt=""
+                                                                        style="height: 100px;"></td>
                                                                 <td>
                                                                     <button
                                                                         class="btn btn-sm dropdown-toggle more-horizontal"

@@ -21,7 +21,8 @@
     border-radius: 3px;
 }
 
-.content-block, .image-block {
+.content-block,
+.image-block {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 6px 20px rgba(0, 0, 0, 0.1);
     border-radius: 10px;
     padding: 20px;
@@ -31,28 +32,50 @@
 }
 
 /* 3D hover effect */
-.content-block:hover, .image-block:hover {
+.content-block:hover,
+.image-block:hover {
     transform: perspective(1000px) translateZ(20px);
 }
 
-.valid-doctor{
+.valid-doctor {
     background-color: beige;
 }
 
-.custom-font-size{
+.custom-font-size {
     font-size: 15px;
 }
 
-  .swiper {
+.swiper {
     width: 100%;
     height: 100%;
-  }
+}
 
-  .swiper-slide {
+.swiper-slide {
     text-align: center;
     font-size: 18px;
     background: #fff;
     display: flex;
     justify-content: center;
     align-items: center;
-  }
+}
+.fc-day-past{
+    /* background-color: #f5ecec; */
+    background-color: lightgray;
+}
+.custom-fc-event-main-past {
+    background-color: #908b8b;
+    
+}
+
+.custom-fc-event-past {
+    border-color: #d3d3d3 !important;  
+}
+
+.custom-fc-event-past .fc-event-title{
+    color: #fff
+}
+
+.fc-day-today{
+    background-color: #e1eccd !important;
+    /* background-color: #f4e5c4 !important; */
+}

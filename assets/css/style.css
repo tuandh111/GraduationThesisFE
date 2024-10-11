@@ -348,7 +348,7 @@ a:focus {
 }
 
 .section-title {
-  margin-bottom: 70px;
+  margin-bottom: 50px;
 }
 
 .section-title h2 {
@@ -1502,6 +1502,8 @@ a:focus {
 }
 
 .booking-specialty-item {
+  user-select: none; /* Ngăn chọn văn bản */
+  font-weight: bold;
   display: inline-block;
   padding: 10px 20px;
   cursor: pointer;
@@ -1511,12 +1513,13 @@ a:focus {
   border-radius: 10px;
   text-align: center;
   transition: background 0.3s, transform 0.3s;
-  box-shadow: #ffffff 0px 0px 10px 0px;
+  box-shadow: #ffffff 0px 0px 0px 0px;
 }
 
 .booking-specialty-item:hover {
   background: #82acff;
   transform: scale(1.1);
+  color: white;
 }
 
 .selected-specialty {
@@ -1538,9 +1541,9 @@ a:focus {
   border-radius: 40px;
   text-align: center;
   cursor: pointer;
-  box-shadow: #6e8fd1 0px 0px 10px 0px;
+  box-shadow: #5371ad 0px 0px 10px 0px;
   transition: transform 0.3s;
-  background-image: linear-gradient(to top, #091a38, #4c638f);
+  background-image: linear-gradient(to top, #0f2e63, #748dbb);
   color: white;
 }
 
@@ -1567,7 +1570,13 @@ a:focus {
   border-radius: 20%;
   object-fit: cover;
 }
-
+.doctor-specialtyName{
+  color: white; 
+  white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis;
+  max-width: 60%;
+}
 .color-legend-card {
   position: fixed;
   right: 20px;
@@ -1672,7 +1681,7 @@ a:focus {
   align-items: center;
   height: 300px;
   border-radius: 300px;
-  box-shadow: #2e436b 10px 5px 40px 10px;
+  box-shadow: rgb(96, 117, 160) 0 0 60px 0px;
 }
 
 .doctor-card-details{
@@ -1709,16 +1718,16 @@ a:focus {
   border-bottom-right-radius: 1300px 1200px;
   display: flex;
   align-items: center;
-  padding: 0 10px; /* Thêm một chút padding để tạo không gian */
-  padding: 0 50px 0 50px;
   text-shadow: 0px 0px 10px white;
+  white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis;
 }
 
 .doctor-card-details-name p {
   margin: 0; /* Loại bỏ margin mặc định của thẻ <p> */
   flex-grow: 1; /* Để p chiếm không gian còn lại */
   text-align: center; /* Căn giữa chữ */
-  margin: 0 10px 0 140px;
   font-size: 40px;
   line-height: 45px;
   font-weight: bolder;
@@ -1762,14 +1771,27 @@ a:focus {
 }
 
 .fc-daygrid-day.fc-unavailable{
-  background-image: linear-gradient(to bottom, #ffffff, #f4f3ff);
+  background: white;
 }
 .fc-able.fc-daygrid-day{
-  color: rgb(209, 0, 0);
+  color: rgb(250, 90, 90);
+  font-weight: bolder;
   background-image: linear-gradient(to bottom, #dfffef, #8bf7c1);
 }
 .fc-able.fc-daygrid-day:hover{
   background-image: linear-gradient(to bottom, #acffd6, #4dbe86);
+}
+.fc-day.fc-daygrid-day.fc-day-today:not(.fc-able){
+  background-color: white;
+}
+.fc-toolbar-title{
+  color: #384d75;
+}
+.fc-button.fc-button-primary{
+  background-color: #384d75;
+}
+.fc-dayGridMonth-button{
+  display: none
 }
 .modal-body-accept {
   padding: 10px 200px 10px 40px;
@@ -1811,4 +1833,89 @@ a:focus {
   display: flex;
   align-items: center;
   width: 100%;
+}
+
+.hourInListShiftHoursButton-hour{
+  border: #708ca5 inset 2px;
+  border-radius: 150px;
+  padding: 20px;
+  color: #001a4e;
+}
+
+.hourInListShiftHoursButton-hour:hover:not(.hourValid){
+  scale:1.1;
+  border: #708ca5 inset 2px;
+  color: #000000;
+}
+
+.hourSelected:not(.hourValid){
+  border: #708ca5 inset 2px;
+  padding: 20px;
+  color: white;
+  background-color: #708ca5;
+}
+
+.hourValid {
+  border: #f3f3f3 inset 2px;
+  color: rgb(173, 173, 173);
+}
+
+.textLargerCss {
+  font-size: 20px;
+}
+
+.serviceItem:hover {
+  scale: 1.03;
+}
+
+/* CSS tùy chỉnh cho toast với thiết kế hiện đại */
+.notify-toast-container {
+  z-index: 1050; /* Đảm bảo toast nằm trên các phần tử khác */
+}
+
+.notify-toast {
+  color: #8d2727; /* Màu chữ sáng */
+  border-radius: 0.75rem; /* Bo góc tròn cho toast */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Đổ bóng cho toast */
+  min-width: 350px; /* Chiều rộng tối thiểu của toast */
+  font-size: 1rem; /* Kích thước chữ vừa phải */
+  padding: 1rem; /* Padding cho toast */
+}
+.notify-toast-header .me-auto{
+  color: #8d2727; /* Màu chữ sáng */
+}
+.notify-toast-header {
+  background-color: #fcd7d7; /* Màu nền của header (màu xanh dương) */
+  color: #8d2727; /* Màu chữ sáng */
+  padding: 10px;
+  border-bottom: 1px solid #0069d9; /* Đường viền dưới header */
+  border-top-left-radius: 0.75rem; /* Bo góc tròn cho header */
+  border-top-right-radius: 0.75rem; /* Bo góc tròn cho header */
+}
+
+.notify-toast-body {
+  background-color: #333; /* Màu nền của body (phù hợp với màu của toast) */
+  color: #f8f9fa; /* Màu chữ sáng */
+  padding: 20px;
+}
+
+.notify-toast .btn-close {
+  filter: invert(1); /* Đổi màu của nút đóng */
+  opacity: 0.6; /* Đổi độ mờ của nút đóng */
+}
+
+.notify-toast .btn-close:hover {
+  opacity: 1; /* Độ mờ khi hover */
+}
+
+.scrollable-row:nth-child(n+3) {
+  display: block;
+  max-height: 100px; /* Đặt chiều cao tối đa cho các hàng cần cuộn */
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.booking-container{
+  margin-top: -50px;
+  height: 70vh;
 }

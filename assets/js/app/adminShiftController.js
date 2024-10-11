@@ -348,11 +348,11 @@ app.controller('AdminShiftController', function ($scope, $http, $rootScope, $loc
                     var requsetformTimeOfShiftJSON = angular.toJson($scope.formTimeOfShift)
                     console.log("formTimeOfShift", requsetformTimeOfShiftJSON);
                     $http.post(url + '/time-of-shift', requsetformTimeOfShiftJSON).then(res => {
-                        Swal.fire({
-                            title: "Thành công!",
-                            html: "Thêm ca làm việc thành công!",
-                            icon: "success"
-                        })
+                        new Noty({
+                            text: 'Thêm ca làm việc thành công !',
+                            type: 'success',
+                            timeout: 3000
+                        }).show() ;
                         $scope.resetForm()
                         $scope.getListShift()
                         $scope.getListTimeOfShift()
@@ -360,11 +360,11 @@ app.controller('AdminShiftController', function ($scope, $http, $rootScope, $loc
                         secondTabButtonShift.click();
                     }).catch(err => {
                         console.log("error", err);
-                        Swal.fire({
-                            title: "Thất bại!",
-                            html: '<p class="text-danger">Xảy ra lỗi khi thêm giờ làm!</p>',
-                            icon: "error"
-                        })
+                        new Noty({
+                            text: 'Thêm ca làm việc thất bại. Vui lòng thử lại!',
+                            type: 'error',
+                            timeout: 3000
+                        }).show() ;
                     })
                 }).catch(err => {
                     console.log("Error", err);
@@ -401,11 +401,11 @@ app.controller('AdminShiftController', function ($scope, $http, $rootScope, $loc
                     var requsetformTimeOfShiftJSON = angular.toJson($scope.formTimeOfShift)
                     console.log("formTimeOfShift", requsetformTimeOfShiftJSON);
                     $http.put(url + '/time-of-shift/' + timeOfShiftId, requsetformTimeOfShiftJSON).then(res => {
-                        Swal.fire({
-                            title: "Thành công!",
-                            html: "Cập nhật thành công!",
-                            icon: "success"
-                        })
+                        new Noty({
+                            text: 'Cập nhật ca làm việc thành công !',
+                            type: 'success',
+                            timeout: 3000
+                        }).show() ;
                         $scope.resetForm()
                         $scope.getListShift()
                         $scope.getListTimeOfShift()
@@ -413,20 +413,20 @@ app.controller('AdminShiftController', function ($scope, $http, $rootScope, $loc
                         secondTabButtonShiftUpdate.click();
                     }).catch(err => {
                         console.log("error", err);
-                        Swal.fire({
-                            title: "Thất bại!",
-                            html: '<p class="text-danger">Xảy ra lỗi khi cập nhật giờ làm!</p>',
-                            icon: "error"
-                        })
+                        new Noty({
+                            text: 'Cập nhật ca làm việc thất bại. Vui lòng thử lại!',
+                            type: 'error',
+                            timeout: 3000
+                        }).show() ;
                     })
 
                 }).catch(err => {
                     console.log("Error", err);
-                    Swal.fire({
-                        title: "Thất bại!",
-                        html: '<p class="text-danger">Cập nhật thất bại!</p>',
-                        icon: "error"
-                    })
+                    new Noty({
+                        text: 'Cập nhật ca làm việc thất bại. Vui lòng thử lại!',
+                        type: 'error',
+                        timeout: 3000
+                    }).show() ;
                 })
             }
         }
@@ -448,27 +448,27 @@ app.controller('AdminShiftController', function ($scope, $http, $rootScope, $loc
                 if (rs.isConfirmed) {
                     $http.delete(url + '/sort-delete-time-of-shift/' + timeOfShiftId).then(res => {
                         $http.delete(url + '/sort-delete-shift/' + shiftId).then(respone => {
-                            Swal.fire({
-                                title: "Thành công!",
-                                html: "Đã xóa thành công!",
-                                icon: "success"
-                            })
+                            new Noty({
+                                text: 'Xóa ca làm việc thành công !',
+                                type: 'success',
+                                timeout: 3000
+                            }).show() ;
                             $scope.getListShift()
                             $scope.getListTimeOfShift()
                         }).catch(err => {
                             console.log("Error: ", err);
-                            Swal.fire({
-                                title: "Thất bại!",
-                                html: '<p class="text-danger">Xảy ra lỗi!</p>',
-                                icon: "error"
-                            })
+                            new Noty({
+                                text: 'Xóa ca làm việc thất bại. Vui lòng thử lại!',
+                                type: 'error',
+                                timeout: 3000
+                            }).show() ;
                         })
                     }).catch(err => {
-                        Swal.fire({
-                            title: "Thất bại!",
-                            html: '<p class="text-danger">Xảy ra lỗi khi xóa thời gian!</p>',
-                            icon: "error"
-                        })
+                        new Noty({
+                            text: 'Xóa ca làm việc thất bại. Vui lòng thử lại!',
+                            type: 'error',
+                            timeout: 3000
+                        }).show() ;
                         console.log("Error deleting time of shift", err);
                     })
                 }

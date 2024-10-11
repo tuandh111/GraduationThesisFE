@@ -1,103 +1,81 @@
-<!--================ Start Header Menu Area =================-->
-<header class="header_area" ng-include="'component/header.html'"></header>
-<!--================ End Header Menu Area =================-->
-<section class="page-title bg-1">
-  <div class="overlay"></div>
-  <div class="container">
-    <div class="row">
-      <div class="col-md-12">
-        <div class="block text-center">
-          <span class="text-white">Tooth Teeth</span>
-          <h1 class="text-capitalize mb-5 text-lg">Dịch vụ của Chúng tôi</h1>
-
-          <!-- <ul class="list-inline breadcumb-nav">
-            <li class="list-inline-item"><a href="index.html" class="text-white">Home</a></li>
-            <li class="list-inline-item"><span class="text-white">/</span></li>
-            <li class="list-inline-item"><a href="#" class="text-white-50">Our services</a></li>
-          </ul> -->
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-<section class="section service-2">
+<div ng-controller="BookingController">
+	<!--================ Start Header Menu Area =================-->
+	<header class="header_area" ng-include="'component/header.html'"></header>
+	<!--================ End Header Menu Area =================-->
+	<section class="page-title bg-1">
+	<div class="overlay"></div>
 	<div class="container">
 		<div class="row">
-			<div class="col-lg-4 col-md-6 col-sm-6">
-				<div class="service-block mb-5">
-					<img src="/assets/images/service/service-1.jpg" alt="" class="img-fluid">
-					<div class="content">
-						<h4 class="mt-4 mb-2 title-color">Child care</h4>
-						<p class="mb-4">Saepe nulla praesentium eaque omnis perferendis a doloremque.</p>
-					</div>
+		<div class="col-md-12">
+			<div class="block text-center">
+			<span class="text-white">Tooth Teeth</span>
+			<h1 class="text-capitalize mb-5 text-lg">Dịch vụ của Chúng tôi</h1>
+
+			<!-- <ul class="list-inline breadcumb-nav">
+				<li class="list-inline-item"><a href="index.html" class="text-white">Home</a></li>
+				<li class="list-inline-item"><span class="text-white">/</span></li>
+				<li class="list-inline-item"><a href="#" class="text-white-50">Our services</a></li>
+			</ul> -->
+			</div>
+		</div>
+		</div>
+	</div>
+	</section>
+	<section class="section service-2">
+		<div class="container">
+			<!-- Search Input -->
+			<div class="row mb-4">
+				<div class="col-lg-12">
+					<input type="text" ng-model="searchQuery" class="form-control" placeholder="Search services...">
 				</div>
 			</div>
 
-			<div class="col-lg-4 col-md-6 col-sm-6">
-				<div class="service-block mb-5">
-					<img src="/assets/images/service/service-2.jpg" alt="" class="img-fluid">
-					<div class="content">
-						<h4 class="mt-4 mb-2  title-color">Personal Care</h4>
-						<p class="mb-4">Saepe nulla praesentium eaque omnis perferendis a doloremque.</p>
+			<!-- Service List -->
+			<div class="row">
+				<div class="col-lg-4 col-md-6 col-sm-12 mb-4 serviceItem" ng-repeat="s in filteredServices | filter:searchQuery">
+					<div class=" h-100 shadow-sm">
+						<img ng-src="{{s.imageURL || 'path/to/default-image.png'}}" alt="Service Image" class="card-img-top img-fluid" style="height: 200px; object-fit: cover;">
+						<div class="card-body d-flex flex-column">
+							<h5 class="card-title mt-2 mb-2 text-primary" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{s.serviceName}}</h5>
+							<p class="card-text text-secondary mb-4">{{s.description}}</p>
+							<p class="card-text mb-4 text-secondary text-end">{{s.price | currencyVND}}</p>
+							<a class="btn btn-outline-primary mt-auto" ng-click="openFastBookingModal(s.serviceId)">Đặt nhanh</a>
+						</div>
 					</div>
 				</div>
 			</div>
-			
-			<div class="col-lg-4 col-md-6 col-sm-6">
-				<div class="service-block mb-5">
-					<img src="/assets/images/service/service-3.jpg" alt="" class="img-fluid">
-					<div class="content">
-						<h4 class="mt-4 mb-2 title-color">CT scan</h4>
-						<p class="mb-4">Saepe nulla praesentium eaque omnis perferendis a doloremque.</p>
-					</div>
-				</div>
+		
+			<!-- Pagination Controls -->
+			<div class="row">
+				<ul class="pagination justify-content-center">
+					<li class="page-item" ng-class="{disabled: currentPage === 1}">
+						<a class="page-link" href="#" ng-click="prevPage($event)" ng-class="{disabledLink: currentPage === 1}">Previous</a>
+					</li>
+					<li class="page-item" ng-repeat="n in [].constructor(totalPages) track by $index" ng-class="{active: $index + 1 === currentPage}">
+						<a class="page-link" href="#" ng-click="setPage($index + 1, $event)" ng-class="{disabledLink: $index + 1 === currentPage}">{{$index + 1}}</a>
+					</li>
+					<li class="page-item" ng-class="{disabled: currentPage === totalPages}">
+						<a class="page-link" href="#" ng-click="nextPage($event)" ng-class="{disabledLink: currentPage === totalPages}">Next</a>
+					</li>
+				</ul>
 			</div>
-
-			<div class="col-lg-4 col-md-6 col-sm-6">
-				<div class="service-block mb-5 mb-lg-0">
-					<img src="/assets/images/service/service-4.jpg" alt="" class="img-fluid">
-					<div class="content">
-						<h4 class="mt-4 mb-2 title-color">Joint replacement</h4>
-						<p class="mb-4">Saepe nulla praesentium eaque omnis perferendis a doloremque.</p>
-					</div>
-				</div>
-			</div>
-
-			<div class="col-lg-4 col-md-6 col-sm-6">
-				<div class="service-block mb-5 mb-lg-0">
-					<img src="/assets/images/service/service-6.jpg" alt="" class="img-fluid">
-					<div class="content">
-						<h4 class="mt-4 mb-2 title-color">Examination & Diagnosis</h4>
-						<p class="mb-4">Saepe nulla praesentium eaque omnis perferendis a doloremque.</p>
-					</div>
-				</div>
-			</div>
-			
-			<div class="col-lg-4 col-md-6 col-sm-6">
-				<div class="service-block mb-5 mb-lg-0">
-					<img src="/assets/images/service/service-8.jpg" alt="" class="img-fluid">
-					<div class="content">
-						<h4 class="mt-4 mb-2 title-color">Alzheimer's disease</h4>
-						<p class="mb-4">Saepe nulla praesentium eaque omnis perferendis a doloremque.</p>
+		</div>
+	</section>	
+	<div ng-include="'component/booking-modal.html'"></div>
+	<section class="section cta-page">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-7">
+					<div class="cta-content">
+						<div class="divider mb-4"></div>
+						<h2 class="mb-5 text-lg text-danger">Chúng tôi rất vui được cung cấp cho bạn <span class="title-color">cơ hội có một hàm răng khỏe mạnh.</span></h2>
+						<a href="#!appoinment" class="btn btn-main-2 btn-round-full">Đặt lịch khám<i class="icofont-simple-right  ml-2"></i></a>
 					</div>
 				</div>
 			</div>
 		</div>
-	</div>
-</section>
-<section class="section cta-page">
-	<div class="container">
-		<div class="row">
-			<div class="col-lg-7">
-				<div class="cta-content">
-					<div class="divider mb-4"></div>
-					<h2 class="mb-5 text-lg text-danger">Chúng tôi rất vui được cung cấp cho bạn <span class="title-color">cơ hội có một hàm răng khỏe mạnh.</span></h2>
-					<a href="#!appoinment" class="btn btn-main-2 btn-round-full">Đặt lịch hẹn<i class="icofont-simple-right  ml-2"></i></a>
-				</div>
-			</div>
-		</div>
-	</div>
-</section>
-<!-- footer Start -->
-<footer class="footer section gray-bg" ng-include="'component/footer.html'"></footer>
-<!--================ End footer Area  =================-->
+	</section>
+	<!-- footer Start -->
+	<footer class="footer section gray-bg" ng-include="'component/footer.html'"></footer>
+	<!--================ End footer Area  =================-->
+</div>

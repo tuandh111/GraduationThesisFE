@@ -1,4 +1,4 @@
-app.controller('AdminListInvoice', function ($scope, $http, $rootScope, $location, $timeout, TimezoneService, $route,API,adminBreadcrumbService) {
+app.controller('AdminListInvoice', function ($scope, $http, SocketService, $rootScope, $location, $timeout, TimezoneService, $route, API, adminBreadcrumbService, processSelect2Service) {
     let url = API.getBaseUrl();
     let headers = API.getHeaders();
     adminBreadcrumbService.generateBreadcrumb()
@@ -26,8 +26,6 @@ app.controller('AdminListInvoice', function ($scope, $http, $rootScope, $locatio
             var timePart = isoString.split('T')[1];
             return timePart.slice(0, 5);
         }
-
-
     }
     $scope.getStatusColor = function (status) {
         if (status) { // assuming true for paid
@@ -38,15 +36,20 @@ app.controller('AdminListInvoice', function ($scope, $http, $rootScope, $locatio
     };
 
     $scope.initializeUIComponents = () => {
-        $('.select2').select2(
-            {
-                theme: 'bootstrap4',
-            });
-        $('.select2-multi').select2(
-            {
-                multiple: true,
-                theme: 'bootstrap4',
-            });
+        $timeout(() => {
+            $('.select2-chooseInfo').select2(
+                {
+                    theme: 'bootstrap4',
+                    placeholder: '---Chọn thông tin khách hàng---',
+                    allowClear: true
+                }).val(null).trigger('change')
+            $('.select2-multi').select2(
+                {
+                    multiple: true,
+                    theme: 'bootstrap4',
+                }).val(null).trigger('change')
+        },500)
+       
         $('.drgpicker').daterangepicker(
             {
                 singleDatePicker: false,
@@ -219,7 +222,16 @@ app.controller('AdminListInvoice', function ($scope, $http, $rootScope, $locatio
             }, false);
         })();
 
+        $('#chooseInfo').on('change', function () {
+            $timeout(function () {
+                let selectedVals = $('#chooseInfo').val();
+                $scope.selectedAppointmentId = processSelect2Service.processSelect2Data(selectedVals)[0]
+                $scope.getAppointmentServiceByAppointmentId($scope.selectedAppointmentId)
+            });
+        });
+
     }
+
     $scope.calculateTotalPrice = function (services) {
         return services.reduce((total, service) => total + (service.price * (service.quantity || 1)), 0);
     };
@@ -248,13 +260,20 @@ app.controller('AdminListInvoice', function ($scope, $http, $rootScope, $locatio
         $scope.editInvoiceForm.patientAge = $scope.calculateAge($scope.editInvoiceForm.appointment.patient.birthday);
     };
     $scope.getListAppointmentStatus = () => {
-        $http.get(url + '/appointment-status').then(resp => {
+        $http.get(url + '/appointment-status', { headers: headers }).then(resp => {
             $scope.listAppointmentStatusBD = resp.data
         })
     }
+    $scope.getServiceDescription = function (appointmentId) {
+        if ($scope.editInvoiceForm && $scope.editInvoiceForm.services && $scope.editInvoiceForm.services.length > 0) {
+            let serviceNames = $scope.editInvoiceForm.services.map(service => service.serviceName);
+            return 'Thanh toán dịch vụ: ' + serviceNames.join(', ') + " appointment " + appointmentId;
+        }
+        return 'Thanh toán dịch vụ:';
+    };
     $scope.getListAppointmentService = () => {
         $scope.clearDateFilter();
-        $http.get(url + '/appointment-invoice').then(respone => {
+        $http.get(url + '/appointment-invoice', { headers: headers }).then(respone => {
             $scope.appointments = respone.data
             console.log("$scope.appointmentservice", $scope.appointments);
             $(document).ready(function () {
@@ -280,18 +299,19 @@ app.controller('AdminListInvoice', function ($scope, $http, $rootScope, $locatio
                             sNext: "Tiếp",
                             sLast: "Cuối"
                         }
-                    }
+                    },
+                    "ordering": false,
                 });
             });
         }).catch(err => {
             console.log("Error", err);
         })
     }
+
     $scope.getListBillCancel = () => {
         $scope.clearDateFilter();
-        $http.get(url + '/appointment-invoice-cancel').then(respone => {
+        $http.get(url + '/appointment-invoice-cancel', { headers: headers }).then(respone => {
             $scope.appointments_cancel = respone.data
-            console.log("$scope.appointmentservice", $scope.appointments);
             $(document).ready(function () {
                 $('#dataTable-list-invoice-cancel1').DataTable({
                     autoWidth: true,
@@ -322,11 +342,11 @@ app.controller('AdminListInvoice', function ($scope, $http, $rootScope, $locatio
             console.log("Error", err);
         })
     }
+
     $scope.getListAppointmentServiceClear = () => {
         $scope.clearDateFilter();
-        $http.get(url + '/appointment-invoice').then(respone => {
+        $http.get(url + '/appointment-invoice', { headers: headers }).then(respone => {
             $scope.appointments = respone.data
-            console.log("$scope.appointmentservice", $scope.appointments);
         }).catch(err => {
             console.log("Error", err);
         })
@@ -334,17 +354,27 @@ app.controller('AdminListInvoice', function ($scope, $http, $rootScope, $locatio
     $scope.formAppoinmentFilter = {
         filterDate: ''
     };
-    $scope.getDateFilter = function (dateRange) {
+    function formatDate(date) {
+        let day = ('0' + date.getDate()).slice(-2);
+        let month = ('0' + (date.getMonth() + 1)).slice(-2); // Tháng từ 0-11
+        let year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    }
+    $scope.filterDate = function () {
+        let startDate = $scope.formAppoinmentFilter.startDate;
+        let endDate = $scope.formAppoinmentFilter.endDate;
 
-        console.log('Filtering by date range:', dateRange);
-        let dates = dateRange.split(' - ');
-        let startDate = dates[0];
-        let endDate = dates[1];
-        console.log('Start date:', startDate, endDate);
-
+        // Kiểm tra xem các giá trị ngày có hợp lệ không
+        if (!startDate || !endDate) {
+            console.error('Start date or end date is not specified.');
+            return;
+        }
+        let formattedStartDate = formatDate(new Date(startDate));
+        let formattedEndDate = formatDate(new Date(endDate));
         $http.post(url + '/appointment-filter', {
-            startDate: startDate,
-            endDate: endDate
+            startDate: formattedStartDate,
+            endDate: formattedEndDate,
+            headers: headers
         }).then(function (response) {
             $scope.appointments = response.data;
             table.clear().rows.add($scope.appointments).draw();
@@ -362,12 +392,11 @@ app.controller('AdminListInvoice', function ($scope, $http, $rootScope, $locatio
         }
     };
     $scope.getListAppointmentServiceCancel = () => {
-        $http.get(url + '/appointment-invoice').then(respone => {
+        $http.get(url + '/appointment-invoice', { headers: headers }).then(respone => {
             $scope.appointments = respone.data
             $scope.filteredAppointments = $scope.appointments.filter(function (appointment) {
                 return appointment.status == true;
             });
-            console.log("$scope.appointmentservice cancel", $scope.filteredAppointments);
             $(document).ready(function () {
                 $('#dataTable-list-invoice-cancel').DataTable({
                     autoWidth: true,
@@ -401,7 +430,7 @@ app.controller('AdminListInvoice', function ($scope, $http, $rootScope, $locatio
 
     $scope.payments = [];
     $scope.payments = async function () {
-
+        console.log("Payments", $scope.editInvoiceForm.paymentMethod)
         const result = await Swal.fire({
             title: "Thanh toán hóa đơn",
             text: "Bạn có chắc thanh toán hóa đơn này không?",
@@ -417,6 +446,7 @@ app.controller('AdminListInvoice', function ($scope, $http, $rootScope, $locatio
             var PaymentRequest = {
                 appointmentId: $scope.payments.appointment.appointmentId,
                 text: $scope.payments.text,
+                paymentMethod: $scope.editInvoiceForm.paymentMethod,
             };
             Swal.fire({
                 title: 'Đang thao tác. </br> Vui lòng chờ trong giây lát !',
@@ -445,16 +475,15 @@ app.controller('AdminListInvoice', function ($scope, $http, $rootScope, $locatio
             } finally {
 
                 Swal.close();
-                Swal.fire({
-                    position: "top-end",
-                    icon: "success",
-                    title: "Thanh toán thành công",
-                    showConfirmButton: false,
-                    timer: 1500
-                }).then(() => {
-                    $('#myModal').modal('hide');
-                    window.location.href = "#!admin/list-invoice";
-                });
+                new Noty({
+                    text: 'Thanh toán thành công !',
+                    type: 'success',
+                    timeout: 3000
+                }).show()
+
+                $('#myModal').modal('hide');
+                window.location.href = "#!admin/list-invoice";
+
             }
         }
     };
@@ -483,6 +512,157 @@ app.controller('AdminListInvoice', function ($scope, $http, $rootScope, $locatio
     $scope.updateStatus = (appoinment) => {
         console.log("appoinment update", appoinment);
     }
+
+    //Them code moi
+
+    $scope.initData = () => {
+        $scope.paymentMethod = 'bank'
+        $scope.isLoadingCreateBill = false
+        $scope.getAppointmentWithOutBill()
+    }
+
+    $scope.getAppointmentWithOutBill = async () => {
+        const responseStatus = await $http.get(url + "/appointment-status-except-deleted", { headers: headers });
+        let completedStatus = responseStatus.data.filter(st => st.status.toLowerCase() === 'hoàn thành');
+        if (completedStatus.length > 0) {
+            let completedStatusId = completedStatus[0].appointment_StatusId;
+            let params = { appStatus: completedStatusId }
+            const responseAppointment = await $http.get(url + "/appointment-without-bill", { params, headers })
+            $scope.listAppointmentWithOutBill = responseAppointment.data
+        } else {
+            console.log("Không tìm thấy trạng thái hoàn thành");
+        }
+    }
+
+    let intervalId;  // Declare a variable to store the interval ID
+    const requestDelay = 1000;  // 1 second delay between requests
+    const backtrackSeconds = 55;  // Seconds to go back in time
+
+    $scope.selectPaymentMethod = (method) => {
+        if (method === 'atm') {
+            if (intervalId) {  // Check if there is an existing interval
+                clearInterval(intervalId);  // Clear the existing interval
+            }
+
+            intervalId = setInterval(() => {
+                let time = new Date();
+                let formattedTime = formatTime(time);
+                let backtrackTime = new Date(time.getTime() - (backtrackSeconds * 1000));
+                let formattedBacktrackTime = formatTime(backtrackTime);
+
+                // Make API requests for both the current time and the time 10 seconds before
+                makeRequest(formattedTime);
+                // Delay the backtrack request by 1 second
+                setTimeout(() => {
+                    makeRequest(formattedBacktrackTime);
+                }, requestDelay);
+            }, requestDelay);  // Call the function every 2 seconds to allow time for both requests
+        } else if (method === 'cash') {
+            // If switching to 'cash', clear the interval if it exists
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
+        }
+    };
+
+    // Function to make an API request
+    const makeRequest = (formattedTime) => {
+        $http.get(url + '/transactions', {
+            params: {
+                accountNumber: "0969281254",
+                transactionDateMin: formattedTime,
+                limit: 1
+            }
+        }, { headers: headers }).then((response) => {
+            console.log('Time:', formattedTime, 'Response:', response.data);
+
+            if (response.data.transactions && response.data.transactions.length > 0) {
+                $scope.closeModal();
+                clearInterval(intervalId);  // Stop the interval if transactions are found
+                window.location.href = 'http://127.0.0.1:5501/#!/admin/transaction-success';
+            }
+        }).catch((error) => {
+            console.error('Error fetching transactions:', error);
+        });
+    };
+
+    // Function to format date to required format
+    const formatTime = (date) => {
+        return date.getFullYear() + '-' +
+            String(date.getMonth() + 1).padStart(2, '0') + '-' +
+            String(date.getDate()).padStart(2, '0') + ' ' +
+            String(date.getHours()).padStart(2, '0') + ':' +
+            String(date.getMinutes()).padStart(2, '0') + ':' +
+            String(date.getSeconds()).padStart(2, '0');
+    };
+
+    // Function to be called when the modal is closed
+    $scope.closeModal = () => {
+        if (intervalId) {
+            clearInterval(intervalId);
+        }
+    };
+
+    // Function to be called when switching between payment methods
+    $scope.switchPaymentMethod = (method) => {
+        if (intervalId) {
+            clearInterval(intervalId);
+        }
+        $scope.selectPaymentMethod(method);
+    };
+
+    // Example for using the modal close event
+    angular.element(document).ready(() => {
+        angular.element('#myModal').on('hidden.bs.modal', () => {
+            $scope.closeModal();
+        });
+    });
+
+
+
+    $scope.getAppointmentServiceByAppointmentId = (appointmentId) => {
+        $http.get(url + '/appointment-service-appointment-id/' + appointmentId, { headers: headers }).then((response) => {
+            $scope.listAppointmentService = response.data.filter(item => item.deleted == false)
+            $scope.totalPrice = response.data.reduce((total, s) => total + (s.price * s.quantity), 0)
+        })
+    }
+
+    $scope.createBill = () => {
+        if (!$scope.selectedAppointmentId) {
+            Swal.fire({
+                title: "Cảnh báo!",
+                html: '<p class="text-danger">Vui lòng chọn thông tin khách hàng!</p>',
+                icon: "error"
+            })
+            return
+        }
+        let billRequest = {
+            status: 'NOT_PAY',
+            totalCost: $scope.totalPrice,
+            paymentMethod: null,
+            createAt: new Date(),
+            appointmentId: $scope.selectedAppointmentId
+        }
+        $scope.isLoadingCreateBill = true
+        $http.post(url + "/bill", angular.toJson(billRequest), { headers: headers }).then(response => {
+            $timeout(() => {
+                new Noty({
+                    text: 'Tạo hóa đơn thành công !',
+                    type: 'success',
+                    timeout: 3000
+                }).show();
+                $scope.initData()
+                $route.reload()
+            }, 3000)
+        }).then(() => {
+            $timeout(() => {
+                $scope.isLoadingCreateBill = false
+            }, 3000)
+        })
+    }
+
+    $scope.initData()
+    //End Them code moi
 
 
     $scope.setupTab()
@@ -628,4 +808,6 @@ app.controller('AdminListInvoice', function ($scope, $http, $rootScope, $locatio
         }
         return to_vietnamese
     })();
+
+
 })

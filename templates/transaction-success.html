@@ -1,0 +1,85 @@
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    .success-container {
+        background-color: #fff;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        max-width: 600px;
+        text-align: center;
+    }
+
+    .success-icon {
+        font-size: 50px;
+        color: #4CAF50;
+        margin-bottom: 20px;
+    }
+
+    .success-title {
+        font-size: 24px;
+        color: #333;
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+
+    .success-message {
+        font-size: 16px;
+        color: #777;
+        margin-bottom: 20px;
+    }
+
+    .details {
+        background-color: #f9f9f9;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+        text-align: left;
+    }
+
+    .details p {
+        margin: 5px 0;
+        font-size: 14px;
+        color: #555;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        font-size: 16px;
+        color: #fff;
+        background-color: #4CAF50;
+        border: none;
+        border-radius: 5px;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn:hover {
+        background-color: #45a049;
+    }
+</style>
+
+<div class="success-container" ng-controller="TransactionSuccessController">
+    <div class="success-icon">✔️</div>
+    <h1 class="success-title">Chuyển Khoản Thành Công!</h1>
+    <p class="success-message">Cảm ơn bạn đã chuyển khoản. Thông tin chi tiết giao dịch như sau:</p>
+    <div class="details">
+        <p><strong>Số tài khoản:</strong> {{transactionSuccess.transactions[0].accountNumber}}</p>
+        <p><strong>Số tiền:</strong> {{transactionSuccess.transactions[0].amountIn}} VND</p>
+        <p><strong>Thời gian:</strong> {{transactionSuccess.transactions[0].transactionDate}}</p>
+        <p><strong>Mã giao dịch:</strong> {{transactionSuccess.transactions[0].referenceNumber}}</p>
+        <p><strong>Nội dung chuyển khoản:</strong> {{transactionSuccess.transactions[0].transactionContent }}</p>
+    </div>
+    <a href="#!admin/list-invoice" class="btn">Tiếp tục</a>
+</div>

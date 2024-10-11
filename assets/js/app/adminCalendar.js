@@ -1,10 +1,11 @@
-app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, $timeout, processSelect2Service, TimezoneService, $route, convertMoneyService, API, adminBreadcrumbService) {
+app.controller('AdminCalendar', function ($scope, $http, SocketService, $rootScope, $location, $timeout, processSelect2Service, TimezoneService, $route, convertMoneyService, API, adminBreadcrumbService) {
     let url = API.getBaseUrl();
     let headers = API.getHeaders();
     adminBreadcrumbService.generateBreadcrumb()
     //code here
     const defaultTimezone = "Asia/Ho_Chi_Minh"
-    let dentalStaff = 1
+    let dentalStaff = API.getUser() ? parseInt(API.getUser().split("-")[0]) : null
+
     $scope.listServiceByDentalIssuesDB = []
     $scope.listServiceByDentalIssuesDBUp = []
     $scope.listDoctorDB = []
@@ -21,7 +22,7 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
     $scope.showFormRegister = false
     $scope.disableContinue = false
     $scope.isSelectCalendar = false
-    $scope.validAppointmentType=true
+    $scope.validAppointmentType = true
     $scope.isUpdate = false
     $scope.isShowFormResult = false
     $scope.isValidServiceUp = false
@@ -36,20 +37,30 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
     $scope.validDateByPatient = ""
     $scope.isSelectByService = false
     $scope.isSelectByServiceUp = false
-
-
+    $scope.isLoadingCreate = false
+    $scope.listDentalIssueDB=[]
     //List appointment
     $scope.selectedDatesLApp = []
     $scope.selectedDoctorLApp = []
     $scope.selectedPatientLApp = []
+    $scope.selectedStatusLApp = []
     $scope.isReExaminationFilter = false
     $scope.listBillByAppointmentAndPatientDB = []
+    $scope.listPrescriptionByAppointmentAndMedicinesDB = []
+
     $scope.appointmentIdParam = null
     $scope.patientIdParam = null
     $scope.listAPSDB = []
     $scope.formPatientRecord = {
         patientId: null,
         doctorId: null
+    }
+
+    $scope.formAppoinmentFilter = {
+        appointment_StatusId: null,
+        patientId: null,
+        doctorId: null,
+        filterDateLapp: moment().format("DD/MM/YYYY")
     }
 
     $scope.initReExaminationDate = [
@@ -62,12 +73,13 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
         appointmentDate: moment(new Date).format('DD/MM/YYYY'),
         doctorId: -1,
         title: '',
-        appointmentTypeId: -1,
-        patientId: -1,
+        appointmentTypeId: null,
+        patientId: null,
         notes: '',
         fullName: "",
         startTime: "",
-        endTime: ""
+        endTime: "",
+        dentalIssuesId: null
     }
     $scope.formUpApp = {
         reExaminationDate: moment(new Date).format('DD/MM/YYYY'),
@@ -91,7 +103,7 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
         $scope.appointmentPatientRecordRequest = {
             patientId: isUpdate ? fu.patientId : fa.patientId,
             createAt: isUpdate ? fu.createDate : TimezoneService.convertToTimezone(moment(new Date()), defaultTimezone),
-            currentCondition: isUpdate ? fu.currentCondition : "",
+            currentCondition: isUpdate ? fu.currentCondition : fa.notes,
             reExamination: isUpdate ? fu.reExaminationDate : "",
             deleted: isUpdate ? fu.deleted : false,
             isDeleted: isUpdate ? fu.deleted : false
@@ -177,7 +189,6 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
     }
 
     $scope.recommendShifts = (getTotalTime) => {
-        // $scope.disableContinue = false
         if (getTotalTime <= 40) {
             return 1;
         } else if (getTotalTime <= 70) {
@@ -185,8 +196,6 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
         } else if (getTotalTime <= 100) {
             return 3;
         } else {
-            // $scope.disableContinue = true
-            // $scope.showFormRegister = false
             return 4;
         }
     }
@@ -198,13 +207,13 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
     };
 
     $scope.getAllDentalIssuesExceptDeleted = () => {
-        $http.get(url + '/dental-issues-except-deleted').then(response => {
+        $http.get(url + '/dental-issues-except-deleted', { headers: headers }).then(response => {
             $scope.listDentalIssueDB = response.data
         })
     }
 
     $scope.getAllDentalIssuesExceptDeletedUp = () => {
-        $http.get(url + '/dental-issues-except-deleted').then(response => {
+        $http.get(url + '/dental-issues-except-deleted', { headers: headers }).then(response => {
             $scope.listDentalIssueDBUp = response.data
         })
     }
@@ -214,7 +223,7 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
         let params = {
             ids: ids
         }
-        $http.get(url + '/service-by-dental-issues', { params: params }).then(response => {
+        $http.get(url + '/service-by-dental-issues', { params: params, headers: headers }).then(response => {
             $scope.listServiceByDentalIssuesDB = response.data
         })
     }
@@ -224,7 +233,7 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
         let params = {
             ids: ids
         }
-        $http.get(url + '/service-by-dental-issues', { params: params }).then(response => {
+        $http.get(url + '/service-by-dental-issues', { params: params, headers: headers }).then(response => {
             $scope.listServiceByDentalIssuesDBUp = response.data.map(service => {
                 if (service.quantity === undefined || service.quantity === null) {
                     service.quantity = 1
@@ -235,36 +244,71 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
     }
 
     $scope.getListAppointmentType = () => {
-        $http.get(url + '/appointment-type').then(respone => {
+        $http.get(url + '/appointment-type', { headers: headers }).then(respone => {
+            let allOptions = {
+                appointment_TypeId: null,
+                typeName: '---Chọn loại ca khám ---'
+            }
             $scope.listAppointmentTypeDB = respone.data
+            $scope.listAppointmentTypeDB.unshift(allOptions);
         }).catch(err => {
             console.log("Error", err);
         })
     }
 
     $scope.getListPatient = () => {
-        $http.get(url + '/patient').then(response => {
+        $http.get(url + '/patient-except-deleted').then(response => {
+            let allOptions = {
+                patientId: null,
+                fullName: '---Chọn bệnh nhân ---'
+            }
             $scope.listPatientDB = response.data
-            // $scope.listPatientDB.unshift({ patientId: null, fullName: 'Chọn tất cả' });
+            $scope.listPatientDB.unshift(allOptions);
+        })
+    }
+
+    $scope.getListPatientFilter = () => {
+        $http.get(url + '/patient-except-deleted').then(response => {
+            let allOptions = {
+                patientId: null,
+                fullName: '---Tất cả ---'
+            }
+            $scope.listPatientDBFilter = response.data
+            $scope.listPatientDBFilter.unshift(allOptions);
         })
     }
 
     $scope.getListAppointmentStatus = () => {
-        $http.get(url + '/appointment-status').then(resp => {
+        $http.get(url + '/appointment-status-except-deleted', { headers: headers }).then(resp => {
             $scope.listAppointmentStatusBD = resp.data
             $scope.formApp.appointmentStatus = $scope.listAppointmentStatusBD.find((item) => item.status.toLowerCase() === 'đã xác nhận').appointment_StatusId
         })
     }
 
+    $scope.getListAppointmentStatusFilter = () => {
+        $http.get(url + '/appointment-status-except-deleted', { headers: headers }).then(resp => {
+            let allOptions = {
+                appointment_StatusId: null,
+                status: "---Tất cả---",
+                description: "Tất cả trạng thái",
+                deleted: false
+            }
+            $scope.listAppointmentStatusBDFilter = resp.data
+            $scope.listAppointmentStatusBDFilter.unshift(allOptions)
+
+        })
+    }
+
     $scope.getListAppointmentStatusUp = () => {
-        $http.get(url + '/appointment-status').then(resp => {
+        $http.get(url + '/appointment-status-except-deleted', { headers: headers }).then(resp => {
             $scope.listAppointmentStatusBDUp = resp.data
             $scope.listAppointmentStatusBDUp = resp.data.filter(item => item.status.toLowerCase() !== 'hoàn thành');
         })
     }
 
+
     $scope.getListAppointment = () => {
-        $http.get(url + '/appointment').then(resp => {
+        $http.get(url + '/appointment', { headers: headers }).then(resp => {
             $scope.listAppointmentDB = resp.data
             const today = moment(new Date()).format('YYYY-MM-DD');
             const past = moment(today).subtract(1, 'days').format('YYYY-MM-DD');
@@ -295,7 +339,7 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
     }
 
     $scope.getAllDoctorUnavailabilityExceptDeleted = () => {
-        $http.get(url + '/doctorUnavailability-except-deleted').then(response => {
+        $http.get(url + '/doctorUnavailability-except-deleted', { headers: headers }).then(response => {
             $scope.listDuDB = response.data
         })
     }
@@ -304,7 +348,7 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
         let dateRequest = {
             date: moment(date, "DD/MM/YYYY").format("YYYY-MM-DD")
         }
-        $http.get(url + '/doctor-schedule-by-date', { params: dateRequest }).then(response => {
+        $http.get(url + '/doctor-schedule-by-date', { params: dateRequest, headers: headers }).then(response => {
             let doctorMap = new Map();
             response.data.forEach(d => {
                 if (d.doctor) {
@@ -318,6 +362,7 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
                 let shift = response.data
                     .filter(item => item.doctor && item.doctor.doctorId === doctorId)
                     .map(item => item.shift);
+                shift.sort((a, b) => a.shiftId - b.shiftId)
                 return shift
             }
         })
@@ -329,7 +374,7 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
             doctorId: doctorId
         }
         return new Promise((resolve, reject) => {
-            $http.get(url + '/get-doctor-shifts-excluding-deleted', { params: params }).then(response => {
+            $http.get(url + '/get-doctor-shifts-excluding-deleted', { params: params, headers: headers }).then(response => {
                 resolve(response.data)
             }).catch(err => reject(err))
         })
@@ -338,7 +383,7 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
     $scope.getAllDoctorScheduleExceptDeleted = () => {
         return new Promise((resolve, reject) => {
             // /doctor-schedule-and-tos
-            $http.get(url + '/doctor-schedule-except-deleted').then(response => {
+            $http.get(url + '/doctor-schedule-except-deleted', { headers: headers }).then(response => {
                 resolve(response.data)
             }).catch(err => reject(err))
         })
@@ -346,7 +391,7 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
 
     $scope.getTimeOfShiftByShiftId = (shiftId) => {
         return new Promise((resolve, reject) => {
-            $http.get(url + '/time-of-shift-by-shift-id/' + shiftId).then(response => {
+            $http.get(url + '/time-of-shift-by-shift-id/' + shiftId, { headers: headers }).then(response => {
                 resolve(response.data)
             }).catch(err => reject(err))
         })
@@ -359,7 +404,7 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
             date: convertedDate,
             doctorId: doctorId
         }
-        return $http.get(url + '/time-of-shift-available', { params: params }).then(response => {
+        return $http.get(url + '/time-of-shift-available', { params: params, headers: headers }).then(response => {
             return response.data
         }).catch(error => {
             console.log("Error: " + error)
@@ -374,7 +419,7 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
             date: convertedDate,
             doctorId: doctorId
         }
-        return $http.get(url + '/time-of-shift-details', { params: params }).then(response => {
+        return $http.get(url + '/time-of-shift-details', { params: params, headers: headers }).then(response => {
             return response.data
         }).catch(error => {
             console.log("Error: " + error)
@@ -448,11 +493,11 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
         let params = {
             appId: appointmentId
         }
-        let getAppointmentPromise = $http.get(url + '/appointment-id/' + appointmentId).then((response) => {
+        let getAppointmentPromise = $http.get(url + '/appointment-id/' + appointmentId, { headers: headers }).then((response) => {
             $scope.originalAppointment = response.data
             $scope.originalAPR = response.data.appointmentPatientRecord
         })
-        let getOriginalDUPromise = $http.get(url + '/doctorUnavailability-by-appid', { params: params }).then((response) => {
+        let getOriginalDUPromise = $http.get(url + '/doctorUnavailability-by-appid', { params: params, headers: headers }).then((response) => {
             let checkStatus = ['đã hủy', 'không đến', 'hoãn']
             $scope.originalDU = response.data.filter(du => {
                 let stt = du.appointment.appointmentStatus
@@ -460,7 +505,7 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
                 return (du.deleted == false) || (du.deleted == true && isAuth)
             })
         })
-        let getOriginalASPromise = $http.get(url + '/appointment-service-by-appid', { params: params }).then((response) => {
+        let getOriginalASPromise = $http.get(url + '/appointment-service-by-appid', { params: params, headers: headers }).then((response) => {
             $scope.originalAS = response.data
         })
 
@@ -580,14 +625,15 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
         let appType = $scope.formApp.appointmentTypeId
         let valid = true
 
-        if (title == "" || title == null) {
-            Swal.fire({
-                title: "Cảnh báo!",
-                html: "Vui lòng điền tiêu đề cuộc hẹn!",
-                icon: "error"
-            })
-            valid = false
-        } else if (doctorId == -1) {
+        // if (title == "" || title == null) {
+        //     Swal.fire({
+        //         title: "Cảnh báo!",
+        //         html: "Vui lòng điền tiêu đề ca khám!",
+        //         icon: "error"
+        //     })
+        //     valid = false
+        // } else 
+        if (doctorId == -1) {
             Swal.fire({
                 title: "Cảnh báo!",
                 html: "Vui lòng chọn bác sĩ khám!",
@@ -601,14 +647,14 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
                 icon: "error"
             })
             valid = false
-        } else if (appType == -1) {
+        } else if (appType == null || appType === undefined || appType == "") {
             Swal.fire({
                 title: "Cảnh báo!",
-                html: "Vui lòng chọn loại cuộc hẹn!",
+                html: "Vui lòng chọn loại ca khám!",
                 icon: "error"
             })
             valid = false
-        } else if (patientId == -1) {
+        } else if (patientId == null || patientId === undefined || patientId == "") {
             Swal.fire({
                 title: "Cảnh báo!",
                 html: "Vui lòng chọn bệnh nhân!",
@@ -620,6 +666,7 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
     }
 
     $scope.validPatient = (patientId, dateSelected) => {
+        if (patientId === undefined || patientId === null) return
         if (dateSelected == "") {
             $scope.listAppByPatientDB = []
         } else {
@@ -628,12 +675,10 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
                 patientId: patientId
             }
 
-            $http.get(url + '/appointment-by-patient', { params: params }).then(response => {
+            $http.get(url + '/appointment-by-patient', { params: params, headers: headers }).then(response => {
                 $scope.listAppByPatientDB = response.data
             })
         }
-
-
     }
 
     $scope.saveAppointment = async () => {
@@ -642,13 +687,14 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
         let valid = $scope.validationForm()
         if (valid) {
             try {
+                $scope.isLoadingCreate = true
                 let dataAPRReq = angular.toJson($scope.appointmentPatientRecordRequest)
 
-                let responseApr = await $http.post(url + '/appointment-patient-record', dataAPRReq)
+                let responseApr = await $http.post(url + '/appointment-patient-record', dataAPRReq, { headers: headers })
                 $scope.appointmentRequest.appointmentPatientRecord = responseApr.data.appointmentPatientRecordId
 
                 let dataAppoinmentReq = angular.toJson($scope.appointmentRequest)
-                let respApp = await $http.post(url + '/appointment', dataAppoinmentReq)
+                let respApp = await $http.post(url + '/appointment', dataAppoinmentReq, { headers: headers })
 
                 let appointmentId = respApp.data.appointmentId == null ? null : respApp.data.appointmentId
 
@@ -657,38 +703,42 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
 
                 let doctorUnavailabilityRequests = dataArrayDUReq.map(item => {
                     let dataArrayDUReqJson = angular.toJson(item);
-                    return $http.post(url + '/doctorUnavailability', dataArrayDUReqJson);
+                    return $http.post(url + '/doctorUnavailability', dataArrayDUReqJson, { headers: headers });
                 })
 
                 let appointmentServiceRequests = dataArrayServiceReq.map(item => {
                     let dataArrayServiceReqJson = angular.toJson(item);
-                    return $http.post(url + '/appointment-service', dataArrayServiceReqJson);
+                    return $http.post(url + '/appointment-service', dataArrayServiceReqJson, { headers: headers });
                 })
 
-                await Promise.all([...doctorUnavailabilityRequests, ...appointmentServiceRequests])
+                await Promise.all([...doctorUnavailabilityRequests, ...appointmentServiceRequests]).then(() => {
+                    $timeout(() => { $scope.isLoadingCreate = false }, 3000)
+                }).finally(() => {
+                    $timeout(() => {
+                        new Noty({
+                            text: 'Đặt lịch khám thành công !',
+                            type: 'success',
+                            timeout: 3000
+                        }).show()
+                       $route.reload()
 
-                Swal.fire({
-                    title: "Thành công!",
-                    html: "Đặt lịch hẹn thành công",
-                    icon: "success"
-                }).then(() => {
-                    $route.reload()
+                    }, 3000)
                 })
 
             } catch (error) {
-                console.error('Có lỗi xảy ra khi đặt lịch hẹn:', error);
-                Swal.fire({
-                    title: "Lỗi!",
-                    html: "Có lỗi xảy ra khi đặt lịch hẹn. Vui lòng thử lại.",
-                    icon: "error"
-                });
+                console.error('Có lỗi xảy ra khi đặt lịch khám:', error);
+                new Noty({
+                    text: 'Có lỗi xảy ra khi đặt lịch khám. Vui lòng thử lại !',
+                    type: 'error',
+                    timeout: 3000
+                }).show();
             }
         }
     }
 
     $scope.processDoctorsWithAppointmentStatus = () => {
         return new Promise((resolve, reject) => {
-            $http.get(url + '/doctor-with-appointment-status').then(response => {
+            $http.get(url + '/doctor-with-appointment-status', { headers: headers }).then(response => {
                 resolve(response.data)
             }).catch(err =>
                 reject(err)
@@ -701,7 +751,7 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
             date: curentDate
         }
         return new Promise((resolve, reject) => {
-            $http.get(url + '/doctor-schedule-with-appointment-status', { params: params }).then(response => {
+            $http.get(url + '/doctor-schedule-with-appointment-status', { params: params, headers: headers }).then(response => {
                 resolve(response.data)
             }).catch(err =>
                 reject(err)
@@ -711,7 +761,7 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
 
     $scope.processDoctorUnavailability = () => {
         return new Promise((resolve, reject) => {
-            $http.get(url + '/doctorUnavailability').then(response => {
+            $http.get(url + '/doctorUnavailability', { headers: headers }).then(response => {
                 resolve(response.data)
             }).catch(err =>
                 reject(err)
@@ -726,7 +776,7 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
             startStr: startStr,
             endStr: endStr
         }
-        $http.get(url + '/time-of-shift-by-range', { params: params }).then(response => {
+        $http.get(url + '/time-of-shift-by-range', { params: params, headers: headers }).then(response => {
             $scope.selectedTimeOfShift = response.data
         })
     }
@@ -801,13 +851,32 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
         } else {
             updateArr = [originalArr, reqArr]
         }
-
-
         return {
+
             updateArr: [updateArr],
             deleteArr: [deleteArr],
             postArr: [postArr]
         }
+    }
+
+
+    $scope.getNameStatus = (statusId) => {
+        let st = $scope.listAppointmentStatusBD.find(s => s.appointment_StatusId === statusId);
+
+        if (!st) {
+            console.log("Không tìm thấy trạng thái với id:", statusId);
+            return 'trạng thái không xác định';
+        }
+
+        return st.status.toLowerCase();
+    }
+
+    function convertDateOfAlert(dateString) {
+        // Split the date string into an array of [year, month, day]
+        const [year, month, day] = dateString.split("-");
+
+        // Return the date in dd/mm/yyyy format
+        return `${day}/${month}/${year}`;
     }
 
 
@@ -857,6 +926,43 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
 
         let reqApr = $scope.appointmentPatientRecordRequest
         let reqApp = $scope.appointmentRequest
+
+
+        $http.get(url + '/get-email-by-doctor-id', {
+            params: { doctorId: reqApp.doctorId },
+        }, { headers: headers }).then(function (response) {
+            let emailOfDoctor = response.data.email;
+            let messageToDoctor = {
+                getterMail: emailOfDoctor,
+                body: "Lịch khám cho bệnh nhân ngày " + convertDateOfAlert(reqApp.appointmentDate.split("T")[0]) + " " + $scope.getNameStatus(reqApp.appointmentStatus)
+            };
+
+            $http.get(url + '/get-email-by-patient-id', { params: { patientId: reqApp.patientId } }, { headers: headers }).then(function (response) {
+                let email = response.data.email;
+
+                let message = {
+                    getterMail: email,
+                    body: "Lịch khám ngày " + convertDateOfAlert(reqApp.appointmentDate.split("T")[0]) + " " + $scope.getNameStatus(reqApp.appointmentStatus)
+                };
+
+                SocketService.getStompClient().then(function (stompClient) {
+                    stompClient.send("/app/private-message", {}, JSON.stringify(message));
+                    stompClient.send("/app/private-message", {}, JSON.stringify(messageToDoctor));
+
+                }).catch(function (error) {
+                    console.error('Socket connection error: ' + error);
+                });
+            }).catch(function (error) {
+                console.error('Error fetching patient email: ' + error);
+            });
+
+        }).catch(function (error) {
+            console.error('Error fetching doctor email: ' + error);
+        });
+
+
+
+
         let reqDu = $scope.generateDoctorUnavailabilityRequest($scope.selectedTimeOfShiftUp, appId, isUpdate)
         let reqAs = $scope.generateAppointmentServiceRequest($scope.selectedServicesUp, appId, isUpdate)
 
@@ -878,7 +984,7 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
                 data.deleteArr.forEach(arrReq => {
                     if (arrReq.length === 0) return
                     arrReq.forEach(itemReq => {
-                        promises.push($http.delete(`${deleteUrl}/${itemReq[idKey]}`))
+                        promises.push($http.delete(`${deleteUrl}/${itemReq[idKey]}`, { headers: headers }))
                     })
                 });
             }
@@ -887,7 +993,7 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
                 data.postArr.forEach(arrReq => {
                     if (arrReq.length === 0) return
                     arrReq.forEach(itemReq => {
-                        promises.push($http.post(postUrl, itemReq))
+                        promises.push($http.post(postUrl, itemReq, { headers: headers }))
                     })
                 });
             }
@@ -897,11 +1003,13 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
                     if (arrReq.length === 0) return
                     let oItem = ensureArray(arrReq[0])
                     let uItem = ensureArray(arrReq[1])
-                    oItem.forEach(o => {
-                        const id = o[idKey]
-                        uItem.forEach(u => {
-                            promises.push($http.put(`${putUrl}/${id}`, u))
-                        })
+                    oItem.forEach((o, index) => {
+                        if (index >= uItem.length) return;
+                        const id = o[idKey];
+                        const updateData = uItem[index]
+                        promises.push(
+                            $http.put(`${putUrl}/${id}`, updateData, { headers: headers })
+                        )
                     })
                 })
             }
@@ -915,17 +1023,17 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
             handleApiRequest(url + "/soft-delete-doctorUnavailability", url + "/doctorUnavailability", url + "/doctorUnavailability", reqDuData, duKey),
             handleApiRequest(url + "/soft-delete-appointment-service", url + "/appointment-service", url + "/appointment-service", reqAsData, asKey)
         ]).then(result => {
-            Swal.fire({
-                title: "Thành công!",
-                html: "Cập nhật cuộc hẹn thành công",
-                icon: "success"
-            }).then(rs => {
-                const btnCloseFormUpApp = document.getElementById('btn-close-formUpApp')
-                btnCloseFormUpApp.click()
-                $route.reload()
-            })
+
+            new Noty({
+                text: 'Cập nhật lịch khám thành công !',
+                type: 'success',
+                timeout: 3000
+            }).show()
+            const btnCloseFormUpApp = document.getElementById('btn-close-formUpApp')
+            btnCloseFormUpApp.click()
+            $route.reload()
         }).catch(error => {
-            console.error("Lỗi cập nhật cuộc hẹn", error);
+            console.error("Lỗi cập nhật lịch khám", error);
         })
     }
 
@@ -934,8 +1042,8 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
             appointmentDate: moment(new Date).format('DD/MM/YYYY'),
             doctorId: -1,
             title: '',
-            appointmentTypeId: -1,
-            patientId: -1,
+            appointmentTypeId: null,
+            patientId: null,
             notes: '',
             fullName: "",
             startTime: "",
@@ -956,8 +1064,8 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
                 $('#dataTable-list-service-app').DataTable({
                     autoWidth: true,
                     "lengthMenu": [
-                        [5, 10, 20, 30, -1],
-                        [5, 10, 20, 30, "All"]
+                        [10, 20, 30, -1],
+                        [10, 20, 30, "Tất cả"]
                     ],
                     language: {
                         sProcessing: "Đang xử lý...",
@@ -975,7 +1083,16 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
                             sNext: "Tiếp",
                             sLast: "Cuối"
                         }
-                    }
+                    },
+                    ordering: false,
+                    autoWidth: false,
+                    columnDefs: [
+                        { width: '5%', targets: 0 },
+                        { width: '25%', targets: 1 },
+                        { width: '40%', targets: 2 },
+                        { width: '15%', targets: 3 },
+                        { width: '15%', targets: 4 }
+                    ]
                 });
                 $scope.$apply()
             });
@@ -1023,7 +1140,6 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
     }
 
     $scope.initializeUIComponentsModal = () => {
-
         $('.select2').select2(
             {
                 theme: 'bootstrap4',
@@ -1031,11 +1147,23 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
                 allowClear: true
             });
 
-        $('.select2-multi-up').select2(
-            {
-                multiple: true,
-                theme: 'bootstrap4',
-            });
+        $timeout(() => {
+            $('.select2-multi-up').select2(
+                {
+                    multiple: true,
+                    theme: 'bootstrap4',
+                    placeholder: '---Nhập triệu chứng---',
+                    allowClear: true
+                }).val(null).trigger('change')
+
+            $('.select2-multi-up-treatment').select2(
+                {
+                    multiple: true,
+                    theme: 'bootstrap4',
+                    placeholder: '---Nhập cách điều trị---',
+                    allowClear: true
+                }).val(null).trigger('change')
+        }, 1000)
 
         $('.drgpicker-up').daterangepicker(
             {
@@ -1077,6 +1205,7 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
             $scope.showNextStepUp = true
         });
 
+
         $('#dental-issuesUp').on('change', function () {
             $timeout(function () {
                 let selectedVals = $('#dental-issuesUp').val()
@@ -1104,9 +1233,9 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
         $('#appointmentStatusUp').on('change', function () {
             $timeout(function () {
                 let selectedVal = $('#appointmentStatusUp').val()
+
                 $scope.formUpApp.appointmentStatus = processSelect2Service.processSelect2Data(selectedVal)[0]
                 $scope.processChangeAppStatus($scope.formUpApp.appointmentStatus)
-
             });
         });
     }
@@ -1115,17 +1244,20 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
         $('.select2').select2(
             {
                 theme: 'bootstrap4',
-                placeholder: 'Select an option',
+                placeholder: 'Chọn dữ liệu',
                 allowClear: true
             });
 
-        $('.select2-multi').select2(
-            {
+        $timeout(function () {
+            $('.select2-multi-dentalIssue').select2({
                 multiple: true,
                 theme: 'bootstrap4',
-            });
+                placeholder: '---Nhập triệu chứng ---',
+                allowClear: true
+            }).val(null).trigger('change');
+        }, 100)
 
-        $('.drgpicker').daterangepicker(
+        $('.drgpicker-appointmentDate').daterangepicker(
             {
                 singleDatePicker: true,
                 timePicker: false,
@@ -1139,7 +1271,7 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
                 },
             });
 
-        $('.drgpicker').on('apply.daterangepicker', function (ev, picker) {
+        $('.drgpicker-appointmentDate').on('apply.daterangepicker', function (ev, picker) {
             let selectedDate = picker.startDate.format('DD/MM/YYYY');
             $scope.getListDoctorSchedule(selectedDate)
             $scope.formApp.appointmentDate = selectedDate
@@ -1156,9 +1288,9 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
                 let getDentalIssueNames = $scope.listDentalIssueDB
                     .filter(di => selecteDentalIssues.includes(di.dentalIssuesId))
                     .map(di => di.name)
-                $scope.formApp.notes = getDentalIssueNames.join(' ,')
-                $scope.formApp.title = getDentalIssueNames.join(' ,')
-                $('#appointmentTitle').val(getDentalIssueNames.join(' ,'));
+                $scope.formApp.notes = getDentalIssueNames.join(', ')
+                $scope.formApp.title = getDentalIssueNames.join(', ')
+                $('#appointmentTitle').val(getDentalIssueNames.join(', '));
             });
         });
 
@@ -1167,7 +1299,7 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
         $('#appointmentPatient').on('change', function () {
             $timeout(function () {
                 let selectedVal = $('#appointmentPatient').val();
-                $scope.formApp.patientId = processSelect2Service.processSelect2Data(selectedVal)[0]
+                $scope.formApp.patientId = processSelect2Service.processSelect2Data(selectedVal)[0] ? processSelect2Service.processSelect2Data(selectedVal)[0] : null
                 $scope.validPatient($scope.formApp.patientId, $scope.validDateByPatient)
             });
         });
@@ -1175,10 +1307,9 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
         $('#appointmentType').on('change', function () {
             $timeout(function () {
                 let selectedVal = $('#appointmentType').val()
-                $scope.formApp.appointmentTypeId = processSelect2Service.processSelect2Data(selectedVal)[0]
-                     
-                $scope.validAppointmentType=$scope.listAppointmentTypeDB.filter(item => item.appointment_TypeId === $scope.formApp.appointmentTypeId)[0].typeName.toUpperCase()==='TÁI KHÁM'
+                $scope.formApp.appointmentTypeId = processSelect2Service.processSelect2Data(selectedVal)[0] ? processSelect2Service.processSelect2Data(selectedVal)[0] : null
 
+                $scope.validAppointmentType = $scope.listAppointmentTypeDB.filter(item => item.appointment_TypeId === $scope.formApp.appointmentTypeId)[0].typeName.toUpperCase() === 'TÁI KHÁM'
             });
         });
 
@@ -1222,7 +1353,9 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
                     let isAuth = checkStatus.includes(stt ? du.appointment.appointmentStatus.status.toLowerCase() : 'đã xác nhận')
                     return (du.deleted == false) || (du.deleted == true && isAuth)
                 })
+
                 dataDu.forEach(du => {
+
                     let status = du.appointment.appointmentStatus;
                     let color = status ? $scope.getColorForStatusId(du.appointment.appointmentStatus.status) : 'rgba(92, 184, 92, 0.7)';
                     let event = {
@@ -1235,9 +1368,8 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
                         appointment: du.appointment ? du.appointment : null,
                         tos: du.timeOfShift ? du.timeOfShift : null
                     };
+
                     eventArr.push(event);
-
-
                 });
                 updateCalendar();
             });
@@ -1336,7 +1468,7 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
                         Swal.fire({
                             position: "top-end",
                             icon: "warning",
-                            title: "Đã có lịch hẹn!",
+                            title: "Đã có lịch khám!",
                             showConfirmButton: false,
                             timer: 1500
                         });
@@ -1353,7 +1485,7 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
                         Swal.fire({
                             position: "top-end",
                             icon: "warning",
-                            title: "Đã quá giờ đăng ký cuộc hẹn !",
+                            title: "Đã quá giờ đăng ký lịch khám !",
                             showConfirmButton: false,
                             timer: 1500
                         });
@@ -1368,7 +1500,6 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
                     $scope.validDateByPatient = moment(arg.startStr.split("T")[0], "YYYY-MM-DD").format("DD/MM/YYYY")
                     $scope.formApp.startTime = arg.startStr.split("T")[1]
                     $scope.formApp.endTime = arg.endStr.split("T")[1]
-                    // $scope.startDate = arg.startStr.split("T")[0];
                     $scope.isSelectCalendar = true;
                     $scope.$apply();
                     const divRegisterAppointment = document.getElementById('div-register-appointment');
@@ -1380,6 +1511,7 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
                     if (arg.event.id === "") {
                         return
                     }
+
                     let originalApp = arg.event.extendedProps.appointment
                     if (originalApp == null) {
                         return
@@ -1387,8 +1519,8 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
 
                     $scope.getOriginalData(parseInt(arg.event.id));
                     $scope.originalDate = moment(originalApp.appointmentDate, ('YYYY-MM-DD')).format('DD/MM/YYYY')
+                    $scope.originalPatient = originalApp.patient
                     $scope.comparasionDateEvent(originalApp.appointmentDate)
-                    // $scope.selectedTosOriginal = [arg.event.extendedProps.tos]
                     $scope.formUpApp = {
                         reExaminationDate: originalApp.appointmentPatientRecord.reExamination,
                         currentCondition: originalApp.appointmentPatientRecord.currentCodition,
@@ -1465,71 +1597,113 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
         $scope.getListAppointmentStatusUp()
     })
 
+
     // list appointment
 
     $scope.processDoctorUnavailabilityAllDoctor = () => {
         return new Promise((resolve, reject) => {
-            $http.get(url + '/doctorUnavailability').then((response) => {
-                let filteredData = response.data;
 
+            Promise.all([
+                $http.get(url + '/doctorUnavailability', { headers: headers }),
+                $http.get(url + '/appointment', { headers: headers })
+            ]).then(([doctorUnavailabilityResponse, appointmentResponse]) => {
+                let doctorUnavailabilityData = doctorUnavailabilityResponse.data;
+                let appointmentsData = appointmentResponse.data;
+                let appointmentsWithNoDoctor = appointmentsData.filter(appointment => appointment.doctor === null);
+                             
+                let combinedData = doctorUnavailabilityData.concat(appointmentsWithNoDoctor);
                 if ($scope.selectedDoctorLApp.length > 0) {
-                    filteredData = filteredData.filter(item => {
-                        return $scope.selectedDoctorLApp.includes(item.appointment.doctor.doctorId);
-                    });
+                    combinedData = combinedData.filter(item =>
+                        item.appointment && item.appointment.doctor &&
+                        $scope.selectedDoctorLApp.includes(item.appointment.doctor.doctorId)
+                    );
                 }
+
                 if ($scope.selectedDatesLApp.length > 0) {
-                    filteredData = filteredData.filter(item => {
-                        return $scope.selectedDatesLApp.includes(moment(item.date).format("YYYY-MM-DD"));
-                    });
+                    combinedData = combinedData.filter(item =>
+                        item.date && $scope.selectedDatesLApp.includes(moment(item.date).format("YYYY-MM-DD"))
+                    );
                 }
 
                 if ($scope.selectedPatientLApp.length > 0) {
-                    filteredData = filteredData.filter(item => {
-                        return $scope.selectedPatientLApp.includes(item.appointment.patient.patientId);
-                    });
+                    combinedData = combinedData.filter(item =>
+                        item.appointment && item.appointment.patient &&
+                        $scope.selectedPatientLApp.includes(item.appointment.patient.patientId)
+                    );
+                }
+
+                if ($scope.selectedStatusLApp.length > 0) {
+                    combinedData = combinedData.filter(item =>
+                        item.appointment && item.appointment.appointmentStatus &&
+                        $scope.selectedStatusLApp.includes(item.appointment.appointmentStatus.appointment_StatusId)
+                    );
                 }
 
                 if ($scope.isReExaminationFilter) {
-                    filteredData = filteredData.filter(item => {
-                        return item.appointment.appointmentPatientRecord.reExamination != ""
+                    combinedData = combinedData.filter(item => {
+                        let app = item.appointment ? item.appointment : item;
+                        return app && app.appointmentPatientRecord &&
+                            app.appointmentPatientRecord.reExamination != "" && app.appointmentPatientRecord.reExamination != null
                     });
 
-                    filteredData.sort((a, b) => {
-                        let dateStrA = a.appointment.appointmentPatientRecord.reExamination
-                        let dateStrB = b.appointment.appointmentPatientRecord.reExamination
+                    combinedData.sort((a, b) => {
+                        let appA = a.appointment ? a.appointment : a
+                        let appB = b.appointment ? b.appointment : b
+                        let dateStrA = appA.appointmentPatientRecord.reExamination;
+                        let dateStrB = appB.appointmentPatientRecord.reExamination;
                         let dateA = moment(dateStrA, "DD/MM/YYYY").toDate();
                         let dateB = moment(dateStrB, "DD/MM/YYYY").toDate();
-                        return dateB - dateA
-                    })
-
+                        return dateB - dateA;
+                    });
                 }
 
-                let checkStatus = ['đã hủy', 'không đến', 'hoãn']
-                filteredData = filteredData.filter(du => {
-                    let stt = du.appointment.appointmentStatus
-                    let isAuth = checkStatus.includes(stt ? du.appointment.appointmentStatus.status.toLowerCase() : 'đã xác nhận')
-                    return (du.deleted == false) || (du.deleted == true && isAuth)
-                })
+                let checkStatus = ['đã hủy', 'không đến', 'hoãn'];
+                combinedData = combinedData.filter(du => {
+                    let stt = du.appointment && du.appointment.appointmentStatus;
+                    let isAuth = stt ? checkStatus.includes(stt.status.toLowerCase()) : false;
+                    return du.deleted == false || (du.deleted == true && isAuth);
+                });
 
-
-                resolve(filteredData)
-            }).catch((error) => reject(error))
+                // Apply final sorting
+                combinedData.sort((a, b) => {
+                    var dateA = new Date(a.appointmentDate);
+                    var dateB = new Date(b.appointmentDate);
+                    if (dateA > dateB) return -1;
+                    if (dateA < dateB) return 1;
+                    var idA = a.appointmentId;
+                    var idB = b.appointmentId;
+                    if (idA > idB) return -1;
+                    if (idA < idB) return 1;
+                    return 0;
+                });
+                 
+                resolve(combinedData);
+            }).catch(error => reject(error));
         })
     }
+
+    $rootScope.$on('reloadTableAppointment', function (event) {
+        $scope.getListDoctorUnavailabilityAllDoctor();
+    });
 
     $scope.getListDoctorUnavailabilityAllDoctor = () => {
         $scope.processDoctorUnavailabilityAllDoctor().then(result => {
             $scope.listDoctorUnavailabilityAllDoctorDB = result
             $scope.listAppointmentDBFromDu = []
             let seenAppointmentIds = {}
+            let quickAppArr=[]
             result.forEach(rs => {
-                if (!seenAppointmentIds[rs.appointment.appointmentId]) {
-                    seenAppointmentIds[rs.appointment.appointmentId] = true;
-                    $scope.listAppointmentDBFromDu.push(rs.appointment);
+                let appointmentId = rs.appointment && rs.appointment.appointmentId ? rs.appointment.appointmentId : rs.appointmentId;         
+                if (appointmentId && !seenAppointmentIds[appointmentId]) {
+                    seenAppointmentIds[appointmentId] = true              
+                    if (rs.appointment) {
+                        $scope.listAppointmentDBFromDu.push(rs.appointment);
+                    } else{
+                        quickAppArr.push(rs)
+                    }            
                 }
             })
-            // $scope.listAppointmentDBFromDu = $scope.listAppointmentDBFromDu.sort((a, b) => b.appointmentId - a.appointmentId)
-
+            $scope.listAppointmentDBFromDu=$scope.listAppointmentDBFromDu.concat(quickAppArr)
             $timeout(() => {
                 if ($.fn.DataTable.isDataTable('#dataTable-list-app')) {
                     $('#dataTable-list-app').DataTable().clear().destroy();
@@ -1566,12 +1740,29 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
     }
 
     $scope.getListDoctor = () => {
-        $http.get(url + '/doctor').then(respone => {
+        $http.get(url + '/doctor-except-deleted').then(respone => {
             $scope.listDoctorDB = respone.data
-            //$scope.listDoctorDB.unshift({ doctorId: null, fullName: 'Chọn tất cả' });
         }).catch(err => {
             console.log("Error", err);
         })
+    }
+
+    $scope.getListDoctorFilter = () => {
+        $http.get(url + '/doctor-except-deleted').then(respone => {
+            let allOptions = {
+                doctorId: null,
+                fullName: '---Tất cả ---'
+            }
+            $scope.listDoctorDBFilter = respone.data
+            $scope.listDoctorDBFilter.unshift(allOptions);
+        }).catch(err => {
+            console.log("Error", err);
+        })
+    }
+    $scope.clearDateFilter = () => {
+        $scope.selectedDatesLApp = []
+        $scope.getListDoctorUnavailabilityAllDoctor()
+        $('#formAppoinmentSearchDate').val(moment().format("DD/MM/YYYY"))
     }
 
     $scope.getDateFilter = (selectedDate) => {
@@ -1589,10 +1780,6 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
 
     $scope.refreshFilter = () => {
         $route.reload()
-        $timeout(function () {
-            const tabLink = document.querySelector('.nav-link[ng-click*="selectTab(-2"]')
-            tabLink.click();
-        }, 1000)
     }
 
     $scope.highlightReExamination = (reExamination) => {
@@ -1606,7 +1793,10 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
     }
 
     $scope.updateStatus = (app, status) => {
+        $scope.originalPatient = app.patient
         let details = $scope.getDetailsAppointment(app.appointmentId)
+ 
+        let isDetails = details.length > 0
         if ($scope.isDisabledStatus(status)) return;
         const originalApp = app
         if (originalApp == null) {
@@ -1623,14 +1813,14 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
             reExaminationDate: originalApp.appointmentPatientRecord.reExamination,
             currentCondition: originalApp.appointmentPatientRecord.currentCodition,
             appointmentDate: $scope.originalDate,
-            fullName: originalApp.doctor.fullName,
-            startTime: details[0].timeOfShift.beginTime,
-            endTime: details[details.length - 1].timeOfShift.endTime,
+            fullName: originalApp.doctor ? originalApp.doctor.fullName : 'Đang chờ sắp bác sĩ',
+            startTime: isDetails && details[0] && details[0].timeOfShift ? details[0].timeOfShift.beginTime : 'Đang chờ sắp xếp',
+            endTime: isDetails && details[0] && details[0].timeOfShift ? details[details.length - 1].timeOfShift.endTime : 'Đang chờ sắp xếp',
             patientId: originalApp.patient.patientId,
             appointmentStatus: originalApp.appointmentStatus ? originalApp.appointmentStatus.appointment_StatusId : 2,
             appointmentTypeId: originalApp.appointmentType.appointment_TypeId,
             createDate: originalApp.createAt,
-            doctorId: originalApp.doctor.doctorId,
+            doctorId: originalApp.doctor ? originalApp.doctor.doctorId : -1,
             deleted: originalApp.deleted,
             quantity: 1,
             isReExamination: originalApp.appointmentPatientRecord.reExamination == "" ? false : true
@@ -1655,9 +1845,12 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
 
         $scope.day = moment(appointment.appointmentDate, ('YYYY-MM-DD')).toDate().getDate();
         $scope.day < 10 ? '0' + $scope.day : $scope.day
-        $scope.month = moment(appointment.appointmentDate, ('YYYY-MM-DD')).toDate().getMonth() + 1; // Tháng bắt đầu từ 0
+        $scope.month = moment(appointment.appointmentDate, ('YYYY-MM-DD')).toDate().getMonth() + 1;
         $scope.month < 10 ? '0' + $scope.month : $scope.month
         $scope.year = moment(appointment.appointmentDate, ('YYYY-MM-DD')).toDate().getFullYear();
+
+        $scope.getBillByAppointment(appointmentId, $scope.listBillByAppointmentAndPatientDB)
+        $scope.getPrescriptionByAppointment(appointment, $scope.listPrescriptionByAppointmentAndMedicinesDB)
     }
 
     $scope.getBillByAppointmentAndPatient = (appointmentIdParam, patientIdParam) => {
@@ -1665,26 +1858,44 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
             appointmentId: appointmentIdParam,
             patientId: patientIdParam
         }
-        $http.get(url + '/bill-by-appointment-and-patient', { params: params }).then(response => {
+        $http.get(url + '/bill-by-appointment-and-patient', { params: params, headers: headers }).then(response => {
             $scope.listBillByAppointmentAndPatientDB = response.data
         })
     }
 
     $scope.getBillByAppointment = (appointmentId, listBillByAppointmentAndPatientDB) => {
-        let bill = listBillByAppointmentAndPatientDB.filter(bill => bill.appointment.appointmentId === appointmentId)
-        return bill
+        if (listBillByAppointmentAndPatientDB == null || appointmentId == null) return
+        $scope.bill = listBillByAppointmentAndPatientDB.filter(bill => bill.appointments.appointmentId === appointmentId)
+        $http.post(url + '/generateBarcode', { text: $scope.bill[0].appointments.patient.patientId }, { headers: headers })
+            .then(response => {
+                if (response.data && response.data.message) {
+                    $scope.barcodeImage = response.data.message;
+                    console.log("Barcode generated successfully");
+                } else {
+                    console.error("Unexpected response format");
+                }
+            })
+            .catch(err => {
+                console.error("Error generating barcode", err);
+            });
     }
 
     $scope.getPrescriptionWithMedicinesByAppointment = (appointmentId) => {
         let params = {
             appointmentId: appointmentId
         }
-        $http.get(url + '/prescription-by-appointment', { params: params }).then(response => {
+        $http.get(url + '/prescription-by-appointment', { params: params, headers: headers }).then(response => {
             $scope.listPrescriptionByAppointmentAndMedicinesDB = response.data
+
         })
+            .catch(err => {
+                console.error("Error fetching prescription data", err);
+            });
     }
 
+
     $scope.getPrescriptionByAppointment = (appointment, listPrescriptionByAppointmentAndMedicinesDB) => {
+
         let aprId = appointment.appointmentPatientRecord.appointmentPatientRecordId
         let filterData = listPrescriptionByAppointmentAndMedicinesDB.filter(item => item.prescription.appointmentPatientRecord.appointmentPatientRecordId === aprId)
 
@@ -1705,12 +1916,12 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
             });
 
         }
-
-        return uniqueMedicines
+        $scope.prescription = uniqueMedicines
+        //return uniqueMedicines
     }
 
     $scope.getAllAppointmentServiceExceptDeleted = () => {
-        $http.get(url + '/appointment-service-except-deleted').then(response => {
+        $http.get(url + '/appointment-service-except-deleted', { headers: headers }).then(response => {
             $scope.listAPSDB = response.data
         })
     }
@@ -1728,7 +1939,10 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
     }
 
     $scope.getDetailsAppointment = (appointmentId) => {
-        let duData = $scope.listDoctorUnavailabilityAllDoctorDB.filter(du => du.appointment.appointmentId === appointmentId)
+        let duData = $scope.listDoctorUnavailabilityAllDoctorDB.filter(du => {
+            let id = du.appointment && du.appointment.appointmentId ? du.appointment.appointmentId : du.appointmentId
+            return id === appointmentId
+        })
         return duData
     };
 
@@ -1752,11 +1966,9 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
                 Swal.showLoading();
             }
         });
-        // Wait for Angular to finish rendering
+
         $scope.$evalAsync(() => {
             document.fonts.ready.then(() => {
-                console.log("Fonts are ready");
-
                 pdfMake.fonts = {
                     NimbusSans: {
                         normal: "NimbusSanL-Reg.otf",
@@ -1809,10 +2021,8 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
                         height: tempElement.offsetHeight
                     }).then(function (canvas) {
                         const imgData = canvas.toDataURL('image/png');
-                        console.log("imgData length:", imgData.length);
 
                         if (imgData === 'data:,') {
-                            console.error('Canvas is empty');
                             return;
                         }
 
@@ -1866,12 +2076,17 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
             let selectedDate = $('#formAppoinmentSearchDate').val();
             $scope.getDateFilter(selectedDate)
         });
+        $('.drgpicker-lapp').on('cancel.daterangepicker', function (ev, picker) {
+            $scope.clearDateFilter()
+        });
 
-        $('.select2-multi').select2(
-            {
-                multiple: true,
-                theme: 'bootstrap4',
-            });
+        $('.select2-multi').select2({
+            multiple: true,
+            theme: 'bootstrap4',
+            placeholder: '---Nhập triệu chứng ---',
+            allowClear: true
+        }).val(null).trigger('change');
+
 
         $('#doctorFilterTableApp').on('change', function () {
             $timeout(function () {
@@ -1895,10 +2110,16 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
             });
         });
 
+        $('#appStatusFilterTableApp').on('change', function () {
+            $timeout(function () {
+                let selectedVals = $('#appStatusFilterTableApp').val()
+                $scope.selectedStatusLApp = processSelect2Service.processSelect2Data(selectedVals)
+                $scope.getListDoctorUnavailabilityAllDoctor()
+            });
+        });
     }
 
     $scope.closeModalAndNavigate = () => {
-        // Chuyển route
         $location.path('/admin/patients');
         $scope.$apply();
     }
@@ -1907,10 +2128,33 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
         return url + "/imgDoctorSignature/" + filename;
     }
 
+    $scope.clickAppointmentToAccept = () => {
+        const appointmentId = localStorage.getItem('clickedAppointmentId');
+        const attemptClick = (retries) => {
+            if (retries <= 0) {
+                localStorage.removeItem('clickedAppointmentId');
+                return;
+            }
+
+            const pElement = document.getElementById('appointment' + appointmentId);
+
+            if (pElement) {
+                pElement.click();
+                localStorage.removeItem('clickedAppointmentId');
+            } else {
+                $timeout(() => attemptClick(retries - 1), 500);
+            }
+        };
+        attemptClick(10);
+    };
+
+
+
+
+    $scope.initializeUIComponents()
     $scope.getAllDentalIssuesExceptDeleted()
     $scope.getAllDentalIssuesExceptDeletedUp()
     $scope.initializeCalendarAppointment()
-    $scope.initializeUIComponents()
     $scope.setupTab()
     $scope.getListAppointmentType()
     $scope.getListAppointmentStatus()
@@ -1925,6 +2169,10 @@ app.controller('AdminCalendar', function ($scope, $http, $rootScope, $location, 
     $scope.getBillByAppointmentAndPatient($scope.appointmentIdParam, $scope.patientIdParam)
     $scope.getPrescriptionWithMedicinesByAppointment($scope.appointmentIdParam)
     $scope.getAllAppointmentServiceExceptDeleted()
+    $scope.getListAppointmentStatusFilter()
+    $scope.getListPatientFilter()
+    $scope.getListDoctorFilter()
+    $scope.clickAppointmentToAccept();
 })
 
 

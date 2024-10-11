@@ -1,0 +1,280 @@
+<div class="vertical  dark ">
+    <div class="wrapper">
+        <nav class="topnav navbar navbar-light justify-content-end" ng-include="'component/admin-nav.html'">
+        </nav>
+        <aside class="sidebar-left border-right shadow" id="leftSidebar" ng-include="'component/admin-aside.html'"
+            data-simplebar>
+        </aside>
+        <main role="main" class="main-content" ng-controller="AdminMyProfileController">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                </ol>
+            </nav>
+            <div class="container-fluid">
+                <div class="row justify-content-center mb-3">
+                    <div class="col-12">
+                        <div class="d-flex flex-items-center flex-justify-between custom-heading">
+                            <h3 class="text-secondary">Hồ sơ của tôi</h3>
+                        </div>
+                        <div class="custom-hr mb-3"></div>
+                        <div class="row align-items-center">
+                            <div class="col-md-3 text-center">
+                                <div class="avatar avatar-xl mb-3">
+                                    <img ng-src="{{urlImgDisplay()}}" alt="..." class="avatar-img rounded-circle">
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="row align-items-center">
+                                    <!-- <div class="col-lg-12 col-md-12">
+                                        <div class="form-outline mb-3">
+                                            <label class="form-label" for="manageDoctorsModaldoctorsImage">Chọn
+                                                ảnh đại diện</label>
+                                            <input type="file" accept="image/*" multiple
+                                                onchange="angular.element(this).scope().uploadImg(this.files)"
+                                                id="manageDoctorsModaldoctorsImage" class="form-control" disabled>
+                                            <div class="p-3 mt-3 d-flex justify-content-center flex-wrap"
+                                                style="box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); border-radius: 10px;"
+                                                ng-if="filenames.length > 0">
+                                                <label class="m-2" ng-repeat="filename in filenames"
+                                                    title="Double click để xóa">
+                                                    <img ng-src="{{urlImg(filename)}}" ng-dblclick="deleteImg(filename)"
+                                                        width="100" height="100">
+                                                    <p>{{filename}}</p>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div> -->
+                                    <div class="col-lg-6 col-md-12">
+                                        <div class="form-outline mb-3">
+                                            <label class="form-label" for="manageDoctorsModaldoctorsName">Họ và
+                                                Tên</label>
+                                            <input type="text" id="manageDoctorsModaldoctorsName"
+                                                ng-model="formDoctor.fullName" class="form-control"
+                                                placeholder="Họ và Tên" ng-show="isDoctor" required disabled>
+                                            <input type="text" id="manageDoctorsModalstaffName"
+                                                ng-model="formStaff.fullName" class="form-control"
+                                                placeholder="Họ và Tên" ng-show="!isDoctor" required disabled>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-6 col-md-12" ng-show="isDoctor">
+                                        <div class="form-row">
+                                            <div class="form-group col-md-8">
+                                                <label for="degreesId">Cấp bậc</label>
+                                                <select id="degreesId" class="form-control select2"
+                                                    ng-model="formDoctor.degrees"
+                                                    ng-options="d.degreesId as d.degreesName for d in listDegreesTypeDB" ng-disabled="true">
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-6 col-md-12" ng-show="isDoctor">
+                                        <div class="form-row">
+                                            <div class="form-group col-md-8">
+                                                <label for="specialtyId">Chyên
+                                                    khoa</label>
+                                                <select id="specialtyId" class="form-control select2"
+                                                    ng-model="formDoctor.specialtyId"
+                                                    ng-options="d.specialtyId as d.specialtyName for d in listSpecialtyTypeDB" ng-disabled="true">
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-6 col-md-12" ng-show="!isDoctor">
+                                        <div class="form-row">
+                                            <div class="form-group col-md-8">
+                                                <label for="departmentId">Phòng ban</label>
+                                                <select id="departmentId" class="form-control select2"
+                                                    ng-model="formStaff.departmentId" ng-options="d.departmentId
+                                                    as d.departmentName for d in listDepartmentDB" ng-disabled="true">
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-6 col-md-12">
+                                        <div class="form-outline mb-3">
+                                            <label class="form-label" for="manageDoctorsModaldoctorsPhoneNumber">Số
+                                                điện thoại</label>
+                                            <input type="text" id="manageDoctorsModaldoctorsPhoneNumber"
+                                                ng-model="formDoctor.phoneNumber" class="form-control"
+                                                placeholder="Nhập số điện thoại" ng-show="isDoctor" disabled>
+                                            <input type="text" id="manageDoctorsModalstaffPhoneNumber"
+                                                ng-model="formStaff.phoneNumber" class="form-control"
+                                                placeholder="Nhập số điện thoại" ng-show="!isDoctor" disabled>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-6 col-md-12" ng-show="isDoctor">
+                                        <div class="form-row">
+                                            <div class="form-group col-md-8">
+                                                <label for="doctorGender">Giới
+                                                    tính</label>
+                                                <select id="doctorGender" class="form-control select2"
+                                                    ng-model="formDoctor.gender"
+                                                    ng-options="d.genderId as d.genderName for d in listGenderTypeDB" ng-disabled="true">
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-6 col-md-12" ng-show="!isDoctor">
+                                        <div class="form-row">
+                                            <div class="form-group col-md-8" ng-show="!isDoctor">
+                                                <label for="staffGender">Giới
+                                                    tính</label>
+                                                <select id="staffGender" class="form-control select2"
+                                                    ng-model="formStaff.gender"
+                                                    ng-options="d.genderId as d.genderName for d in listGenderTypeDB" ng-disabled="true">
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-6 col-md-12">
+                                        <div class="form-outline mb-3">
+                                            <label class="form-label" for="manageDoctorsModaldoctorsBirthday">Ngày
+                                                sinh</label>
+                                            <input type="date" id="manageDoctorsModaldoctorsBirthday"
+                                                ng-model="formDoctor.birthday" class="form-control"
+                                                placeholder="Ngày sinh" ng-show="isDoctor" disabled>
+                                            <input type="date" id="manageDoctorsModalstaffBirthday"
+                                                ng-model="formStaff.birthday" class="form-control"
+                                                placeholder="Ngày sinh" ng-show="!isDoctor" disabled>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-6 col-md-12">
+                                        <div class="form-floating mb-3" ng-show="isDoctor">
+                                            <textarea ng-model="formDoctor.address" class="form-control"
+                                                placeholder="Nhập địa chỉ" id="floatingTextarea2Address"
+                                                style="height: 100px" disabled></textarea>
+                                            <label for="floatingTextarea2Address">Địa
+                                                chỉ</label>
+                                        </div>
+                                        <div class="form-floating mb-3" ng-show="!isDoctor">
+                                            <textarea ng-model="formStaff.address" class="form-control"
+                                                placeholder="Nhập địa chỉ" id="floatingTextarea2AddressStaff"
+                                                style="height: 100px" disabled></textarea>
+                                            <label for="floatingTextarea2AddressStaff">Địa
+                                                chỉ</label>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <!-- <div class="d-flex justify-content-center mt-3">
+                                    <button ng-click="isDoctor?updateDoctor():updateStaff()"
+                                        class="btn btn-primary m-2" ng-show="!isLoadingUpdateInfo">Cập
+                                        nhật</button>
+                                    <button class="btn btn-primary" type="button" disabled ng-show="isLoadingUpdateInfo">
+                                        <span class="spinner-border spinner-border-sm" role="status"
+                                            aria-hidden="true"></span>
+                                        Đang xử lý...
+                                    </button>
+                                </div> -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row justify-content-center mb-3">
+                    <div class="col-12">
+                        <div class="d-flex flex-items-center flex-justify-between custom-heading">
+                            <h3 class="text-secondary">Thay đổi mật khẩu</h3>
+                        </div>
+                        <div class="custom-hr mb-3"></div>
+                        <div class="row align-items-center">
+
+                            <div class="col-lg-3 col-md-12 mb-3">
+                                <p class="mb-2">Yêu cầu mật khẩu</p>
+                                <p class="small text-muted mb-2"> Để tạo mật khẩu mới, bạn cần đảm bảo mật khẩu có: </p>
+                                <ul class="small text-muted pl-4 mb-0">
+                                    <li>Ít nhất 8 ký tự </li>
+                                    <li>Chứa ít nhất 1 ký tự đặc biệt </li>
+                                    <li>Chứa ít nhất một ký tự kiểu số</li>
+                                    <li>Chứa ít nhất một ký tự viết hoa</li>
+                                    <li>Chứa ít nhất một ký tự viết thường</li>
+                                    <li>Không trùng với mật khẩu cũ</li>
+                                </ul>
+                            </div>
+
+                            <div class="col-lg-4 col-md-12 mb-3 p-3"
+                                style="box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); border-radius: 10px;">
+                                <div class="form-outline mb-3">
+                                    <label class="form-label" for="manageDoctorsModaldoctorsName">
+                                        Mật khẩu hiện tại
+                                    </label>
+                                    <span>
+                                        <i class="fe fe-eye-off fe-16" ng-click="togglePassword('current')"
+                                            ng-show="!isShowCurrentPassword"></i>
+                                        <i class="fe fe-eye fe-16" ng-click="togglePassword('current')"
+                                            ng-show="isShowCurrentPassword"></i>
+                                    </span>
+                                    <input type="password" id="currentPassword"
+                                        ng-model="formChangePassword.currentPassword" class="form-control"
+                                        placeholder="Nhập mật khẩu hiện tại của bạn" required
+                                        ng-blur="checkCurrentPasswordInput(formChangePassword.currentPassword)">
+                                    <span class="text-danger small"
+                                        ng-show="!isSamePreviousPasswordCurrentInput&&isFocusCurrentPassword&&(formChangePassword.currentPassword!='')">
+                                        (*) Mật khẩu hiện tại chưa đúng
+                                    </span>
+
+                                </div>
+                                <div class="form-outline mb-3">
+                                    <label class="form-label" for="manageDoctorsModaldoctorsName">Mật khẩu mới</label>
+                                    <span id="spanNewPassword">
+                                        <i class="fe fe-eye-off fe-16" ng-click="togglePassword('new')"
+                                            ng-show="!isShowNewPassword"></i>
+                                        <i class="fe fe-eye fe-16" ng-click="togglePassword('new')"
+                                            ng-show="isShowNewPassword"></i>
+                                    </span>
+                                    <input type="password" id="newPassword" ng-model="formChangePassword.newPassword"
+                                        class="form-control" placeholder="Nhập mật khẩu mới" required
+                                        ng-blur="checkNewPasswordInput(formChangePassword.newPassword)">
+                                    <span class="text-danger small"
+                                        ng-show="isFocusNewPassword&&!isPatternPassword&&!isSamePreviousPasswordNewInput&&(formChangePassword.newPassword!='')">
+                                        (*) Mật khẩu chưa đúng
+                                    </span>
+                                    <span class="text-danger small"
+                                        ng-show="isFocusNewPassword&&isSamePreviousPasswordNewInput&&(formChangePassword.newPassword!='')">
+                                        (*) Không được trùng mật khẩu cũ
+                                    </span>
+
+                                </div>
+                                <div class="form-outline mb-3">
+                                    <label class="form-label" for="manageDoctorsModaldoctorsName">Nhập lại mật khẩu
+                                        mới</label>
+                                    <span id="spanConfirmPassword">
+                                        <i class="fe fe-eye-off fe-16" ng-click="togglePassword('confirm')"
+                                            ng-show="!isShowConfirmPassword"></i>
+                                        <i class="fe fe-eye fe-16" ng-click="togglePassword('confirm')"
+                                            ng-show="isShowConfirmPassword"></i>
+                                    </span>
+                                    <input type="password" id="confirmPassword"
+                                        ng-model="formChangePassword.confirmPassword" class="form-control"
+                                        placeholder="Nhập lại mật khẩu mới" required
+                                        ng-blur="checkConfirmPasswordInput(formChangePassword.confirmPassword)">
+                                    <span class="text-danger small"
+                                        ng-show="isFocusConfirmPassword&&!isMatchNewPassword&&(formChangePassword.confirmPassword!='')">
+                                        (*) Xác nhận mật khẩu chưa đúng
+                                    </span>
+                                </div>
+                                <button class="btn btn-outline-info float-end" ng-click="changePassword()"
+                                    ng-show="!isLoadingChangePassword">Đổi mật
+                                    khẩu</button>
+                                <button class="btn btn-outline-info float-end" type="button" disabled
+                                    ng-show="isLoadingChangePassword" float-end>
+                                    <span class="spinner-border spinner-border-sm" role="status"
+                                        aria-hidden="true"></span>
+                                    Đang xử lý...
+                                </button>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>

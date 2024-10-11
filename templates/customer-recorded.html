@@ -1,0 +1,485 @@
+<header class="header_area" ng-include="'component/header.html'"></header>
+<div class="container" ng-controller="CustomerRecoredController">
+  <div class="d-flex flex-items-center flex-justify-between custom-heading">
+    <h3 class="text-secondary">Lịch sử điều trị</h3>
+  </div>
+  <div class="custom-hr mb-3"></div>
+  <div class="box mt-3">
+    <div class="box-content">
+      <div class="row justify-content-center">
+        <div class="col-12">
+          <div class="card card-fill timeline">
+            <div class="card-header">
+              <div class="box-header">
+                <div class="d-flex justify-content-between mb-3">
+                  <div>
+                    <button type="button" class="btn btn-outline-primary p-2" ng-click="reFresh()">
+                      <i class="fe fe-refresh-ccw"></i>
+                      Làm mới
+                    </button>
+                  </div>
+                  <!-- <div class="appointment-pagination mb-2">
+                    <nav ng-include="'component/pagination.html'"></nav>
+                  </div> -->
+                </div>
+                <div class="row align-items-center justify-content-end">
+                  <div class="col-lg-3">
+                    <label for="customerFilterDoctor">Chọn bác sĩ</label>
+                    <select id="customerFilterDoctor" class="form-control select2-multi"
+                      ng-model="formPatientRecord.doctorId" ng-options="d.doctorId as d.fullName for d in listdoctorDB"
+                      style="height: 40px;">
+                    </select>
+                  </div>
+                  <div class="col-lg-3">
+                    <label for="customerFilterByDate">Chọn ngày</label>
+                    <div class="input-group">
+                      <div class="input-group-prepend">
+                        <div class="input-group-text" id="button-addon-date">
+                          <span class="fe fe-calendar fe-16"></span>
+                        </div>
+                      </div>
+                      <input type="text" class="form-control customer-drgpicker-filter-record" id="customerFilterByDate"
+                        ng-model="formPatientRecord.dateFilter" autocomplete="off" style="height: 40px;">
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+
+              <div ng-show="listAppGroupByDateDB.length==0" class="text-warning text-center">Không có dữ liệu hiển
+                thị</div>
+
+              <div class="card">
+                <table class="table datatables" id="dataTable-customer-recorded">
+                  <thead>
+                    <tr>
+                      <!-- Define your headers here -->
+                      <th></th>
+
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr ng-repeat="map in listAppGroupByDateDB">
+                      <td>
+                        <h6 class="text-uppercase text-muted mb-4 mt-4">{{map[0] | dateFormat}}</h6>
+
+                        <div class="pb-3 timeline-item" ng-repeat="app in map[1]" ng-class="
+                {
+                  'item-confirmed': app.appointmentStatus.status=='Đã Xác Nhận',
+                  'item-completed': app.appointmentStatus.status=='Hoàn Thành',
+                  'item-progress': app.appointmentStatus.status=='Đang Diễn Ra',
+                  'item-canceled': app.appointmentStatus.status=='Đã Hủy',
+                  'item-noshow': app.appointmentStatus.status=='Không Đến',
+                  'item-rescheduled': app.appointmentStatus.status=='Hoãn',
+                  'item-booked': app.appointmentStatus.status=='Đã Đặt'
+                }" style="border: 1px solid rgb(221, 215, 215); margin: 0; border-radius: 5px;">
+                          <div class="pl-5">
+                            <div class="mb-3">
+                              Khách hàng <strong>{{app.patient.fullName}}</strong>
+                              <span class="text-muted mx-2">đã
+                                {{app.appointmentStatus.status}} cuộc hẹn</span>
+                              <strong>#{{app.appointmentId}}</strong>
+
+                              <div>
+                                <button class="btn btn-outline-danger float-right" style="margin: 5px;"
+                                  ng-show="isShowBtnCancel(app.appointmentStatus.status)&&!isLoadingCancel(app.appointmentId)"
+                                  ng-click="cancelAppoinmnet(app)">Hủy cuộc hẹn</button>
+                                <button class="btn btn-outline-danger float-right" style="margin: 5px;" type="button"
+                                  disabled
+                                  ng-show="isShowBtnCancel(app.appointmentStatus.status)&&isLoadingCancel(app.appointmentId)">
+                                  <span class="spinner-border spinner-border-sm" role="status"
+                                    aria-hidden="true"></span>
+                                  Đang xử lý...
+                                </button>
+                                <button id="btn-paintient-record-details" class="float-right btn btn-outline-primary"
+                                  href="#!" style="margin: 5px;" data-bs-toggle="offcanvas"
+                                  data-bs-target="#offcanvasDetails-{{app.appointmentId}}"
+                                  aria-controls="offcanvasDetails-{{app.appointmentId}}" ng-click="setupTab(app)">Xem
+                                  chi tiết</button>
+                              </div>
+
+                              <div style="height: 90vh;" class="offcanvas offcanvas-bottom" tabindex="-1"
+                                id="offcanvasDetails-{{app.appointmentId}}" aria-labelledby="offcanvasBottomLabel">
+                                <div class="offcanvas-header">
+                                  <h5 class="offcanvas-title" id="offcanvasBottomLabel">Xem chi tiết bệnh án
+                                    {{app.appointmentPatientRecord.appointmentPatientRecordId}}</h5>
+                                  <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
+                                    aria-label="Close"></button>
+                                </div>
+                                <div class="offcanvas-body">
+                                  <ul class="nav nav-tabs nav-justified mb-3" id="nav-tabs-{{app.appointmentId}}">
+                                    <li class="nav-item">
+                                      <a class="nav-link" ng-class="{active: isSelected(-1)}"
+                                        ng-click="selectTab(-1,$event)" href="#">Thông tin
+                                        bệnh nhân</a>
+                                    </li>
+                                    <li class="nav-item">
+                                      <a class="nav-link" ng-class="{active: isSelected(-2)}"
+                                        ng-click="selectTab(-2,$event)" href="#">Xem hóa
+                                        đơn</a>
+                                    </li>
+                                    <li class="nav-item">
+                                      <a class="nav-link" ng-class="{active: isSelected(-3)}"
+                                        ng-click="selectTab(-3,$event)" href="#">Đơn
+                                        thuốc</a>
+                                    </li>
+                                  </ul>
+                                  <div class="tab-content">
+                                    <div class="tab-pane" ng-class="{ 'active show': isSelected(-1) }"
+                                      ng-init="details = getDetailsAppointment(app.appointmentId)">
+
+                                      <div class="row justify-content-center">
+                                        <div class="col-12">
+                                          <div class="row mt-2 align-items-center">
+                                            <div class="col-md-3 text-center mb-5">
+                                              <div class="avatar avatar-xl">
+                                                <img ng-src="{{app.patient.imageURL}}" alt="..."
+                                                  class="avatar-img rounded-circle">
+                                              </div>
+                                            </div>
+                                            <div class="col">
+                                              <div class="row align-items-center">
+                                                <div class="col-md-7">
+                                                  <h4 class="mb-1">{{app.patient.fullName}}</h4>
+                                                  <p class="mb-3"><span class="badge badge-dark">ID:
+                                                      {{app.patient.patientId
+                                                      }}</span>
+                                                  </p>
+                                                </div>
+                                              </div>
+                                              <div class="row mb-4">
+                                                <div class="col-md-7">
+                                                  <p class="mb-0 text-secondary" ng-show="app.patient.gender==='MALE'">
+                                                    Giới
+                                                    tính: Nam </p>
+                                                  <p class="mb-0 text-secondary"
+                                                    ng-show="app.patient.gender==='FEMALE'">Giới
+                                                    tính: Nữ </p>
+                                                  <p class="mb-0 text-secondary"
+                                                    ng-show="app.patient.gender!=='FEMALE'&&app.patient.gender!=='MALE'">
+                                                    Giới tính: Khác </p>
+                                                  <p class="mb-0 text-secondary">CMND/CCCD:
+                                                    {{app.patient.citizenIdentificationNumber}}</p>
+                                                  <p class="mb-0 text-secondary">Ngày sinh: {{app.patient.birthday |
+                                                    dateFormat
+                                                    }}</p>
+                                                </div>
+                                                <div class="col">
+                                                  <p class="mb-0 text-secondary">Địa chỉ: {{app.patient.address}}</p>
+                                                  <p class="mb-0 text-secondary">Điện thoại: {{app.patient.phoneNumber |
+                                                    phoneNumberFormat}} </p>
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                        <div class="col-6">
+                                          <h6 class="mb-3">Chi tiết giờ khám</h6>
+                                          <table class="table table-hover">
+                                            <thead>
+                                              <tr role="row">
+                                                <th>ID</th>
+                                                <th>Giờ bắt đầu khám</th>
+                                                <th>Giờ kết thúc khám</th>
+                                              </tr>
+                                            </thead>
+                                            <tbody>
+                                              <tr ng-repeat="d in details">
+                                                <th>{{d.doctorUnavailabilityId}}</th>
+                                                <td>{{d.timeOfShift.beginTime|timeFormat}}</td>
+                                                <td>{{d.timeOfShift.endTime|timeFormat}}</td>
+                                              </tr>
+                                            </tbody>
+                                          </table>
+                                        </div>
+                                      </div>
+
+                                    </div>
+                                    <div class="tab-pane" ng-class="{ 'active show': isSelected(-2) }">
+                                      <div ng-show="bill.length==0" class="text-warning text-center">Không có bill hiển
+                                        thị
+                                      </div>
+                                      <div ng-show="bill.length!=0" class="row justify-content-center">
+                                        <div class="col-12 col-lg-10 col-xl-8">
+                                          <div class="row align-items-center">
+                                            <div class="col">
+                                              <h2 class="h5 page-title"><small
+                                                  class="text-secondary text-uppercase">BILL</small><br />#{{bill[0].billId}}
+                                              </h2>
+                                            </div>
+                                            <div class="col-auto">
+                                              <button type="button" class="btn btn-secondary"
+                                                ng-click="exportPDF('pdfContentBill','bill',bill[0].billId)">Tải
+                                                Bill</button>
+                                            </div>
+                                          </div>
+                                          <div id="pdfContentBill">
+                                            <div class="card shadow">
+                                              <div class="card-body p-5">
+                                                <div class="row mb-5">
+                                                  <div class="col-12 text-center mb-4">
+                                                    <img src="/assets/images/logo_tt.png"
+                                                      class="navbar-brand-img mx-auto mb-4" alt="...">
+                                                    <h2 class="mb-0 text-uppercase">Hóa Đơn</h2>
+                                                    <p class="text-secondary">Ngày: {{bill[0].createAt |
+                                                      dateFormat}}<br /></p>
+                                                  </div>
+                                                  <div class="col-md-7">
+                                                    <p class="small text-secondary text-uppercase mb-2">Phòng Khám Nha
+                                                      Khoa</p>
+                                                    <p class="mb-4">
+                                                      <strong>Tooth Teeth</strong><br /> Địa chỉ: 51/A, 3/2, Ninh Kiều,
+                                                      Cần
+                                                      Thơ<br /> MST: 180000111<br /> (84) 0969 281 254<br />
+                                                    </p>
+                                                    <p>
+                                                      <span class="small text-secondary text-uppercase">Hóa đơn số
+                                                        #</span><br />
+                                                      <strong>{{bill[0].billId}}</strong>
+                                                    </p>
+                                                  </div>
+                                                  <div class="col-md-5">
+                                                    <p class="small text-secondary text-uppercase mb-2">Khách hàng</p>
+                                                    <p class="mb-4">
+                                                      <strong>{{bill[0].appointments.patient.fullName}}</strong>
+                                                      <br />
+                                                      Địa chỉ:
+                                                      {{bill[0].appointments.patient.address}}<br />
+                                                      Số điện thoại:
+                                                      {{bill[0].appointments.patient.phoneNumber|phoneNumberFormat}}<br />
+                                                    </p>
+                                                    <p>
+                                                      <small class="small text-secondary text-uppercase">Hạn thanh
+                                                        toán</small><br />
+                                                      <strong>{{bill[0].createAt | dateFormat}}</strong>
+                                                    </p>
+                                                  </div>
+                                                </div>
+                                                <table class="table table-borderless table-striped">
+                                                  <thead>
+                                                    <tr>
+                                                      <th scope="col">#</th>
+                                                      <th scope="col">Tên dịch vụ</th>
+                                                      <th scope="col" class="text-right">Đơn giá</th>
+                                                      <th scope="col" class="text-right">Số lượng</th>
+                                                      <th scope="col" class="text-right">Thành tiền</th>
+                                                    </tr>
+                                                  </thead>
+                                                  <tbody>
+                                                    <tr
+                                                      ng-repeat="s in getAPSByAppointment(app.appointmentId,listAPSDB)">
+                                                      <th scope="row">{{s.appointment_ServiceId}}</th>
+                                                      <td>{{s.service.serviceName}}</td>
+                                                      <td class="text-right">{{s.service.price | formatPrice}}</td>
+                                                      <td class="text-right">{{s.quantity}}</td>
+                                                      <td class="text-right">{{s.service.price*s.quantity |
+                                                        formatPrice}}
+                                                      </td>
+                                                    </tr>
+                                                  </tbody>
+                                                </table>
+                                                <div class="row mt-5">
+                                                  <div class="col-2 text-center">
+                                                    <p hidden>temp</p>
+                                                  </div>
+                                                  <div class="col-md-5">
+                                                    <p hidden>temp</p>
+                                                  </div>
+                                                  <div class="col-md-5">
+                                                    <div class="text-right mr-2">
+
+                                                      <p class="mb-2 h6">
+                                                        <span class="text-secondary">Tổng thanh toán : </span>
+                                                        <span>{{getTotalService(app.appointmentId,listAPSDB)[0] |
+                                                          formatPrice}}</span>
+                                                      </p>
+
+                                                    </div>
+                                                  </div>
+                                                  <div class="col-12">
+                                                    <p class="mb-2 h6">
+                                                      <span class="text-secondary">Số tiền bằng chữ : </span>
+                                                      <span><em>{{getTotalService(app.appointmentId,listAPSDB)[1]}}</em></span>
+                                                    </p>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div class="tab-pane" ng-class="{ 'active show': isSelected(-3) }">
+                                      <div ng-show="prescription.length==0" class="text-warning text-center">Không có
+                                        đơn thuốc hiển
+                                        thị
+                                      </div>
+                                      <div ng-show="prescription.length!=0" class="row justify-content-center">
+                                        <div class="col-12 col-lg-10 col-xl-8">
+                                          <div id="pdfContentMedicine">
+                                            <div class="row mb-3">
+                                              <div class="col-md-7">
+                                                <p class="small text-uppercase mb-2">Phòng Khám Nha Khoa</p>
+                                                <p class="mb-4">
+                                                  <strong>Tooth Teeth</strong><br /> Địa chỉ: 51/A, 3/2, Ninh Kiều, Cần
+                                                  Thơ<br /> (84) 0969 281 254<br />
+                                                </p>
+                                              </div>
+                                              <div class="col-5 text-center mb-4">
+                                                <img src="/assets/images/logo_tt.png"
+                                                  class="navbar-brand-img mx-auto mb-4" alt="...">
+                                                <h3 class="mb-0 text-uppercase">Đơn thuốc
+                                                </h3> <span
+                                                  class="text-secondary">#{{prescription[0].prescription.prescriptionId}}</span>
+                                                <p>Ngày: {{app.appointmentDate|dateFormat}} <br /></p>
+                                              </div>
+                                            </div>
+                                            <div class="row mb-3">
+
+                                              <div class="col-12">
+                                                <p class="small text-uppercase mb-2">Khách hàng</p>
+                                                <div class="row">
+                                                  <div class="col-6">
+                                                    <strong>{{app.patient.fullName}}</strong>
+                                                  </div>
+                                                  <div class="col-6">
+                                                    <p class="small text-uppercase mb-2">Ngày sinh:
+                                                      {{app.patient.birthday|dateFormat}} </p>
+                                                  </div>
+                                                  <div class="col-6" ng-switch="app.patient.gender">
+                                                    <p class="small text-uppercase mb-2" ng-switch-when="FEMALE">Giới
+                                                      tính: Nữ</p>
+                                                    <p class="small text-uppercase mb-2" ng-switch-when="MALE">Giới
+                                                      tính: Nam</p>
+                                                    <p class="small text-uppercase mb-2" ng-switch-default>Giới tính:
+                                                      Khác</p>
+                                                  </div>
+                                                  <div class="col-6">
+                                                    <p class="small text-uppercase mb-2">Địa chỉ:
+                                                      {{app.patient.address}}
+                                                    </p>
+                                                  </div>
+                                                  <div class="col-6">
+                                                    <p class="small text-uppercase mb-2">Số điện thoại:
+                                                      {{app.patient.phoneNumber|phoneNumberFormat}}</p>
+                                                  </div>
+                                                  <div class="col-6">
+                                                    <p class="small text-uppercase mb-2">Mã hồ sơ:
+                                                      <strong>#{{prescription[0].prescription.appointmentPatientRecord.appointmentPatientRecordId}}</strong>
+                                                    </p>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                              <div class="col-12">
+                                                <p>Chẩn đoán:
+                                                  {{prescription[0].prescription.appointmentPatientRecord.currentCodition}}
+                                                </p>
+                                              </div>
+                                            </div>
+                                            <div class="row mb-5">
+                                              <div class="col-12 text-center mb-4">
+                                                <h3 class="mb-0 text-uppercase">Chỉ Định Dùng
+                                                  Thuốc</h3>
+                                              </div>
+                                              <div class="col-12 mb-3" id="data-medince">
+                                                <div class="form-row">
+                                                  <!-- <p>Đơn thuốc được sử dụng trong: {{prescription[0].prescription.description}}</p> -->
+                                                </div>
+                                                <div class="custom-hr mb-3"></div>
+                                              </div>
+                                              <div class="col-12 medincine-result mb-3">
+                                                <table class="table table-hover">
+                                                  <thead>
+                                                    <tr>
+                                                      <th>STT</th>
+                                                      <th>Tên thuốc</th>
+                                                      <th class="text-right">Số lượng</th>
+                                                      <th class="text-right">Đơn vị</th>
+                                                      <th>Buổi uống</th>
+                                                      <th>Lời khuyên</th>
+                                                    </tr>
+                                                  </thead>
+                                                  <tbody>
+                                                    <tr ng-repeat="m in prescription">
+                                                      <th>{{$index+1}}</th>
+                                                      <td>{{m.medicines.medicineName}}</td>
+                                                      <td class="text-right">
+                                                        {{m.medicines.medicinesDosageAmount.amount*m.prescription.treatmentDuration.quantity
+                                                        }}</td>
+                                                      <td class="text-right">{{m.medicines.medicinesDosageUnit.unit}}
+                                                      </td>
+                                                      <td>{{m.frequency}}</td>
+                                                      <td>{{m.medicines.beforeEating ? 'Uống trước khi ăn' : 'Uống sau
+                                                        khi ăn'}}
+                                                      </td>
+                                                    </tr>
+                                                  </tbody>
+                                                </table>
+                                              </div>
+                                            </div>
+                                            <div class="row mb-5">
+                                              <div class="col-md-7">
+                                                <p>Cộng khoản: <strong>{{prescription.length}}</strong></p>
+                                                <p>Số ngày uống:
+                                                  <strong>{{prescription[0].prescription.treatmentDuration.quantity}}
+                                                    ngày</strong>
+                                                </p>
+                                                <p>
+                                                  <strong><em>Tái khám xin mang theo đơn này</em></strong>
+                                                </p>
+                                              </div>
+                                              <div class="col-md-5">
+                                                <div class="text-right">
+                                                  <div class="mb-3 h6 text-center">
+                                                    <p class="text-secondary">Ngày {{ day }} tháng {{ month }} năm {{
+                                                      year }} </p>
+                                                    <p>Bác sĩ khám bệnh</p>
+                                                  </div>
+                                                  <div class="text-center">
+                                                    <img ng-src="{{app.doctor.signature}}" class="mb-3" alt="..."
+                                                      width="100" height="100">
+                                                    <p>{{app.doctor.fullName}}</p>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </div>
+
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                </div>
+                              </div>
+                            </div>
+                            <div class="card d-inline-flex mb-2">
+                              <div class="card-body bg-light py-2 px-3">
+                                Đã điệu trị các vấn đề
+                                <strong>{{app.appointmentPatientRecord.currentCodition}}</strong>
+                              </div>
+                            </div>
+                            </p>
+                            <p class="text-muted">Bác sĩ điều trị: {{app.doctor.fullName}}
+                              <span class="badge badge-success"
+                                ng-show="app.appointmentPatientRecord.reExamination!=''">Hẹn tái khám:
+                                {{app.appointmentPatientRecord.reExamination}}</span>
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<footer class="footer section gray-bg" ng-include="'component/footer.html'"></footer>
