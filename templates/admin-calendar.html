@@ -110,9 +110,9 @@
               </button>
               <select id="appointmentPatient" class="form-control select2" ng-model="formApp.patientId"
                 ng-options="p.patientId as (p.fullName + ' - ' + p.phoneNumber) for p in listPatientDB">
-              </select>           
+              </select>
             </div>
-           
+
             <div class="form-group mb-3 col-6">
               <label for="appointmentType">Chọn loại ca khám</label>
               <select id="appointmentType" class="form-control select2" ng-model="formApp.appointmentTypeId"
@@ -552,7 +552,7 @@
                                   <div class="card-body p-5">
                                     <div class="row mb-5">
                                       <div class="col-12 text-center mb-4">
-                                        <img src="/assets/images/logo_tt.png" class="navbar-brand-img mx-auto mb-4"
+                                        <img src="assets/images/logo_tt.png" class="navbar-brand-img mx-auto mb-4"
                                           alt="...">
                                         <h2 class="mb-0 text-uppercase">Hóa Đơn</h2>
                                         <p class="text-secondary">Ngày: {{bill[0].createAt | dateFormat}}<br /></p>

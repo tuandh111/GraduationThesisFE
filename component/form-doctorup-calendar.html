@@ -109,7 +109,7 @@
             <div class="card" ng-show="listAppGroupByDateDB.length!=0">
               <table class="table datatables" id="dataTable-view-customer-recorded">
                 <thead>
-                  <tr>                
+                  <tr>
                     <th></th>
                   </tr>
                 </thead>
@@ -253,7 +253,7 @@
                                             <div class="card-body p-5">
                                               <div class="row mb-5">
                                                 <div class="col-12 text-center mb-4">
-                                                  <img src="/assets/images/logo_tt.png"
+                                                  <img src="assets/images/logo_tt.png"
                                                     class="navbar-brand-img mx-auto mb-4" alt="...">
                                                   <h2 class="mb-0 text-uppercase">Hóa Đơn</h2>
                                                   <p class="text-secondary">Ngày: {{bill[0].createAt |
@@ -360,8 +360,8 @@
                                               </p>
                                             </div>
                                             <div class="col-5 text-center mb-4">
-                                              <img src="/assets/images/logo_tt.png"
-                                                class="navbar-brand-img mx-auto mb-4" alt="...">
+                                              <img src="assets/images/logo_tt.png" class="navbar-brand-img mx-auto mb-4"
+                                                alt="...">
                                               <h3 class="mb-0 text-uppercase">Đơn thuốc
                                               </h3> <span
                                                 class="text-secondary">#{{prescription[0].prescription.prescriptionId}}</span>
@@ -517,7 +517,9 @@
       <div class="row">
         <div class="col-12 col-lg-8 ml-auto mr-auto mb-4">
           <div class="multisteps-form__progress">
-            <button class="multisteps-form__progress-btn js-active" id="btn-js-active" type="button" ng-disabled="isFutureDate" ng-style="{'cursor': isFutureDate ? 'not-allowed' : 'pointer'}">1. Cập nhật dịch
+            <button class="multisteps-form__progress-btn js-active" id="btn-js-active" type="button"
+              ng-disabled="isFutureDate" ng-style="{'cursor': isFutureDate ? 'not-allowed' : 'pointer'}">1. Cập nhật
+              dịch
               vụ</button>
             <!-- disabled -->
             <button class="multisteps-form__progress-btn" type="button" disabled>2. Ca khám & Công cụ</button>

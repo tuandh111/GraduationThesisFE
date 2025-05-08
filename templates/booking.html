@@ -5,125 +5,151 @@
     <section class="page-title bg-1">
         <div class="overlay overlay-doctorBooking"></div>
         <div class="container booking-container">
-        <div class="row">
-            <div class="col-md-12">
-                <div class="block text-center">
-                    <span class="text-white">Đặt lịch khám</span>
-                    <h1 class="text-capitalize mb-5 text-lg">Đặt lịch khám - chọn bác sĩ</h1>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="block text-center">
+                        <span class="text-white">Đặt lịch khám</span>
+                        <h1 class="text-capitalize mb-5 text-lg">Đặt lịch khám - chọn bác sĩ</h1>
+                    </div>
+                </div>
+            </div>
+            <div class="row booking-doctor-page">
+                <div class="col-md-4 ms-3">
+                    <!-- Ô input tìm kiếm với icon -->
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="search-icon"
+                                style="color: white; background-color: #384d75;">
+                                <i class="bi bi-search"></i>
+                            </span>
+                        </div>
+                        <input type="text" class="form-control" placeholder="Tìm kiếm bác sĩ..."
+                            ng-model="searchDoctorName" aria-describedby="search-icon">
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="booking-scrolling-wrapper-flexbox">
+                        <!-- Thanh cuộn ngang -->
+                        <div class="booking-specialty-item" ng-click="selectSpecialty(0)"
+                            ng-class="{ 'selected-specialty': selectedSpecialtyId === 0 }">
+                            Chọn tất cả
+                        </div>
+                        <div class="booking-specialty-item" ng-repeat="s in listSpecialtyDB"
+                            ng-click="selectSpecialty(s.specialtyId)"
+                            ng-class="{ 'selected-specialty': selectedSpecialtyId === s.specialtyId }">
+                            {{ s.specialtyName }}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="booking-scrolling-wrapper-flexbox">
+                        <!-- Thanh cuộn ngang chứa các thẻ hình ảnh của bác sĩ -->
+                        <div class="booking-doctor-item"
+                            ng-repeat="doctor in listDoctorsDB | filter: {fullName: searchDoctorName}"
+                            ng-click="selectDoctor(doctor.doctorId)">
+                            <img ng-src="{{doctor.image || 'https://inkythuatso.com/uploads/thumbnails/800/2023/03/10-anh-dai-dien-trang-inkythuatso-03-15-27-10.jpg'}}"
+                                alt="doctor-image" class="booking-doctor-image rounded-circle"
+                                onerror="this.src='https://inkythuatso.com/uploads/thumbnails/800/2023/03/10-anh-dai-dien-trang-inkythuatso-03-15-27-10.jpg'">
+                            <p style="font-weight: bolder; text-align: center; margin-top: 10px;">{{ doctor.fullName }}
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="row booking-doctor-page">
-            <div class="col-md-4 ms-3">
-                <!-- Ô input tìm kiếm với icon -->
-                <div class="input-group" >
-                    <div class="input-group-prepend">
-                        <span class="input-group-text" id="search-icon" style="color: white; background-color: #384d75;" >
-                            <i class="bi bi-search"></i>
-                        </span>
-                    </div>
-                    <input type="text" class="form-control" placeholder="Tìm kiếm bác sĩ..." ng-model="searchDoctorName" aria-describedby="search-icon">
-                </div>
-            </div>
-            <div class="col-md-12">
-                <div class="booking-scrolling-wrapper-flexbox">
-                    <!-- Thanh cuộn ngang -->
-                    <div class="booking-specialty-item" ng-click="selectSpecialty(0)" ng-class="{ 'selected-specialty': selectedSpecialtyId === 0 }">
-                        Chọn tất cả
-                    </div>
-                    <div class="booking-specialty-item" ng-repeat="s in listSpecialtyDB" ng-click="selectSpecialty(s.specialtyId)" ng-class="{ 'selected-specialty': selectedSpecialtyId === s.specialtyId }">
-                        {{ s.specialtyName }}
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-12">
-                <div class="booking-scrolling-wrapper-flexbox">
-                    <!-- Thanh cuộn ngang chứa các thẻ hình ảnh của bác sĩ -->
-                    <div class="booking-doctor-item" 
-                         ng-repeat="doctor in listDoctorsDB | filter: {fullName: searchDoctorName}" 
-                         ng-click="selectDoctor(doctor.doctorId)">
-                        <img ng-src="{{doctor.image || 'https://inkythuatso.com/uploads/thumbnails/800/2023/03/10-anh-dai-dien-trang-inkythuatso-03-15-27-10.jpg'}}" 
-                             alt="doctor-image" 
-                             class="booking-doctor-image rounded-circle"
-                             onerror="this.src='https://inkythuatso.com/uploads/thumbnails/800/2023/03/10-anh-dai-dien-trang-inkythuatso-03-15-27-10.jpg'" >
-                        <p style="font-weight: bolder; text-align: center; margin-top: 10px;">{{ doctor.fullName }}</p>
-                    </div>
-                </div>
-            </div>
-        </div>    
-        </div>
-    </section> 
+    </section>
     <section class="main-page">
-    <div class="row main-page-booking">
-        <div class="col-10 main-page-booking-card" ng-show="booleanDoctorChoosen">
-            <div class="doctor-card-image-parent">
-                <img ng-src="{{doctorModel.image || 'https://inkythuatso.com/uploads/thumbnails/800/2023/03/10-anh-dai-dien-trang-inkythuatso-03-15-27-10.jpg'}}" 
-                    alt="doctor-image" 
-                    class="doctor-card-image"
-                    onerror="this.src='https://inkythuatso.com/uploads/thumbnails/800/2023/03/10-anh-dai-dien-trang-inkythuatso-03-15-27-10.jpg'" >
-            </div>
-            <div class="row doctor-card-details">
-                <div class="col-12 doctor-card-details-specialty">
+        <div class="row main-page-booking">
+            <div class="col-10 main-page-booking-card" ng-show="booleanDoctorChoosen">
+                <div class="doctor-card-image-parent">
+                    <img ng-src="{{doctorModel.image || 'https://inkythuatso.com/uploads/thumbnails/800/2023/03/10-anh-dai-dien-trang-inkythuatso-03-15-27-10.jpg'}}"
+                        alt="doctor-image" class="doctor-card-image"
+                        onerror="this.src='https://inkythuatso.com/uploads/thumbnails/800/2023/03/10-anh-dai-dien-trang-inkythuatso-03-15-27-10.jpg'">
+                </div>
+                <div class="row doctor-card-details">
+                    <div class="col-12 doctor-card-details-specialty">
                         <strong class="doctor-specialtyName">
                             CK: {{doctorModel.specialty.specialtyName}}
                         </strong>
-                </div>
-                <div class="col-12 doctor-card-details-name">
-                    <p>Bác Sĩ: {{doctorModel.fullName}}</p> 
+                    </div>
+                    <div class="col-12 doctor-card-details-name">
+                        <p>Bác Sĩ: {{doctorModel.fullName}}</p>
+                    </div>
                 </div>
             </div>
+            <div class="col-8 mt-5" id='calendar-book-appointment'></div>
         </div>
-        <div class="col-8 mt-5" id='calendar-book-appointment'></div>
-    </div>
     </section>
     <div class="modal fade" id="modalBookAppointment" tabindex="-1">
         <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
             <div class="modal-content" ng-hide="!showConfirmForm">
                 <div class="modal-header">
                     <div class="row" style="width: 100%;">
-                        <p class="col-lg-3"><img src="/assets/images/logo_tt.png" class="img-logo-form" style="height: 100%;"></p>
+                        <p class="col-lg-3"><img src="assets/images/logo_tt.png" class="img-logo-form"
+                                style="height: 100%;"></p>
                         <p class="col-lg-6 modal-title fw-bolder" id="modalBookAppointmentLabel">
-                            <span class="block-span fs-1" style="color: #e3315e; display: flex; flex-direction: column; align-items: center; text-align: center;">ĐẶT LỊCH KHÁM</span>
-                            <span class="block-span fs-4" style="color: #ee6587;" >VỚI BÁC SĨ: {{doctorModel.fullName}} </span>
+                            <span class="block-span fs-1"
+                                style="color: #e3315e; display: flex; flex-direction: column; align-items: center; text-align: center;">ĐẶT
+                                LỊCH KHÁM</span>
+                            <span class="block-span fs-4" style="color: #ee6587;">VỚI BÁC SĨ: {{doctorModel.fullName}}
+                            </span>
                         </p>
-                        <p class="col-lg-3 small" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                            <span ng-show="patientIdLogin != -1" >Họ tên (Full Name): {{patientLogin.fullName}}</span> <br>  
-                            <span ng-show="patientIdLogin != -1" >Số điện (Full Name): {{patientLogin.phoneNumber}}</span> <br>  
+                        <p class="col-lg-3 small"
+                            style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            <span ng-show="patientIdLogin != -1">Họ tên (Full Name): {{patientLogin.fullName}}</span>
+                            <br>
+                            <span ng-show="patientIdLogin != -1">Số điện (Full Name):
+                                {{patientLogin.phoneNumber}}</span> <br>
                             <span>Thời gian (Date): {{dateChosen}}</span> <br>
                         </p>
                     </div>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body">
                     <form id="appointmentForm" class="row needs-validatio p-3" novalidate>
-                        
+
                         <!-- Thẻ cần hiển thị khi switch được check -->
-                        <div ng-show="!showSymptoms" class="overflow-auto col-lg-6 form-group mb-3" style="height: 120px;">
-                            <label for="formSymptom" class="col-form-label fw-bolder"><i class="bi bi-bandaid-fill"></i> Các triệu chứng bạn đang gặp phải</label>
-                            <select id="formSymptom" aria-placeholder="Chọn triệu chứng" class="form-control select2-multi" ng-model="selectedIssues" ng-disabled="showSymptoms" ng-options="issue.dentalIssuesId as issue.name for issue in listDentalIssuesDB track by issue.dentalIssuesId" ng-change="loadTreatmeantAndServiceByIssue()" multiple>
+                        <div ng-show="!showSymptoms" class="overflow-auto col-lg-6 form-group mb-3"
+                            style="height: 120px;">
+                            <label for="formSymptom" class="col-form-label fw-bolder"><i class="bi bi-bandaid-fill"></i>
+                                Các triệu chứng bạn đang gặp phải</label>
+                            <select id="formSymptom" aria-placeholder="Chọn triệu chứng"
+                                class="form-control select2-multi" ng-model="selectedIssues" ng-disabled="showSymptoms"
+                                ng-options="issue.dentalIssuesId as issue.name for issue in listDentalIssuesDB track by issue.dentalIssuesId"
+                                ng-change="loadTreatmeantAndServiceByIssue()" multiple>
                             </select>
-                            <div id="formSymptom-feedback" ng-if="symtomTrue" style="width: 100%; margin-top: 0.25rem; font-size: 80%; color: #e3315e;">Chưa chọn triệu chứng</div>
+                            <div id="formSymptom-feedback" ng-if="symtomTrue"
+                                style="width: 100%; margin-top: 0.25rem; font-size: 80%; color: #e3315e;">Chưa chọn
+                                triệu chứng</div>
                         </div>
-                        
-                        <div ng-show="!showSymptoms" class="overflow-auto col-lg-6 form-group mb-3" style="height: 120px; background-color: rgb(245, 245, 245);">
-                            <label class="col-form-label fw-bolder"><i class="bi bi-briefcase-fill"></i>  Khuyến nghị nha khoa</label>
+
+                        <div ng-show="!showSymptoms" class="overflow-auto col-lg-6 form-group mb-3"
+                            style="height: 120px; background-color: rgb(245, 245, 245);">
+                            <label class="col-form-label fw-bolder"><i class="bi bi-briefcase-fill"></i> Khuyến nghị nha
+                                khoa</label>
                             <p class="m-0 ng-binding">{{ getTreatmentNamesString() }}</p>
                         </div>
 
                         <!-- Switch -->
-                        <div class="form-check form-switch col-lg-12 ps-5 m-3"> 
-                            <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckChecked" ng-model="showSymptoms" ng-click="uncheckAllCheckboxes()">
-                            <label class="form-check-label text-danger" for="flexSwitchCheckChecked">Toàn bộ dịch vụ</label>
+                        <div class="form-check form-switch col-lg-12 ps-5 m-3">
+                            <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckChecked"
+                                ng-model="showSymptoms" ng-click="uncheckAllCheckboxes()">
+                            <label class="form-check-label text-danger" for="flexSwitchCheckChecked">Toàn bộ dịch
+                                vụ</label>
                         </div>
                         <!-- Nếu chọn triệu chứng -->
-                        <div ng-show="!showSymptoms" class="overflow-auto col-lg-12 form-group mb-3" style="height: 400px;" >
+                        <div ng-show="!showSymptoms" class="overflow-auto col-lg-12 form-group mb-3"
+                            style="height: 400px;">
                             <table class="table tableService">
                                 <tbody>
-                                    <tr>   
-                                        <th></th> 
-                                        <th class="fw-bolder"><i class="bi bi-heart-pulse-fill"></i> Dịch vụ quý khách nên dùng <span class="text-danger">(*)</span></th>
-										<th class="fw-bolder text-end"><i class="bi bi-coin"></i> Giá tiền</th>
-										<th class="fw-bolder text-end"><i class="bi bi-clock"></i> Thời gian ước tính</th>
+                                    <tr>
+                                        <th></th>
+                                        <th class="fw-bolder"><i class="bi bi-heart-pulse-fill"></i> Dịch vụ quý khách
+                                            nên dùng <span class="text-danger">(*)</span></th>
+                                        <th class="fw-bolder text-end"><i class="bi bi-coin"></i> Giá tiền</th>
+                                        <th class="fw-bolder text-end"><i class="bi bi-clock"></i> Thời gian ước tính
+                                        </th>
                                     </tr>
                                     <tr ng-if="foundServices.length == 0">
                                         <td></td>
@@ -131,9 +157,12 @@
                                         <td class="text-end"></td>
                                         <td class="text-end"></td>
                                     </tr>
-                                    <tr ng-repeat="service in foundServices" ng-click="toggleRowCheckbox(service)" ng-if="foundServices.length > 0" >
+                                    <tr ng-repeat="service in foundServices" ng-click="toggleRowCheckbox(service)"
+                                        ng-if="foundServices.length > 0">
                                         <td>
-                                            <input type="checkbox" ng-model="service.selected" ng-change="updateSelectAll() " ng-hide="listSelectedService.length >= 4 && !service.selected">
+                                            <input type="checkbox" ng-model="service.selected"
+                                                ng-change="updateSelectAll() "
+                                                ng-hide="listSelectedService.length >= 4 && !service.selected">
                                         </td>
                                         <td>{{service.service.serviceName}}</td>
                                         <td class="text-end">{{service.service.price | currency:'':0}} VND</td>
@@ -143,18 +172,23 @@
                             </table>
                         </div>
                         <!-- Nếu không triệu chứng -->
-                        <div ng-show="showSymptoms" class="overflow-auto col-lg-12 form-group mb-3" style="height: 400px;" >
+                        <div ng-show="showSymptoms" class="overflow-auto col-lg-12 form-group mb-3"
+                            style="height: 400px;">
                             <table class="table tableService">
                                 <tbody>
-                                    <tr>   
-                                        <th></th> 
-										<th class="fw-bolder"><i class="bi bi-heart-pulse-fill"></i> Chọn dịch vụ <span class="text-danger">(*)</span></th>
-										<th class="fw-bolder text-end"><i class="bi bi-coin"></i> Giá tiền</th>
-										<th class="fw-bolder text-end"><i class="bi bi-clock"></i> Thời gian ước tính</th>
+                                    <tr>
+                                        <th></th>
+                                        <th class="fw-bolder"><i class="bi bi-heart-pulse-fill"></i> Chọn dịch vụ <span
+                                                class="text-danger">(*)</span></th>
+                                        <th class="fw-bolder text-end"><i class="bi bi-coin"></i> Giá tiền</th>
+                                        <th class="fw-bolder text-end"><i class="bi bi-clock"></i> Thời gian ước tính
+                                        </th>
                                     </tr>
-                                    <tr ng-repeat="service in listServiceDB" ng-click="toggleRowCheckbox(service)" >
+                                    <tr ng-repeat="service in listServiceDB" ng-click="toggleRowCheckbox(service)">
                                         <td>
-                                            <input type="checkbox" ng-model="service.selected" ng-change="updateSelectAll()" ng-hide="listSelectedService.length >= 4 && !service.selected">
+                                            <input type="checkbox" ng-model="service.selected"
+                                                ng-change="updateSelectAll()"
+                                                ng-hide="listSelectedService.length >= 4 && !service.selected">
                                         </td>
                                         <td>{{service.serviceName}}</td>
                                         <td class="text-end">{{service.price | currency:'':0}} VND</td>
@@ -164,42 +198,48 @@
                             </table>
                         </div>
 
-                        <p class="col-lg-12 textSuggest m-0 text-danger" ng-show="listSelectedService.length >= 4"><i class="bi bi-exclamation-circle-fill"></i> Quý khách chỉ có thể đặt trước tối đa 4 dịch vụ, vui lòng bắt máy nhân viên chăm sóc để đăng ký nhiều hơn</p>
+                        <p class="col-lg-12 textSuggest m-0 text-danger" ng-show="listSelectedService.length >= 4"><i
+                                class="bi bi-exclamation-circle-fill"></i> Quý khách chỉ có thể đặt trước tối đa 4 dịch
+                            vụ, vui lòng bắt máy nhân viên chăm sóc để đăng ký nhiều hơn</p>
                         <div class="col-lg-12 text-center p-3 " style="background-color: rgb(245, 245, 245);">
-                            <p class="textSuggest m-0 fw-bolder"><i class="bi bi-clock-history"></i> Thời lượng sử dụng dịch vụ: <span class="text-warning fw-normal">{{totalTime}} phút</span></p>
-                            <p class="textSuggest m-0 fw-bolder"><i class="bi bi-credit-card"></i> Tổng số tiền dịch vụ đã chọn: <span class="text-warning fw-normal">{{totalPrice | currency:'':0}} VND</span></p>
-                            <p class="textSuggest m-0 fw-bolder ng-hide" ng-show="getRecommendation() == 0"><i class="bi bi-exclamation-circle-fill"></i>  Bạn cần liên hệ trực tiếp nhân viên để được hướng dẫn kỹ hơn</p>
-                            <p class="textSuggest fw-bolder m-0 " ng-show="!getRecommendation() == 0"><i class="bi bi-exclamation-circle-fill"></i>  Lưu ý (*): Khung thời gian khám nên chọn liên tục để tránh làm gián đoạn việc điều trị!</p>
+                            <p class="textSuggest m-0 fw-bolder"><i class="bi bi-clock-history"></i> Thời lượng sử dụng
+                                dịch vụ: <span class="text-warning fw-normal">{{totalTime}} phút</span></p>
+                            <p class="textSuggest m-0 fw-bolder"><i class="bi bi-credit-card"></i> Tổng số tiền dịch vụ
+                                đã chọn: <span class="text-warning fw-normal">{{totalPrice | currency:'':0}} VND</span>
+                            </p>
+                            <p class="textSuggest m-0 fw-bolder ng-hide" ng-show="getRecommendation() == 0"><i
+                                    class="bi bi-exclamation-circle-fill"></i> Bạn cần liên hệ trực tiếp nhân viên để
+                                được hướng dẫn kỹ hơn</p>
+                            <p class="textSuggest fw-bolder m-0 " ng-show="!getRecommendation() == 0"><i
+                                    class="bi bi-exclamation-circle-fill"></i> Lưu ý (*): Khung thời gian khám nên chọn
+                                liên tục để tránh làm gián đoạn việc điều trị!</p>
                         </div>
-                        
+
                         <div class="col-lg-6 form-group mb-3">
-                            <label for="formShift" class="col-form-label fw-bolder"><i class="bi bi-cloud-sun-fill"></i> Chọn buổi khám <span class="text-danger">(*)</span></label>
-                            <select id="formShift" class="form-control" 
-                                ng-model="selectedShift" 
-                                ng-options="schedule.shift.name for schedule in getListDoctorScheduleByDoctorId track by schedule.doctorScheduleId" 
-                                ng-change="loadShiftHours(selectedShift)" 
-                                ng-init="selectedShift = null"
-                                required 
+                            <label for="formShift" class="col-form-label fw-bolder"><i class="bi bi-cloud-sun-fill"></i>
+                                Chọn buổi khám <span class="text-danger">(*)</span></label>
+                            <select id="formShift" class="form-control" ng-model="selectedShift"
+                                ng-options="schedule.shift.name for schedule in getListDoctorScheduleByDoctorId track by schedule.doctorScheduleId"
+                                ng-change="loadShiftHours(selectedShift)" ng-init="selectedShift = null" required
                                 ng-disabled="!hasSelectedService">
                                 <option value="">-- Chọn buổi khám --</option>
                             </select>
-                    
-                            <div id="formShift-feedback" class="invalid-feedback" 
-                                 ng-show="appointmentForm.formShift.$touched && appointmentForm.formShift.$invalid && hasSelectedService">
+
+                            <div id="formShift-feedback" class="invalid-feedback"
+                                ng-show="appointmentForm.formShift.$touched && appointmentForm.formShift.$invalid && hasSelectedService">
                                 Chọn buổi khám là bắt buộc
                             </div>
                         </div>
-                        
+
                         <!-- Giả sử đây là danh sách các giờ đã chọn -->
                         <div ng-show="listShiftHours.length > 0" class="col-lg-12 row">
-                            <div class="hourInListShiftHoursButton-main col-lg-3 mt-3 mb-3" 
-                            ng-repeat="hour in listShiftHours" >
-                                <div class="hourInListShiftHoursButton-hour btn d-flex flex-wrap justify-content-center" 
-                                    ng-model="hour.selected" 
-                                    ng-click="changeHourSelected(hour)" 
+                            <div class="hourInListShiftHoursButton-main col-lg-3 mt-3 mb-3"
+                                ng-repeat="hour in listShiftHours">
+                                <div class="hourInListShiftHoursButton-hour btn d-flex flex-wrap justify-content-center"
+                                    ng-model="hour.selected" ng-click="changeHourSelected(hour)"
                                     ng-class="{'hourSelected': hour.selected, 'hourValid': hour.isValid}"
                                     ng-hide="!hour.selected && hourSelected.length == getRecommendation()">
-                                        {{hour.beginTime + ' - ' + hour.endTime}}
+                                    {{hour.beginTime + ' - ' + hour.endTime}}
                                 </div>
                             </div>
                             <div id="formShiftHour-feedback" class="invalid-feedback">Chọn giờ khám là bắt buộc</div>
@@ -208,70 +248,101 @@
                         <div class="col-lg-6">
                         </div>
                         <div class="col-lg-12 fw-bolder m-0 p-4">
-                            <span class="text-danger" ng-show="getRecommendation() == 0 || hourLenghtSelected != getRecommendation() "><i class="bi bi-exclamation-circle-fill"></i> Lưu ý 
-                                (*): Quý khách nên chọn đủ số lượng ca khám ước tính! <span class="text-danger" style="color: #001a4e;">( {{hourLenghtSelected}} / {{getRecommendation()}} )</span></span>
-                            <span class="text-danger" ng-show="hourLenghtSelected == getRecommendation() && hourLenghtSelected != 0 && !isCorrectBookingHoour()"><i class="bi bi-exclamation-circle-fill"></i> Lưu ý (*): Quý khách nên chọn khung thời gian liền kề tránh dịch vụ bị gián đoạn !</span>
-                            <span class="textSuggest"ng-show="hourLenghtSelected == getRecommendation() && hourLenghtSelected != 0 && isCorrectBookingHoour()"><i class="bi bi-check-circle-fill"></i> Quý khách đã chọn đủ số lượng ca khám ước tính ( {{hourLenghtSelected}}/ {{getRecommendation()}} )</span>
+                            <span class="text-danger"
+                                ng-show="getRecommendation() == 0 || hourLenghtSelected != getRecommendation() "><i
+                                    class="bi bi-exclamation-circle-fill"></i> Lưu ý
+                                (*): Quý khách nên chọn đủ số lượng ca khám ước tính! <span class="text-danger"
+                                    style="color: #001a4e;">( {{hourLenghtSelected}} / {{getRecommendation()}}
+                                    )</span></span>
+                            <span class="text-danger"
+                                ng-show="hourLenghtSelected == getRecommendation() && hourLenghtSelected != 0 && !isCorrectBookingHoour()"><i
+                                    class="bi bi-exclamation-circle-fill"></i> Lưu ý (*): Quý khách nên chọn khung thời
+                                gian liền kề tránh dịch vụ bị gián đoạn !</span>
+                            <span class="textSuggest"
+                                ng-show="hourLenghtSelected == getRecommendation() && hourLenghtSelected != 0 && isCorrectBookingHoour()"><i
+                                    class="bi bi-check-circle-fill"></i> Quý khách đã chọn đủ số lượng ca khám ước tính
+                                ( {{hourLenghtSelected}}/ {{getRecommendation()}} )</span>
                         </div>
                         <div class="col-lg-12 mb-3">
                             <div class="card">
                                 <div class="card-body">
-                                    <p class="fs-5 card-title text-primary-emphasis fw-bolder"><i class="bi bi-pencil-fill"></i> Ghi chú</p>
+                                    <p class="fs-5 card-title text-primary-emphasis fw-bolder"><i
+                                            class="bi bi-pencil-fill"></i> Ghi chú</p>
                                     <div class="form-floating">
-                                        <textarea ng-model="formAppointmentRequestNote" class="form-control" placeholder="Nhập triệu chứng" id="formAppointmentRequestNote" style="height: 150px" ng-disabled="!hasSelectedService"></textarea>
-                                        <label for="formAppointmentRequestNote">Ghi chú cho nhân viên hoặc bác sĩ về tình trạng bệnh của quý khách</label>
+                                        <textarea ng-model="formAppointmentRequestNote" class="form-control"
+                                            placeholder="Nhập triệu chứng" id="formAppointmentRequestNote"
+                                            style="height: 150px" ng-disabled="!hasSelectedService"></textarea>
+                                        <label for="formAppointmentRequestNote">Ghi chú cho nhân viên hoặc bác sĩ về
+                                            tình trạng bệnh của quý khách</label>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="col-lg-12 mb-2">
-                            <button type="button" class="btn btn-success btn-create-appoinment" ng-click="showConfirmModal()" ng-disabled="!hasSelectedService"><i class="bi bi-clipboard2-fill"></i> Lưu lại</button>
-                            <button type="button" class="btn btn-danger" ng-click="resetForm()"><i class="bi bi-backspace-fill"></i> Làm trống</button>
-                        </div>                    
+                            <button type="button" class="btn btn-success btn-create-appoinment"
+                                ng-click="showConfirmModal()" ng-disabled="!hasSelectedService"><i
+                                    class="bi bi-clipboard2-fill"></i> Lưu lại</button>
+                            <button type="button" class="btn btn-danger" ng-click="resetForm()"><i
+                                    class="bi bi-backspace-fill"></i> Làm trống</button>
+                        </div>
                     </form>
                 </div>
             </div>
             <div class="modal-content" ng-hide="showConfirmForm">
                 <div class="modal-header">
                     <div class="row">
-                        <p class="col-lg-4"><img src="/assets/images/logo_tt.png" alt="" class="img"></p>
-                        <p class="col-lg-8 modal-title fs-1 text-primary-emphasis text-center fw-bolder" id="modalConfirmAppointmentLabel" style="color: #e3315e;">Xác nhận thông tin đặt lịch khám</p>
+                        <p class="col-lg-4"><img src="assets/images/logo_tt.png" alt="" class="img"></p>
+                        <p class="col-lg-8 modal-title fs-1 text-primary-emphasis text-center fw-bolder"
+                            id="modalConfirmAppointmentLabel" style="color: #e3315e;">Xác nhận thông tin đặt lịch khám
+                        </p>
                     </div>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body-accept textLargerCss">
                     <div class="row">
-                        <strong class="col-lg-3"><i class="bi bi-person-workspace"></i>Bác sĩ:</strong> <span class="col-lg-9 bordered">{{doctorModel.fullName}}</span>
+                        <strong class="col-lg-3"><i class="bi bi-person-workspace"></i>Bác sĩ:</strong> <span
+                            class="col-lg-9 bordered">{{doctorModel.fullName}}</span>
                     </div>
                     <div class="row">
-                        <strong class="col-lg-3"><i class="bi bi-person-fill"></i>  Tên bệnh nhân:</strong> <span class="col-lg-9 bordered">{{patientLogin.fullName}}</span>
+                        <strong class="col-lg-3"><i class="bi bi-person-fill"></i> Tên bệnh nhân:</strong> <span
+                            class="col-lg-9 bordered">{{patientLogin.fullName}}</span>
                     </div>
                     <div class="row">
-                        <strong class="col-lg-3"><i class="bi bi-telephone-fill"></i> Số điện thoại:</strong> <span class="col-lg-9 bordered">{{patientLogin.phoneNumber}}</span>
+                        <strong class="col-lg-3"><i class="bi bi-telephone-fill"></i> Số điện thoại:</strong> <span
+                            class="col-lg-9 bordered">{{patientLogin.phoneNumber}}</span>
                     </div>
                     <div class="row">
-                        <strong class="col-lg-3"><i class="bi bi-table"></i> Ngày khám:</strong> <span class="col-lg-9 bordered">{{daySelected}}</span>
+                        <strong class="col-lg-3"><i class="bi bi-table"></i> Ngày khám:</strong> <span
+                            class="col-lg-9 bordered">{{daySelected}}</span>
                     </div>
                     <div class="row">
-                        <strong class="col-lg-3"><i class="bi bi-cloud-sun-fill"></i> Giờ khám:</strong> <span class="col-lg-9 bordered">{{ getTimeString() }}</span>
+                        <strong class="col-lg-3"><i class="bi bi-cloud-sun-fill"></i> Giờ khám:</strong> <span
+                            class="col-lg-9 bordered">{{ getTimeString() }}</span>
                     </div>
                     <div class="row" ng-if="!showSymptoms">
-                        <strong class="col-lg-3"><i class="bi bi-bandaid-fill"></i> Triệu chứng:</strong> <span class="col-lg-9 bordered">{{selectedIssuesString}}</span>
+                        <strong class="col-lg-3"><i class="bi bi-bandaid-fill"></i> Triệu chứng:</strong> <span
+                            class="col-lg-9 bordered">{{selectedIssuesString}}</span>
                     </div>
                     <div class="row">
-                        <strong class="col-lg-3"><i class="bi bi-heart-pulse-fill"></i>  Dịch vụ đã chọn:</strong> <span class="col-lg-9 bordered">{{convertedString}}</span>
+                        <strong class="col-lg-3"><i class="bi bi-heart-pulse-fill"></i> Dịch vụ đã chọn:</strong> <span
+                            class="col-lg-9 bordered">{{convertedString}}</span>
                     </div>
                     <div class="row">
-                        <strong class="col-lg-3"><i class="bi bi-coin"></i> Đơn giá:</strong> <span class="col-lg-9 bordered">{{totalPrice | currency:'':0}} VND</span>
+                        <strong class="col-lg-3"><i class="bi bi-coin"></i> Đơn giá:</strong> <span
+                            class="col-lg-9 bordered">{{totalPrice | currency:'':0}} VND</span>
                     </div>
                     <div class="row" ng-if="formAppointmentRequestNote">
-                        <strong class="col-lg-3"><i class="bi bi-pencil-fill"></i> Ghi chú:</strong> <span class="col-lg-9 bordered">{{formAppointmentRequestNote}}</span>
+                        <strong class="col-lg-3"><i class="bi bi-pencil-fill"></i> Ghi chú:</strong> <span
+                            class="col-lg-9 bordered">{{formAppointmentRequestNote}}</span>
                     </div>
-                </div>                    
+                </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" ng-click="showConfirmForm = true;"><i class="bi bi-x-circle-fill"></i> Hủy</button>
-                    <button type="button" class="btn btn-primary" ng-click="confirmSaveAppointment()"><i class="bi bi-plus-circle-fill"></i> Xác nhận</button>
+                    <button type="button" class="btn btn-secondary" ng-click="showConfirmForm = true;"><i
+                            class="bi bi-x-circle-fill"></i> Hủy</button>
+                    <button type="button" class="btn btn-primary" ng-click="confirmSaveAppointment()"><i
+                            class="bi bi-plus-circle-fill"></i> Xác nhận</button>
                 </div>
             </div>
         </div>
@@ -286,7 +357,7 @@
     </div>
 
 
-    
+
     <!-- footer Start -->
     <footer class="footer section gray-bg" ng-include="'component/footer.html'"></footer>
     <!--================ End footer Area  =================-->
