@@ -73,83 +73,83 @@ app.config(function ($routeProvider) {
         })
         .when("/admin", {
             templateUrl: "templates/admin-dashboard.html",
-            data: { title: 'Dashboard', requiresAuth: true, roles: ['QUAN_LY'] }
+            data: { title: 'Dashboard' }
         })
         .when("/admin/dashboard", {
             templateUrl: "templates/admin-dashboard.html",
-            data: { title: 'Dashboard', requiresAuth: true, roles: ['QUAN_LY'] }
+            data: { title: 'Dashboard' }
         })
         .when("/admin/doctor", {
             templateUrl: "templates/admin-doctor.html",
-            data: { title: 'Thông tin bác sĩ', requiresAuth: true, roles: ['QUAN_LY'] }
+            data: { title: 'Thông tin bác sĩ' }
         })
         .when("/admin/doctor-schedule", {
             templateUrl: "templates/admin-doctor-schedule.html",
-            data: { title: 'Xếp lịch làm việc', requiresAuth: true, roles: ['QUAN_LY'] }
+            data: { title: 'Xếp lịch làm việc' }
         })
         .when("/admin/list-appoinment", {
             templateUrl: "templates/admin-list-appoinment.html",
-            data: { title: 'Danh sách ca khám', requiresAuth: true, roles: ['QUAN_LY', 'HANH_CHINH'] }
+            data: { title: 'Danh sách ca khám' }
         })
         .when("/admin/list-service", {
             templateUrl: "templates/admin-list-service.html",
-            data: { title: 'Dịch vụ nha khoa', requiresAuth: true, roles: ['QUAN_LY', 'HANH_CHINH'] }
+            data: { title: 'Dịch vụ nha khoa' }
         })
         .when("/admin/admin-calendar", {
             templateUrl: "templates/admin-calendar.html",
-            data: { title: 'Lên lịch khám', requiresAuth: true, roles: ['QUAN_LY', 'HANH_CHINH'] }
+            data: { title: 'Lên lịch khám' }
         })
         .when("/admin/shift", {
             templateUrl: "templates/admin-shift.html",
-            data: { title: 'Ca làm việc', requiresAuth: true, roles: ['QUAN_LY', 'HANH_CHINH'] }
+            data: { title: 'Ca làm việc' }
         })
         .when("/admin/dental-staff", {
             templateUrl: "templates/admin-dental-staff.html",
-            data: { title: 'Thông tin nhân viên', requiresAuth: true, roles: ['QUAN_LY'] }
+            data: { title: 'Thông tin nhân viên' }
         })
         .when("/admin/patients", {
             templateUrl: "templates/admin-patients.html",
-            data: { title: 'Hồ sơ bệnh nhân', requiresAuth: true, roles: ['QUAN_LY', 'HANH_CHINH'] }
+            data: { title: 'Hồ sơ bệnh nhân' }
         })
         .when("/admin/medicines", {
             templateUrl: "templates/admin-medicines.html",
-            data: { title: 'Quản lí thuốc', requiresAuth: true, roles: ['QUAN_LY', 'HANH_CHINH'] }
+            data: { title: 'Quản lí thuốc' }
         })
         .when("/admin/dental-supplies", {
             templateUrl: "templates/admin-list-dental-supplies.html",
-            data: { title: 'Vật tư nha khoa', requiresAuth: true, roles: ['QUAN_LY', 'HANH_CHINH'] }
+            data: { title: 'Vật tư nha khoa' }
         })
         .when("/admin/save-dental-supplies", {
             templateUrl: "templates/admin-save-dental-supplies.html",
-            data: { title: 'Quản lý vật tư nha khoa', requiresAuth: true, roles: ['QUAN_LY', 'HANH_CHINH'] }
+            data: { title: 'Quản lý vật tư nha khoa' }
         })
         .when("/admin/distribution-supplies", {
             templateUrl: "templates/admin-list-distribution-supplies.html",
-            data: { title: 'Nhà phân phối', requiresAuth: true, roles: ['QUAN_LY', 'HANH_CHINH'] }
+            data: { title: 'Nhà phân phối' }
         })
         .when("/admin/save-distribution-supplies", {
             templateUrl: "templates/admin-save-distribution-supplies.html",
-            data: { title: 'Quản lý thông tin nhà phân phối', requiresAuth: true, roles: ['QUAN_LY', 'HANH_CHINH'] }
+            data: { title: 'Quản lý thông tin nhà phân phối' }
         })
         .when("/admin/list-invoice", {
             templateUrl: "templates/admin-list-invoice.html",
-            data: { title: 'Hóa đơn', requiresAuth: true, roles: ['QUAN_LY', 'HANH_CHINH'] }
+            data: { title: 'Hóa đơn' }
         })
         .when("/admin/ct-results", {
             templateUrl: "templates/admin-ct-results.html",
-            data: { title: 'Film chụp CT', requiresAuth: true, roles: ['KY_THUAT'] }
+            data: { title: 'Film chụp CT' }
         })
         .when("/admin/patient-record", {
             templateUrl: "templates/admin-patient-record.html",
-            data: { title: 'Lịch sử điều trị', requiresAuth: true, roles: ['QUAN_LY', 'HANH_CHINH'] }
+            data: { title: 'Lịch sử điều trị' }
         })
         .when("/admin/doctor-calendar", {
             templateUrl: "templates/admin-doctor-calendar.html",
-            data: { title: 'Lịch làm của tôi', requiresAuth: true, roles: ['BAC_SI'] }
+            data: { title: 'Lịch làm của tôi' }
         })
         .when("/admin/create-account", {
             templateUrl: "templates/admin-create-account.html",
-            data: { title: 'Tài khoản', requiresAuth: true, roles: ['QUAN_LY','HANH_CHINH']}
+            data: { title: 'Tài khoản' }
         })
         .when("/login", {
             templateUrl: "templates/login.html",
@@ -165,19 +165,19 @@ app.config(function ($routeProvider) {
         })
         .when("/admin/my-profile", {
             templateUrl: "templates/admin-my-profile.html",
-            data: { title: 'Hồ sơ của tôi', requiresAuth: true, roles: ['QUAN_LY', 'HANH_CHINH', 'BAC_SI', 'KY_THUAT'] }
+            data: { title: 'Hồ sơ của tôi' }
         })
         .when("/admin/my-setting", {
             templateUrl: "templates/admin-my-setting.html",
-            data: { title: 'Cài đặt', requiresAuth: true, roles: ['QUAN_LY', 'HANH_CHINH', 'BAC_SI', 'KY_THUAT'] }
+            data: { title: 'Cài đặt' }
         })
         .when("/admin/post", {
             templateUrl: "templates/admin-post.html",
-            data: { title: 'Bài viết', requiresAuth: true, roles: ['QUAN_LY', 'HANH_CHINH'] }
+            data: { title: 'Bài viết' }
         })
         .when("/admin/transaction-success", {
             templateUrl: "templates/transaction-success.html",
-            data: { title: 'Thanh toán thành công', requiresAuth: true, roles: ['QUAN_LY', 'HANH_CHINH'] }
+            data: { title: 'Thanh toán thành công' }
         })
         .when("/not-found", {
             templateUrl: "/component/notFound.html",
@@ -205,7 +205,7 @@ app
                 return value !== null;
             });
             return processedValues;
-        }        
+        }
     })
     .service('TimezoneService', function () {
         this.convertToTimezone = function (date, timezone) {
@@ -282,14 +282,14 @@ app
             const userLogin = localStorage.getItem(localStorageKey);
             const userType = getUserType(userLogin);
             const emailMine = getUserEmail(userLogin); // Adjust this if needed
-            
+
 
             if (userType === 'HANH_CHINH') {
-                stompClient.subscribe('/chatroom', function (message) { 
+                stompClient.subscribe('/chatroom', function (message) {
                     try {
                         // Try to parse the message body as an integer
                         const appointmentId = parseInt(message.body, 10);
-            
+
                         // If successful, broadcast the new appointment event
                         if (!isNaN(appointmentId)) {
                             $rootScope.$broadcast('gotNewApppointment', message.body);
@@ -303,9 +303,9 @@ app
                         // If parsing fails, do the other thing (you can customize this)
                         $rootScope.$broadcast('appointmentBeingCancel', message.body);
                     }
-                   
+
                 })
-                stompClient.subscribe('/appointmentdone', function (message) { 
+                stompClient.subscribe('/appointmentdone', function (message) {
                     $rootScope.$broadcast('appointmentIsDone', message.body);
                     $rootScope.$broadcast('reloadTableAppointment');
                 })
@@ -432,7 +432,7 @@ app
             breadcrumbSec.append(`<li class="breadcrumb-item"><a href="#!` + currentUrl + `">` + pageTitle + `</a></li>`);
         };
     });
-   
+
 app
     .filter('truncateWordsHTML', function () {
         return function (input, limit) {
@@ -498,14 +498,14 @@ app
             return amount;
         };
     })
-    .filter('initialCharacter', function() {
-        return function(input) {
+    .filter('initialCharacter', function () {
+        return function (input) {
             if (typeof input !== 'string' || input.length === 0) {
                 return '';
             }
             var cleanedInput = input.replace(/[\(\)\-]/g, '');
 
-            return cleanedInput.split(' ').map(function(word) {
+            return cleanedInput.split(' ').map(function (word) {
                 return word.charAt(0).toUpperCase();
             }).join('');
         };
