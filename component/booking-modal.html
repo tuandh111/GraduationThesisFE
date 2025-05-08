@@ -308,11 +308,18 @@
                 </div>
 
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" ng-click="closeConfirmForm()"><i
-                        class="bi bi-x-circle-fill"></i> Hủy</button>
-                <button type="button" class="btn btn-primary" ng-click="confirmSaveAppointment()"><i
-                        class="bi bi-plus-circle-fill"></i> Xác nhận</button>
+            <div class="row">
+                <div class="col-12">
+                    <div
+                        class="modal-footer d-flex flex-column flex-sm-row justify-content-center justify-content-sm-between align-items-center">
+                        <button type="button" class="btn btn-secondary mb-2 mb-sm-0" ng-click="closeConfirmForm()">
+                            <i class="bi bi-x-circle-fill"></i> Hủy
+                        </button>
+                        <button type="button" class="btn btn-primary" ng-click="confirmSaveAppointment()">
+                            <i class="bi bi-plus-circle-fill"></i> Xác nhận
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
