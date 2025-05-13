@@ -1,47 +1,130 @@
-app.controller('BookingController', function ($scope, $http,SocketService ,$rootScope, $location, $timeout,API, $q) {
+app.controller('BookingController', function ($scope, $http, SocketService, $rootScope, $location, $timeout, API, $q) {
     let url = API.getBaseUrl();
     let headers = API.getHeaders();
-    $scope.isPatient = API.getUser()?API.getUser().split("-")[1]=='BENH_NHAN':null
+    $scope.isPatient = API.getUser() ? API.getUser().split("-")[1] == 'BENH_NHAN' : null
     $scope.isLogin = localStorage.getItem("isLogin") ? localStorage.getItem("isLogin") : false;
     var specialtyId = 0;
 
-    $scope.doctorId = -1;
-    $scope.daySelected = "";
-    $scope.foundServices = []
-    $scope.hourLenghtSelected = 0;
-    $scope.hasSelectedService = false; // Biến để kiểm tra xem có dịch vụ nào được chọn
-    $scope.hasSelectedtHours = false;
-    $scope.hourSelected = []
-    $scope.isEnoughHour = false;
-    $scope.isFastBookingForm = false; // Biến để kiểm tra xem có phải là form đặt lịch nhanh không
-    $scope.issueIds = [];
-    $scope.listSelectedService = [];
-    $scope.listDoctorUnavailabilityByDoctorDB = [];
-    $scope.listDoctorUnavailabilityByDate = []
-    $scope.listDoctorScheduleByDate = []
+    $scope.doctorId = 1;
+    $scope.daySelected = "2025-05-15";
+    $scope.foundServices = [
+        { id: 1, name: "Teeth Cleaning", duration: 30, price: 300000 },
+        { id: 2, name: "Cavity Filling", duration: 45, price: 500000 }
+    ];
+    $scope.hourLenghtSelected = 75;
+    $scope.hasSelectedService = true;
+    $scope.hasSelectedtHours = true;
+    $scope.hourSelected = ["09:00", "09:30", "10:00"];
+    $scope.isEnoughHour = true;
+    $scope.isFastBookingForm = false;
+    $scope.issueIds = [1, 3];
+    $scope.listSelectedService = [
+        { id: 1, name: "Teeth Cleaning", duration: 30, price: 300000 },
+        { id: 2, name: "Cavity Filling", duration: 45, price: 500000 }
+    ];
+    $scope.listDoctorUnavailabilityByDoctorDB = [
+        { doctorId: 1, date: "2025-05-16", hours: ["13:00", "14:00"] }
+    ];
+    $scope.listDoctorUnavailabilityByDate = [
+        { hour: "14:00", reason: "Break time" }
+    ];
+    $scope.listDoctorScheduleByDate = [
+        { hour: "08:00", available: true },
+        { hour: "08:30", available: true },
+        { hour: "09:00", available: false }
+    ];
     $scope.selectAll = false;
     $scope.selectAllEnable = true;
-    $scope.listServiceSelected = []
-    $scope.listShiftHours = []
-    $scope.selectedShiftHour = [];
-    $scope.selectedShift = null
-    $scope.servicePage = false;
+    $scope.listServiceSelected = [
+        { id: 1, name: "Teeth Cleaning", duration: 30, price: 300000 }
+    ];
+    $scope.listShiftHours = ["08:00", "08:30", "09:00", "09:30", "10:00"];
+    $scope.selectedShiftHour = ["09:00", "09:30"];
+    $scope.getListDoctorScheduleByDoctorId = [
+        {
+            doctorScheduleId: 1,
+            shift: { name: "Buổi sáng" }, // Morning
+            startTime: "08:00",
+            endTime: "12:00"
+        },
+        {
+            doctorScheduleId: 2,
+            shift: { name: "Buổi chiều" }, // Afternoon
+            startTime: "13:00",
+            endTime: "17:00"
+        },
+        {
+            doctorScheduleId: 3,
+            shift: { name: "Buổi tối" }, // Evening
+            startTime: "18:00",
+            endTime: "21:00"
+        }
+    ];
+
+    $scope.selectedShift = null;
+    $scope.hasSelectedService = true; // Phải bật biến này để không bị ng-disabled
+
+    $scope.servicePage = true;
     $scope.showConfirmForm = true;
-    $scope.symtomTrue = false;
-    $scope.showSymptoms = false
-    $scope.totalPrice = 0;
-    $scope.totalTime = 0;
-    $scope.patientAdding = [];
-    $scope.patientIdLogin = -1;
-    $scope.patientLogin = []
-    $scope.listServiceDB = [];
-    $scope.filteredServices = [];
-    $scope.listAppointmentByDate = [];
-    $scope.searchQuery = ""; // Search input model
+    $scope.symtomTrue = true;
+    $scope.showSymptoms = true;
+    $scope.totalPrice = 800000;
+    $scope.totalTime = 75;
+    $scope.patientAdding = [
+        { id: 1, name: "Nguyen Van A", phone: "0901234567" }
+    ];
+    $scope.patientIdLogin = 1;
+    $scope.patientLogin = { id: 1, name: "Nguyen Van A", phone: "0901234567" };
+    $scope.listServiceDB = [
+        { id: 1, serviceName: "Cạo vôi răng", timeEstimate: 30, price: 200000 },
+        { id: 2, serviceName: "Trám răng thẩm mỹ", timeEstimate: 45, price: 400000 },
+        { id: 3, serviceName: "Tư vấn niềng răng", timeEstimate: 60, price: 500000 },
+        { id: 4, serviceName: "Nhổ răng sữa", timeEstimate: 20, price: 100000 },
+        { id: 5, serviceName: "Nhổ răng khôn", timeEstimate: 60, price: 800000 },
+        { id: 6, serviceName: "Chụp X-quang răng", timeEstimate: 15, price: 150000 },
+        { id: 7, serviceName: "Tẩy trắng răng", timeEstimate: 45, price: 1000000 },
+        { id: 8, serviceName: "Bọc răng sứ", timeEstimate: 90, price: 2000000 },
+        { id: 9, serviceName: "Lấy tủy răng", timeEstimate: 60, price: 700000 },
+        { id: 10, serviceName: "Gắn đá răng", timeEstimate: 30, price: 500000 },
+        { id: 11, serviceName: "Chỉnh nha niềng răng", timeEstimate: 60, price: 3000000 },
+        { id: 12, serviceName: "Cạo vôi và đánh bóng răng", timeEstimate: 40, price: 300000 },
+        { id: 13, serviceName: "Điều trị viêm nha chu", timeEstimate: 60, price: 600000 },
+        { id: 14, serviceName: "Tái khám sau điều trị", timeEstimate: 20, price: 50000 },
+        { id: 15, serviceName: "Gắn mão răng tạm", timeEstimate: 25, price: 250000 },
+        { id: 16, serviceName: "Phẫu thuật nướu", timeEstimate: 90, price: 1200000 },
+        { id: 17, serviceName: "Tái tạo xương hàm", timeEstimate: 120, price: 2500000 },
+        { id: 18, serviceName: "Trồng răng Implant", timeEstimate: 120, price: 10000000 },
+        { id: 19, serviceName: "Tẩy trắng răng bằng laser", timeEstimate: 60, price: 1500000 },
+        { id: 20, serviceName: "Niềng răng mắc cài kim loại", timeEstimate: 60, price: 25000000 },
+        { id: 21, serviceName: "Niềng răng mắc cài sứ", timeEstimate: 60, price: 30000000 },
+        { id: 22, serviceName: "Niềng răng trong suốt", timeEstimate: 60, price: 45000000 },
+        { id: 23, serviceName: "Tạo hình răng thẩm mỹ", timeEstimate: 45, price: 1200000 },
+        { id: 24, serviceName: "Khám răng tổng quát", timeEstimate: 20, price: 50000 },
+        { id: 25, serviceName: "Điều trị sâu răng", timeEstimate: 30, price: 300000 },
+        { id: 26, serviceName: "Làm sạch chân răng", timeEstimate: 40, price: 350000 },
+        { id: 27, serviceName: "Chữa viêm tủy", timeEstimate: 60, price: 800000 },
+        { id: 28, serviceName: "Bọc mão răng toàn sứ", timeEstimate: 90, price: 2500000 },
+        { id: 29, serviceName: "Gắn cầu răng sứ", timeEstimate: 90, price: 3000000 },
+        { id: 30, serviceName: "Khám và tư vấn điều trị", timeEstimate: 15, price: 0 }
+    ];
+
+    $scope.filteredServices = angular.copy($scope.listServiceDB);
+    $scope.listAppointmentByDate = [
+        {
+            id: 101,
+            date: "2025-05-15",
+            patientName: "Nguyen Van A",
+            services: ["Teeth Cleaning", "Cavity Filling"],
+            status: "Đang chờ xử lí"
+        }
+    ];
+    $scope.searchQuery = "";
     $scope.currentPage = 1;
-    $scope.pageSize = 6; // Number of items per page
+    $scope.pageSize = 6;
     $scope.isAllowedFastBooking = true;
-    $scope.phoneNumber = ""; // Khởi tạo biến nếu chưa được khởi tạo
+    $scope.phoneNumber = "0901234567";
+
+
 
     function normalizeVietnameseString(str) {
         return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
@@ -49,57 +132,57 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
     // Hàm loại bỏ các phần tử trùng lặp
     $scope.dutyDays = [];
 
-    $scope.init = function (){
-            $scope.servicePage = false;
-            
-            $('.select2-multi').select2({
-                multiple: true,
-                theme: 'bootstrap4',
-                placeholder: "   -- Chọn triệu chứng --",
-                allowClear: true // Cho phép xóa lựa chọn để quay lại trạng thái placeholder
+    $scope.init = function () {
+        $scope.servicePage = false;
+
+        $('.select2-multi').select2({
+            multiple: true,
+            theme: 'bootstrap4',
+            placeholder: "   -- Chọn triệu chứng --",
+            allowClear: true // Cho phép xóa lựa chọn để quay lại trạng thái placeholder
+        });
+        $('#formSymptom').on('change', function () {
+            $timeout(function () {
+                $scope.loadTreatmeantAndServiceByIssue()
             });
-            $('#formSymptom').on('change', function () {
-                $timeout(function () {
-                    $scope.loadTreatmeantAndServiceByIssue()
-                 });
-              });
-            $scope.patientIdLogin = $scope.getUserLogin();
-              // console.log($scope.patientIdLogin);
-              if ($scope.patientIdLogin != -1) {
-                  $http.get(url + '/patient-id/' + $scope.patientIdLogin, { headers: headers }).then(response => {
-                      $scope.patientLogin = response.data;
-                      $scope.fullName = $scope.patientLogin.fullName;
-                      $scope.phoneNumber =  $scope.patientLogin.phoneNumber
-                  });
-              }
-                    // Lấy URL hiện tại
-            var currentUrl = window.location.href;
-            // Tách chuỗi để lấy số sau dấu '/' cuối cùng
-            var segments = currentUrl.split('/');
-            var lastSegment = segments.pop(); // Lấy phần tử cuối cùng của mảng
-            // console.log(lastSegment);
-              
-            // Nếu số được lấy có giá trị hợp lệ, thực hiện chức năng
-            if (!isNaN(lastSegment) && lastSegment) {
-                // console.log("Số sau dấu '/' cuối cùng là:", lastSegment);
-                $scope.selectDoctor(lastSegment)
-            
-            }
-            if(!($scope.getUserLogin() == -1) && !$scope.isPatient){
-                $scope.isAllowedFastBooking = false;
-            }
-            console.log( $scope.isLogin);
-            
+        });
+        $scope.patientIdLogin = $scope.getUserLogin();
+        // console.log($scope.patientIdLogin);
+        if ($scope.patientIdLogin != -1) {
+            $http.get(url + '/patient-id/' + $scope.patientIdLogin, { headers: headers }).then(response => {
+                $scope.patientLogin = response.data;
+                $scope.fullName = $scope.patientLogin.fullName;
+                $scope.phoneNumber = $scope.patientLogin.phoneNumber
+            });
+        }
+        // Lấy URL hiện tại
+        var currentUrl = window.location.href;
+        // Tách chuỗi để lấy số sau dấu '/' cuối cùng
+        var segments = currentUrl.split('/');
+        var lastSegment = segments.pop(); // Lấy phần tử cuối cùng của mảng
+        // console.log(lastSegment);
+
+        // Nếu số được lấy có giá trị hợp lệ, thực hiện chức năng
+        if (!isNaN(lastSegment) && lastSegment) {
+            // console.log("Số sau dấu '/' cuối cùng là:", lastSegment);
+            $scope.selectDoctor(lastSegment)
+
+        }
+        if (!($scope.getUserLogin() == -1) && !$scope.isPatient) {
+            $scope.isAllowedFastBooking = false;
+        }
+        console.log($scope.isLogin);
+
     }
 
-    $scope.getUserLogin = function() {
+    $scope.getUserLogin = function () {
         var userString = localStorage.getItem('userLogin');
         if (userString) {
             // Tách chuỗi tại dấu gạch ngang đầu tiên
             var parts = userString.split('-');
             var userNumber = parts[0];
             var userType = parts[1];
-            
+
             // Kiểm tra nếu phần đầu tiên là số và phần thứ hai là "BENH_NHAN"
             var numberOnly = userNumber.match(/^\d+/);
 
@@ -112,105 +195,105 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
         }
         return -1;
     };
-    
-    
-    $scope.formValidateColor = function() {
-            var form = document.getElementById('appointmentForm');
-            var isVal = form.checkValidity()
-            var shiftClass = document.getElementById("formShift").classList;
-            var shiftHour = document.getElementById("formShiftHour-feedback");
-            var shift = document.getElementById("formShift-feedback");
-            isVal = true;
 
-            if ($scope.issueIds.length === 0 && !$scope.showSymptoms) {
-                var firstElement = document.querySelector('.select2-selection.select2-selection--multiple');
-                if (firstElement) {
-                    firstElement.style.borderColor = '#dc3545';
-                }
-                $scope.symtomTrue = true;
-                isVal = false;
-                return isVal;
-            } else {
-                var firstElement = document.querySelector('.select2-selection.select2-selection--multiple');
-                if (firstElement) {
-                    firstElement.style.borderColor = '#3ad29f';
-                }
 
-                $scope.symtomTrue = false;
+    $scope.formValidateColor = function () {
+        var form = document.getElementById('appointmentForm');
+        var isVal = form.checkValidity()
+        var shiftClass = document.getElementById("formShift").classList;
+        var shiftHour = document.getElementById("formShiftHour-feedback");
+        var shift = document.getElementById("formShift-feedback");
+        isVal = true;
+
+        if ($scope.issueIds.length === 0 && !$scope.showSymptoms) {
+            var firstElement = document.querySelector('.select2-selection.select2-selection--multiple');
+            if (firstElement) {
+                firstElement.style.borderColor = '#dc3545';
             }
-            console.log(isVal);
-            
-        if($scope.isFastBookingForm){
+            $scope.symtomTrue = true;
+            isVal = false;
+            return isVal;
+        } else {
+            var firstElement = document.querySelector('.select2-selection.select2-selection--multiple');
+            if (firstElement) {
+                firstElement.style.borderColor = '#3ad29f';
+            }
+
+            $scope.symtomTrue = false;
+        }
+        console.log(isVal);
+
+        if ($scope.isFastBookingForm) {
             //Nếu là form đặt nhanh
             $scope.phoneNumber = document.getElementById("formPhoneNumber").value;
             $scope.daySelected = document.getElementById("formDate").value;
             $scope.fullName = document.getElementById("fullName").value
 
-            if($scope.fullName === ""){              
+            if ($scope.fullName === "") {
                 isVal = false
                 console.log(isVal);
                 return isVal
             }
-            
-            if($scope.phoneNumber === ""){
+
+            if ($scope.phoneNumber === "") {
                 isVal = false
                 console.log(isVal);
                 return isVal
             }
             console.log(isVal);
-            
-        }else{
+
+        } else {
 
             if (shiftClass.contains('ng-invalid')) {
 
                 shift.classList.remove("ng-hide");
                 isVal = false;
                 return isVal;
-            }else{
+            } else {
                 shift.classList.add("ng-hide");
-                
+
             }
             if (!$scope.hasSelectedtHours) {
                 shiftHour.classList.remove("ng-hide");
                 isVal = false;
                 return isVal;
-            }else{
+            } else {
                 shiftHour.classList.add("ng-hide");
             }
-            
-            
-            if(!$scope.isCorrectBookingHoour()){
+
+
+            if (!$scope.isCorrectBookingHoour()) {
                 isVal = false;
-                
+
                 return isVal;
             }
         }
-        
-        
+
+
         return isVal;
     }
-    $scope.isCorrectBookingHoour  = function() {
-        var sortedShifts = $scope.hourSelected.slice().sort(function(a, b) {
+    $scope.isCorrectBookingHoour = function () {
+        var sortedShifts = $scope.hourSelected.slice().sort(function (a, b) {
             return a.timeOfShiftId - b.timeOfShiftId;
         });
 
         // Kiểm tra tính liên tiếp
         for (var i = 0; i < sortedShifts.length - 1; i++) {
             if (sortedShifts[i + 1].timeOfShiftId !== sortedShifts[i].timeOfShiftId + 1) {
-               
+
                 return false; // Không liên tiếp
             }
         }
         return true;
     }
-    $scope.showConfirmModal = function() {
+    $scope.showConfirmModal = function () {
         try {
             var isCorrectForm = $scope.formValidateColor();
             var isBookingYet = false;
             console.log('isCorrectForm', isCorrectForm);
             var validStatuses = ["đã đặt", "đã xác nhận", "đang diễn ra", "hoàn thành"];
             if (isCorrectForm) {
-                if($scope.listSelectedService.length > 4 ){
+                if ($scope.listSelectedService.length > 4) {
                     Swal.fire({
                         title: "Không thành công!",
                         html: "Quý khách chỉ chọn trước tối đa 4 dịch vụ!",
@@ -219,25 +302,25 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
                     $scope.showConfirmForm = true;
                     return false;
                 }
-        
-                $scope.getListAppointmentByDate($scope.daySelected).then(function() {
+
+                $scope.getListAppointmentByDate($scope.daySelected).then(function () {
                     if ($scope.listAppointmentByDate && $scope.listAppointmentByDate.length > 0) {
-                        if($scope.isFastBookingForm){
+                        if ($scope.isFastBookingForm) {
                             var apByNum = $scope.listAppointmentByDate.filter(a => a.patient.phoneNumber == $scope.phoneNumber);
                             console.log(apByNum);
                             if (apByNum.length > 0) {
-                                if(validStatuses.includes(apByNum.appointmentStatus.status.toLowerCase())){
+                                if (validStatuses.includes(apByNum.appointmentStatus.status.toLowerCase())) {
                                     if (apByNum.appointmentType.typeNametoLowerCase() !== "tái khám") {
-                                    Swal.fire({
-                                        title: "Không thành công!",
-                                        html: "Quý khách đã có lịch khám ngày " + $scope.daySelected + "!\n Quý khách vui lòng liên hệ nhân viên tư vấn nếu cần hỗ trợ thêm.",
-                                        icon: "error"
-                                    });
-                                    isBookingYet = true;
-                                }
+                                        Swal.fire({
+                                            title: "Không thành công!",
+                                            html: "Quý khách đã có lịch khám ngày " + $scope.daySelected + "!\n Quý khách vui lòng liên hệ nhân viên tư vấn nếu cần hỗ trợ thêm.",
+                                            icon: "error"
+                                        });
+                                        isBookingYet = true;
+                                    }
                                 }
                             }
-                        } else if($scope.patientIdLogin != -1){
+                        } else if ($scope.patientIdLogin != -1) {
                             var apById = $scope.listAppointmentByDate.find(a => a.patient.patientId == $scope.patientIdLogin);
                             console.log(apById);
 
@@ -253,13 +336,13 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
                             }
                         }
                     }
-                
-                    if(isBookingYet){
+
+                    if (isBookingYet) {
                         return false;
                     }
-                
-                    if($scope.showformShift || !$scope.isFastBookingForm){
-                        if($scope.hourLenghtSelected != $scope.getRecommendation()){
+
+                    if ($scope.showformShift || !$scope.isFastBookingForm) {
+                        if ($scope.hourLenghtSelected != $scope.getRecommendation()) {
                             Swal.fire({
                                 title: "Không thành công!!",
                                 html: "Số ca quý khách chọn chưa đúng!",
@@ -267,7 +350,7 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
                             });
                             return false;
                         }
-                        if(!$scope.isCorrectBookingHoour()){
+                        if (!$scope.isCorrectBookingHoour()) {
                             Swal.fire({
                                 title: "Không thành công!!",
                                 html: "Quý khách cần chọn giờ liên tiếp tránh dịch vụ bị gián đoạn!",
@@ -275,7 +358,7 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
                             });
                             return false;
                         }
-                
+
                         if ($scope.hourSelected.length < $scope.getRecommendation()) {
                             $scope.showConfirmForm = false;
                         } else {
@@ -289,7 +372,7 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
                 }).catch(error => {
                     console.error('Error in showConfirmModal:', error);
                 });
-                
+
             } else {
                 $scope.showConfirmForm = true;
                 document.getElementById('appointmentForm').classList.add('was-validated');
@@ -300,35 +383,35 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
                 });
             }
         } catch (error) {
-            
+
             console.log('Đã xảy ra lỗi: ' + error.message);
         }
     }
-    
 
-    $scope.addPatientFastBooking = function(){        
-        if($scope.patientIdLogin != -1){
+
+    $scope.addPatientFastBooking = function () {
+        if ($scope.patientIdLogin != -1) {
             $scope.patientAdding = $scope.listPatient.filter(p => p.patientId == $scope.patientIdLogin)
-            console.log( $scope.patientAdding);
+            console.log($scope.patientAdding);
             return $http.get(url + '/patient-id', $scope.patientAdding.patientId, { headers: headers });
-        }else if($scope.isExistPatient($scope.phoneNumber)){
+        } else if ($scope.isExistPatient($scope.phoneNumber)) {
             $scope.patientAdding = $scope.listPatient.filter(p => p.phoneNumber == $scope.phoneNumber)
 
-            console.log( "isExistPatien: ", $scope.patientAdding);
+            console.log("isExistPatien: ", $scope.patientAdding);
             return $http.get(url + '/patient-id', $scope.patientAdding.patientId, { headers: headers });
-        }else{
+        } else {
             try {
                 $scope.fullName = document.getElementById("fullName").value;
                 $scope.phoneNumber = document.getElementById("phoneNumber").value;
             } catch (error) {
-                
+
             }
-           
+
 
             var patientData = {
                 fullName: $scope.fullName,
                 phoneNumber: $scope.phoneNumber,
-                gender: "UNISEX",   
+                gender: "UNISEX",
                 birthday: null,
                 CitizenIdentificationNumber: null,
                 Type: false,
@@ -337,13 +420,13 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
             }
 
             console.log("Lưu thành công patient: ", patientData);
-        
+
             return $http.post(url + '/patient', patientData, { headers: headers });
         }
-        
+
     }
 
-    $scope.addAppointmentPatientRecord = function(patientId) {
+    $scope.addAppointmentPatientRecord = function (patientId) {
         var appointmentPatientRecordData = {
             createAt: new Date(),
             currentCondition: $scope.selectedIssuesString,
@@ -352,16 +435,16 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
             patientId: parseInt(patientId)
         };
         // console.log(appointmentPatientRecordData);
-        
+
         return $http.post(url + '/appointment-patient-record', appointmentPatientRecordData, { headers: headers });
     };
-    
-    $scope.addAppointment = function(createdAppointmentPatientRecord, doctorId, patientId) {
-        var appointmentTypeSelected = $scope.listAppointmentTypeDB.find(function(appointmentType) {
+
+    $scope.addAppointment = function (createdAppointmentPatientRecord, doctorId, patientId) {
+        var appointmentTypeSelected = $scope.listAppointmentTypeDB.find(function (appointmentType) {
             return appointmentType.appointment_TypeId === 1;
         });
-    
-        var appointmentStatusSelected = $scope.listAppointmentStatusDB.find(function(appointmentStatus) {
+
+        var appointmentStatusSelected = $scope.listAppointmentStatusDB.find(function (appointmentStatus) {
             return appointmentStatus.appointment_StatusId === 1;
         });
         var note = $scope.formAppointmentRequestNote;
@@ -384,17 +467,17 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
             patientId: patientId,
             isDeleted: false
         };
-    
+
         return $http.post(url + '/appointment', appointmentRequestData, { headers: headers });
     };
-    
-    $scope.addDoctorUnavailability = function(createdAppointment) {
+
+    $scope.addDoctorUnavailability = function (createdAppointment) {
         var promises = [];
         $scope.hourSelected.forEach(hr => {
             var dateDoctorUnavailability = new Date($scope.daySelected);
             var hourParts = hr.beginTime.split(':');
             dateDoctorUnavailability.setHours(hourParts[0], hourParts[1], 0, 0);
-    
+
             var doctorUnavailabilityData = {
                 description: "Bận",
                 isDeleted: false,
@@ -402,14 +485,14 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
                 timeOfShiftId: hr.timeOfShiftId,
                 appointmentId: createdAppointment.appointmentId
             };
-    
+
             promises.push($http.post(url + '/doctorUnavailability', doctorUnavailabilityData, { headers: headers }));
         });
-    
+
         return Promise.all(promises);
     };
 
-    $scope.addAppointmentService = function(appointmentId, serviceId, price) {
+    $scope.addAppointmentService = function (appointmentId, serviceId, price) {
         var appointmentServiceData = {
             appointmentId: appointmentId,
             isDeleted: false,
@@ -421,15 +504,15 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
         return $http.post(url + '/appointment-service', appointmentServiceData, { headers: headers });
     };
 
-    $scope.confirmSaveAppointment = function() {
+    $scope.confirmSaveAppointment = function () {
         let idAppointment;
         let appointmentPromise;
-    
+
         if (!$scope.isFastBookingForm) {
             // Nếu là form chọn bác sĩ
             var patient = $scope.patientLogin;
             // console.log(patient);
-            
+
             appointmentPromise = $scope.addAppointmentPatientRecord(patient.patientId)
                 .then(response => {
                     var createdAppointmentPatientRecord = response.data;
@@ -455,7 +538,7 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
                     return $scope.addAppointment(createdAppointmentPatientRecord, null, $scope.patientAdding.patientId);
                 });
         }
-    
+
         appointmentPromise
             .then(response => {
                 var createdAppointment = response.data;
@@ -475,10 +558,10 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
                     text: 'Thêm đặt lịch khám thành công !',
                     type: 'success',
                     timeout: 5000
-                }).show() ;
+                }).show();
                 $scope.showConfirmForm = true;
                 $scope.resetForm();
-            
+
                 // Send the idAppointment via WebSocket after everything is done
                 SocketService.getStompClient().then(function (stompClient) {
                     // console.log('I send ' + idAppointment);
@@ -487,7 +570,7 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
                     console.error('Socket connection error: ' + error);
                 });
                 console.log(idAppointment);
-                
+
                 // // Đợi 5 giây sau khi Noty thông báo xong mới tải lại trang
                 // setTimeout(function() {
                 //     window.location.reload();
@@ -497,10 +580,10 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
                 // console.log("Lỗi khi lưu dữ liệu!", error);
                 $scope.showConfirmForm = true;
             });
-    }            
-    
+    }
 
-    $scope.loadTreatmeantAndServiceByIssue = function() {
+
+    $scope.loadTreatmeantAndServiceByIssue = function () {
         // Lấy các triệu chứng đã chọn từ select2
         var selectedIssues = $('#formSymptom').val();
         // // console.log("Selected issues from select2:", selectedIssues);
@@ -521,25 +604,25 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
         });
         $scope.selectedIssuesString = $scope.selectedIssuesForm.map(issue => issue.name).join(', ');
         $scope.issueIds = selectedIssues.map(id => parseInt(id));
-        if($scope.issueIds != []){
+        if ($scope.issueIds != []) {
             $scope.selectAllEnable = true;
-        }else{
+        } else {
             $scope.selectAllEnable = false;
         }
-    
+
         // Tìm các điều trị tương ứng với các vấn đề đã chọn
-        $scope.foundTreatments = $scope.issueIds.flatMap(issueId => 
+        $scope.foundTreatments = $scope.issueIds.flatMap(issueId =>
             $scope.listIssuesTreatmentAutomationDB.filter(list => list.dentalIssues.dentalIssuesId === issueId)
         );
-    
+
         $scope.foundTreatments = $scope.foundTreatments.filter(treatment => treatment.treatment !== null);
         // // console.log("Found issues:", $scope.selectedIssuesForm);
-        
+
         // Tìm các dịch vụ tương ứng với các điều trị đã tìm được
-        $scope.foundServices = $scope.foundTreatments.flatMap(treatment => 
+        $scope.foundServices = $scope.foundTreatments.flatMap(treatment =>
             $scope.listServiceTreatmentAutomationDB.filter(list => list.treatment.treatmentId === treatment.treatment.treatmentId)
         );
-    
+
         // Loại bỏ các dịch vụ trùng lặp
         let uniqueServices = {};
         $scope.foundServices.forEach(service => {
@@ -547,10 +630,10 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
                 uniqueServices[service.service.serviceId] = service;
             }
         });
-    
+
         // Chuyển đối tượng uniqueServices thành mảng
         $scope.foundServices = Object.values(uniqueServices);
-    
+
         // Sắp xếp dịch vụ theo giá tiền
         $scope.foundServices.sort((a, b) => {
             return a.service.price - b.service.price;
@@ -558,13 +641,13 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
 
         $scope.updateStatistics()
     };
-    $scope.getListServiceSelected = function() {
+    $scope.getListServiceSelected = function () {
         var selectedServices = [];
         var promises = [];
 
-        if($scope.showSymptoms){
-            
-            angular.forEach($scope.listServiceDB, function(service) {
+        if ($scope.showSymptoms) {
+
+            angular.forEach($scope.listServiceDB, function (service) {
                 if (service.selected) {
                     var promise = $http.get(url + '/service-id/' + service.serviceId, { headers: headers }).then(response => {
                         selectedServices.push(response.data);
@@ -572,14 +655,14 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
                     promises.push(promise);
                 }
             });
-            return $q.all(promises).then(function() {
+            return $q.all(promises).then(function () {
                 $scope.listSelectedService = selectedServices;
                 // console.log($scope.listSelectedService)
                 $scope.convertedString = $scope.convertSelectedServiceToString();
                 return selectedServices;
             });
-        }else{
-            angular.forEach($scope.foundServices, function(service) {
+        } else {
+            angular.forEach($scope.foundServices, function (service) {
                 if (service.selected) {
                     var promise = $http.get(url + '/service-id/' + service.service.serviceId, { headers: headers }).then(response => {
                         selectedServices.push(response.data);
@@ -587,7 +670,7 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
                     promises.push(promise);
                 }
             });
-            return $q.all(promises).then(function() {
+            return $q.all(promises).then(function () {
                 $scope.listSelectedService = selectedServices;
                 $scope.convertedString = $scope.convertSelectedServiceToString();
                 return selectedServices;
@@ -595,28 +678,28 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
         }
     };
 
-    $scope.convertSelectedServiceToString = function() {
+    $scope.convertSelectedServiceToString = function () {
         return $scope.listSelectedService.map(service => service.serviceName).join(', ');
     };
 
-    $scope.uncheckAllCheckboxes = function() {
+    $scope.uncheckAllCheckboxes = function () {
         $scope.listSelectedService = [];
-        angular.forEach($scope.foundServices, function(service) {
+        angular.forEach($scope.foundServices, function (service) {
             service.selected = false
         });
         console.log($scope.foundServices);
         $scope.resetForm()
-        $scope.showSymptoms = ! $scope.showSymptoms;
+        $scope.showSymptoms = !$scope.showSymptoms;
         $scope.updateStatistics()
     };
 
-    $scope.getListDoctorScheduleByDate = function(date) {
+    $scope.getListDoctorScheduleByDate = function (date) {
         var formattedDate = new Date(date).toISOString().split('T')[0];  // Ensure date is in yyyy-MM-dd format
         var params = { date: formattedDate };  // Wrap date in an object with key 'date'
         // // // console.log('Calling API with params:', params);  // Log params to verify
         return $http.get(url + '/doctor-schedule-by-date', { params: params }).then(response => {
             $scope.listDoctorScheduleByDate = response.data;
-            
+
             return response.data;  // Ensure the promise resolves with the response data
         }).catch(error => {
             console.error('Error fetching doctor schedule:', error);
@@ -624,14 +707,14 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
             return [];  // Ensure the promise resolves with an empty array on error
         });
     };
-    $scope.getTreatmentNamesString = function() {
-            if ($scope.foundTreatments && $scope.foundTreatments.length > 0) {
-                return $scope.foundTreatments.map(function(treatment) {
-                    return treatment.treatment.treatmentName;
-                }).join(', ');
-            } else {
-                return '';
-            }
+    $scope.getTreatmentNamesString = function () {
+        if ($scope.foundTreatments && $scope.foundTreatments.length > 0) {
+            return $scope.foundTreatments.map(function (treatment) {
+                return treatment.treatment.treatmentName;
+            }).join(', ');
+        } else {
+            return '';
+        }
     }
     $scope.getListDentalStaff = function () {
         $http.get(url + '/dental-staff-except-deleted', { headers: headers }).then(response => {
@@ -646,7 +729,7 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
     }
     $scope.getListAppointmentStatus = function () {
         $http.get(url + '/appointment-status-except-deleted', { headers: headers }).then(response => {
-            
+
             $scope.listAppointmentStatusDB = response.data;
         });
     }
@@ -657,19 +740,19 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
     }
     $scope.getListAppointmentByDate = function (date) {
         return $http.get(url + '/appointment-by-date', { params: { date: date } })
-        .then(response => {
-            if (response.data && response.data.length > 0) {
-                $scope.listAppointmentByDate = response.data;
-            } else {
-                // Xử lý trường hợp không có kết quả
+            .then(response => {
+                if (response.data && response.data.length > 0) {
+                    $scope.listAppointmentByDate = response.data;
+                } else {
+                    // Xử lý trường hợp không có kết quả
+                    $scope.listAppointmentByDate = [];
+                }
+            })
+            .catch(error => {
+                // Xử lý lỗi nếu có
+                console.error('Error fetching appointments:', error);
                 $scope.listAppointmentByDate = [];
-            }
-        })
-        .catch(error => {
-            // Xử lý lỗi nếu có
-            console.error('Error fetching appointments:', error);
-            $scope.listAppointmentByDate = [];
-        });
+            });
     }
 
     $scope.getListIssuesTreatmentAutomation = function () {
@@ -688,16 +771,16 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
         $http.get(url + '/patient', { headers: headers }).then(response => {
             $scope.listPatient = response.data;
             // console.log($scope.listPatient);
-            
+
         });
     }
-    $scope.isExistPatient = function(phoneNum){
-        return $scope.listPatient.find( p => p.phoneNumber == phoneNum ) !== undefined
+    $scope.isExistPatient = function (phoneNum) {
+        return $scope.listPatient.find(p => p.phoneNumber == phoneNum) !== undefined
     }
     $scope.getListDentalIssues = function () {
         $http.get(url + '/dental-issues', { headers: headers }).then(response => {
             $scope.listDentalIssuesDB = response.data;
-           
+
             // Sắp xếp danh sách theo thuộc tính name sau khi đã chuẩn hóa
             $scope.listDentalIssuesDB.sort((a, b) => {
                 let nameA = normalizeVietnameseString(a.name);
@@ -711,7 +794,7 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
                 }
                 return 0;
             });
-            
+
             // // // console.log('API getListDentalIssues response:', $scope.listDentalIssuesDB); 
         });
     };
@@ -725,12 +808,12 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
     $scope.getListTreatment = function () {
         $http.get(url + '/treatment', { headers: headers }).then(response => {
             $scope.listTreatmentDB = response.data;
-    
+
             // Sắp xếp danh sách theo thuộc tính treatmentName
             $scope.listTreatmentDB.sort((a, b) => {
                 let nameA = normalizeVietnameseString(a.treatmentName); // chuyển đổi tất cả sang chữ hoa
                 let nameB = normalizeVietnameseString(b.treatmentName); // chuyển đổi tất cả sang chữ hoa
-    
+
                 if (nameA < nameB) {
                     return -1;
                 }
@@ -739,7 +822,7 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
                 }
                 return 0;
             });
-    
+
             // // // console.log('Sorted getListTreatment:', $scope.listTreatmentDB); 
         }).catch(error => {
             console.error('API error:', error);
@@ -782,48 +865,48 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
         $http.get(url + '/time-of-shift', { headers: headers }).then(response => {
             // console.log(response.data)
             $scope.listTimeOfShifts = response.data;
-          
+
         });
     }
 
-    $scope.loadShiftHours = function() {
+    $scope.loadShiftHours = function () {
 
 
-        
+
         var selectedOption = document.getElementById('formShift').options[document.getElementById('formShift').selectedIndex];
         var selectedLabel = selectedOption.text;
         console.log($scope.selectedShift);
-        
-        
+
+
         if ($scope.doctorId != -1) {
             // console.log($scope.listDoctorUnavailabilityByDoctorDB);
-            
+
             $scope.listDoctorUnavailabilityByDate = $scope.listDoctorUnavailabilityByDoctorDB.filter(d => {
                 // Lấy phần đầu của chuỗi ngày đến ký tự thứ 10 (2024-08-24)
                 const formattedDate = d.date.slice(0, 10);
-                
+
                 // So sánh với $scope.daySelected
                 return formattedDate === $scope.daySelected;
             });
-            
+
 
             // console.log("$scope.listDoctorUnavailabilityByDate: ", $scope.listDoctorUnavailabilityByDate);
             var selectedShift = $scope.listShifts.find(shift => shift.name === selectedLabel);
-            
+
             if (selectedShift) {
                 var shiftId = selectedShift.shiftId;
-                
+
                 if (shiftId) {
                     $http.get(url + '/time-of-shift-by-shift-id/' + shiftId, { headers: headers }).then(response => {
                         $scope.listShiftHours = response.data;
-    
-                        angular.forEach($scope.listShiftHours, function(hour) {
+
+                        angular.forEach($scope.listShiftHours, function (hour) {
                             if ($scope.listDoctorUnavailabilityByDate.some(avail => avail.timeOfShift.timeOfShiftId === hour.timeOfShiftId)) {
                                 hour.isValid = true;
                             }
                         });
                         // console.log($scope.listShiftHours);
-    
+
                     }).catch(error => {
                         // // console.log("Error fetching time of shift: " + error);
                         $scope.listShiftHours = [];
@@ -836,20 +919,20 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
             } else {
                 // // console.log("Không tìm thấy ca làm việc tương ứng");
             }
-            
-        }else{
+
+        } else {
             //Fast
             var selectedShift = $scope.listShifts.find(shift => shift.name === selectedLabel);
-            
+
             if (selectedShift) {
                 var shiftId = selectedShift.shiftId;
-                
+
                 if (shiftId) {
                     $http.get(url + '/time-of-shift-by-shift-id/' + shiftId, { headers: headers }).then(response => {
                         $scope.listShiftHours = response.data;
-    
+
                         // console.log($scope.listShiftHours);``
-    
+
                     }).catch(error => {
                         // // console.log("Error fetching time of shift: " + error);
                         $scope.listShiftHours = [];
@@ -864,9 +947,9 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
             }
         }
     };
-    
+
     $scope.getFreeShiftOfDoctor = (shiftId, dateSelected, doctorId) => {
-        var params = { 
+        var params = {
             shiftId: shiftId,
             date: dateSelected,
             doctorId: doctorId
@@ -881,10 +964,10 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
     }
 
     $scope.formBookingFill = (doctorId, dateValue) => {
-        if($scope.isFastBookingForm){
-            var today = $scope.getDateString(new Date())                
+        if ($scope.isFastBookingForm) {
+            var today = $scope.getDateString(new Date())
             $scope.dateChosen = today;
-        }else{
+        } else {
             // Tìm đối tượng bác sĩ theo doctorId trong danh sách
             const doctor = $scope.listDoctorsDB.find(doc => doc.doctorId === doctorId);
             if (doctor) {
@@ -892,11 +975,11 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
                 $scope.dateChosen = dateValue;
             } else {
                 // // console.log(`Không tìm thấy bác sĩ với doctorId ${doctorId}`);
-        }   
-        }    
+            }
+        }
     };
-    $scope.getDateString = function(date){
-        if(!date){
+    $scope.getDateString = function (date) {
+        if (!date) {
             return ""
         }
         return date.toISOString().split('T')[0] // Sets the minimum selectable date to today      
@@ -927,10 +1010,10 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
             }
         } else {
             // // console.log('Không tìm thấy thẻ <h2> bên trong thẻ có class fc-center');
-        }        
-        
-        
-        if(month == "" || year == ""){
+        }
+
+
+        if (month == "" || year == "") {
             Swal.fire({
                 title: "Lỗi!",
                 html: "Không có dữ liệu lịch làm của bác sĩ theo tháng!",
@@ -938,7 +1021,7 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
             })
             return false;
         }
-        
+
         var params = {
             doctorId: $scope.doctorId,
             month: month,
@@ -947,15 +1030,15 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
         // // console.log(params)
         $http.get(url + '/time-of-shift-available-by-month', { params: params }).then(response => {
             $scope.listFreeShiftOfDoctorDB = response.data;
-             // Khởi tạo lại mảng dutyDays
-             // console.log($scope.listFreeShiftOfDoctorDB);
-             
-            $scope.listFreeShiftOfDoctorDB.forEach(function(shift) {
+            // Khởi tạo lại mảng dutyDays
+            // console.log($scope.listFreeShiftOfDoctorDB);
+
+            $scope.listFreeShiftOfDoctorDB.forEach(function (shift) {
                 // Kiểm tra nếu mảng không rỗng và có phần tử đầu tiên
                 if (shift.length > 0 && shift[0].date) {
                     var dateTime = shift[0].date;
                     var date = dateTime.split('T')[0]; // Lấy phần YYYY-MM-DD từ chuỗi datetime
-        
+
                     // Kiểm tra nếu ngày chưa có trong mảng dutyDays
                     if (!$scope.dutyDays.includes(date)) {
                         $scope.dutyDays.push(date); // Thêm ngày vào mảng
@@ -965,11 +1048,11 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
                 }
             });
             // Thêm class .fc-able cho các thẻ có data-date trùng với bất kỳ dữ liệu trong mảng dutyDays
-            document.querySelectorAll('[data-date]').forEach(function(element) {
+            document.querySelectorAll('[data-date]').forEach(function (element) {
                 var date = element.getAttribute('data-date');
                 if ($scope.dutyDays.includes(date) && !element.classList.contains('fc-day-past')) {
                     element.classList.add('fc-able');
-                }   
+                }
                 if (element.classList.contains('fc-day-past') && !element.classList.contains('fc-able') && !element.classList.contains('fc-day-other')) {
                     element.classList.add('fc-unavailable');
                 }
@@ -979,22 +1062,22 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
                 // if (element.classList.contains('fc-day-past') && element.classList.contains('fc-past') ) {
                 //     element.classList.remove('fc-able');  // Remove fc-able class if present
                 // }
-                
+
             });
         }).catch(error => {
             // // console.log("Error: " + error);
             return false;
         });
     }
-    
-    $scope.selectSpecialty = function(specialtyId) {
-        $scope.selectedSpecialtyId = specialtyId; 
-        if(specialtyId != 0){
+
+    $scope.selectSpecialty = function (specialtyId) {
+        $scope.selectedSpecialtyId = specialtyId;
+        if (specialtyId != 0) {
             // // console.log("Selected Specialty ID:", specialtyId);
             $http.get(url + '/doctor-specialty/' + specialtyId, { headers: headers }).then(response => {
-            $scope.listDoctorsDB = response.data;
-        });
-        }else{
+                $scope.listDoctorsDB = response.data;
+            });
+        } else {
             $http.get(url + '/doctor', { headers: headers }).then(response => {
                 $scope.listDoctorsDB = response.data;
                 // // console.log($scope.listDoctorsDB)
@@ -1002,21 +1085,21 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
         }
     }
 
-    $scope.getListDoctorId = function() {
-            $http.get(url + '/doctor-id/'+ $scope.doctorId, { headers: headers }).then(response => {
-                $scope.doctorModel = response.data;
-            });
+    $scope.getListDoctorId = function () {
+        $http.get(url + '/doctor-id/' + $scope.doctorId, { headers: headers }).then(response => {
+            $scope.doctorModel = response.data;
+        });
     }
 
-    $scope.selectDoctor = function(doctorId) {
+    $scope.selectDoctor = function (doctorId) {
         $scope.doctorId = angular.copy(doctorId);
         $scope.booleanDoctorChoosen = true;
         // Gọi hàm xóa và tạo lại thẻ calendar-book-appointment
         $scope.resetCalendarElement(doctorId);
         $scope.getListDoctorId();
     };
-    
-    $scope.resetCalendarElement = function(doctorId) {
+
+    $scope.resetCalendarElement = function (doctorId) {
         var oldCalendar = document.getElementById('calendar-book-appointment');
         if (oldCalendar) {
             var parent = oldCalendar.parentNode;
@@ -1027,7 +1110,7 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
 
             parent.removeChild(oldCalendar);
             parent.appendChild(newCalendar);
-            
+
             $scope.initializeFullCalendar(doctorId)
         }
     };
@@ -1035,7 +1118,7 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
         window.scrollTo(0, 1000);
         $scope.doctorId = doctorIdPicked;
         var events = [];
-    
+
         let calendarEl = document.getElementById('calendar-book-appointment');
         let calendar = new FullCalendar2.Calendar(calendarEl, {
             timeZone: 'Asia/Ho_Chi_Minh',
@@ -1056,7 +1139,7 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
             selectMirror: true,
             select: function (arg) {
                 var userString = localStorage.getItem('userLogin');
-                if(!userString){
+                if (!userString) {
                     console.log(userString);
                     Swal.fire({
                         title: "Không thành công!",
@@ -1070,9 +1153,9 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
 
                 $scope.getListAppointmentByDate($scope.daySelected);
                 console.log($scope.listAppointmentByDate);
-                
+
                 // listApp.find(l => {
-                    
+
                 // })
                 // Lấy ngày hiện tại
                 var today = new Date();
@@ -1080,8 +1163,8 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
 
                 // Lấy ngày được chọn
                 var selectedDate = new Date($scope.daySelected);
-               
-                
+
+
                 // Nếu ngày được chọn là ngày trước ngày hiện tại thì không làm gì cả
                 if (selectedDate < today) {
                     return;
@@ -1090,14 +1173,14 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
                 if ($scope.dutyDays.includes($scope.daySelected)) {
                     var modalElement = document.getElementById('modalBookAppointment');
                     var modal = new bootstrap.Modal(modalElement);
-                    modal.show();        
+                    modal.show();
                     $scope.formBookingFill($scope.doctorId, $scope.daySelected);
-                    
-                    $scope.getListDoctorScheduleByDate($scope.daySelected).then(function() {
-                        $scope.getListDoctorScheduleByDoctorId = $scope.listDoctorScheduleByDate.filter(function(schedule) {
+
+                    $scope.getListDoctorScheduleByDate($scope.daySelected).then(function () {
+                        $scope.getListDoctorScheduleByDoctorId = $scope.listDoctorScheduleByDate.filter(function (schedule) {
                             return schedule.doctor.doctorId === $scope.doctorId;
                         });
-                        
+
                         if ($scope.getListDoctorScheduleByDoctorId.length > 0) {
                             $scope.selectedShift = null;  // hoặc chọn một giá trị mặc định
                         }
@@ -1106,15 +1189,15 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
                             "Chiều": 2,
                             "Tối": 3
                         };
-                    
-                        $scope.getListDoctorScheduleByDoctorId.sort(function(a, b) {
+
+                        $scope.getListDoctorScheduleByDoctorId.sort(function (a, b) {
                             return shiftOrder[a.shift.name] - shiftOrder[b.shift.name];
                         });
 
                         // console.log($scope.getListDoctorScheduleByDoctorId);
-                        
-                        
-                        document.querySelectorAll('.invalid-feedback').forEach(function(element) {
+
+
+                        document.querySelectorAll('.invalid-feedback').forEach(function (element) {
                             element.classList.add('ng-hide');
                         });
 
@@ -1129,16 +1212,16 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
             editable: true,
             dayMaxEvents: true,
             events: events,
-            datesSet: function() {
+            datesSet: function () {
                 const disableClickOnDayNumbers = () => {
                     document.querySelectorAll(".fc-daygrid-day-number").forEach(fc => {
                         fc.parentNode.style.pointerEvents = 'none'; // Disable all pointer events on the parent container
                     });
                 };
-                
+
                 // Run initially
                 disableClickOnDayNumbers();
-            
+
                 // Observe changes in the calendar
                 const observer = new MutationObserver(disableClickOnDayNumbers);
                 observer.observe(document.getElementById('calendar-book-appointment'), {
@@ -1151,48 +1234,48 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
                 if (todayElement) {
                     // Đổi nội dung thành "25 ( Hôm nay )"
                     day = todayElement.textContent;
-                    todayElement.textContent = "( Hôm nay: " +day +" )";
+                    todayElement.textContent = "( Hôm nay: " + day + " )";
                 }
                 addButtonEventListeners();
             },
-                     
+
             validRange: {
                 start: new Date().toISOString().split('T')[0] // Sets the minimum selectable date to today
             }
-           
+
         });
-    
+
         calendar.render();
         $scope.getListShiftOfDoctorOnMonth();
-    
+
         // Hàm để thêm sự kiện lắng nghe click cho các nút
         function addButtonEventListeners() {
             let todayButton = calendarEl.querySelector('.fc-today-button');
             let prevButton = calendarEl.querySelector('.fc-prev-button');
             let nextButton = calendarEl.querySelector('.fc-next-button');
             let monthButton = calendarEl.querySelector('.fc-dayGridMonth-button');
-            
+
             if (todayButton && !todayButton.classList.contains('listener-added')) {
-                todayButton.addEventListener('click', function() {
-                    $scope.$apply(function() {
+                todayButton.addEventListener('click', function () {
+                    $scope.$apply(function () {
                         $scope.getListShiftOfDoctorOnMonth();
                     });
                 });
                 todayButton.classList.add('listener-added');
             }
-    
+
             if (prevButton && !prevButton.classList.contains('listener-added')) {
-                prevButton.addEventListener('click', function() {
-                    $scope.$apply(function() {
+                prevButton.addEventListener('click', function () {
+                    $scope.$apply(function () {
                         $scope.getListShiftOfDoctorOnMonth();
                     });
                 });
                 prevButton.classList.add('listener-added');
             }
-    
+
             if (nextButton && !nextButton.classList.contains('listener-added')) {
-                nextButton.addEventListener('click', function() {
-                    $scope.$apply(function() {
+                nextButton.addEventListener('click', function () {
+                    $scope.$apply(function () {
                         $scope.getListShiftOfDoctorOnMonth();
                     });
                 });
@@ -1200,16 +1283,16 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
             }
 
             if (monthButton && !monthButton.classList.contains('listener-added')) {
-                monthButton.addEventListener('click', function() {
-                    $scope.$apply(function() {
+                monthButton.addEventListener('click', function () {
+                    $scope.$apply(function () {
                         $scope.getListShiftOfDoctorOnMonth();
                     });
                 });
                 monthButton.classList.add('listener-added');
             }
-    
-        }    
-        
+
+        }
+
         // Gọi hàm để thêm sự kiện lắng nghe click lần đầu tiên
         addButtonEventListeners();
     };
@@ -1236,33 +1319,33 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
         });
     }
 
-    $scope.toggleRowCheckbox = function(service) {
-        if($scope.listSelectedService.length < 4 || service.selected) {
+    $scope.toggleRowCheckbox = function (service) {
+        if ($scope.listSelectedService.length < 4 || service.selected) {
             service.selected = !service.selected;
         }
 
-        
+
         // Cập nhật danh sách dịch vụ đã chọn
         $scope.getListServiceSelected();
         $scope.updateStatistics();
     }
-    
-    $scope.updateStatistics = function() {
-        
-        if($scope.foundServices.length > 0){
+
+    $scope.updateStatistics = function () {
+
+        if ($scope.foundServices.length > 0) {
             $scope.totalPrice = $scope.foundServices
                 .filter(service => service.selected)
                 .reduce((sum, service) => sum + service.service.price, 0);
-            
+
             $scope.totalTime = $scope.foundServices
                 .filter(service => service.selected)
                 .reduce((sum, service) => sum + service.service.timeEstimate, 0);
-            
-            $scope.hasSelectedService = $scope.foundServices.some(function(service) {
+
+            $scope.hasSelectedService = $scope.foundServices.some(function (service) {
                 return service.selected;
             })
         } else {
-            
+
             var formSymptom = document.getElementById("formSymptom")
             formSymptom.classList.remove("ng-valid")
             formSymptom.classList.add("ng-invalid")
@@ -1273,37 +1356,37 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
             $scope.totalTime = $scope.listServiceDB
                 .filter(service => service.selected)
                 .reduce((sum, service) => sum + service.timeEstimate, 0);
-            
-            $scope.hasSelectedService = $scope.listServiceDB.some(function(service) {
+
+            $scope.hasSelectedService = $scope.listServiceDB.some(function (service) {
                 return service.selected;
             });
         }
-       
+
     };
-    
-    $scope.getRecommendation = function() {
+
+    $scope.getRecommendation = function () {
         // Giả sử đây là logic để tính số khung thời gian khuyến nghị
         // Bạn có thể thay đổi logic này dựa trên yêu cầu của mình
         return Math.ceil($scope.totalTime / 30); // Ví dụ: 1 khung thời gian mỗi giờ
     };
 
-    $scope.getTimeString = function() {
-        if ( $scope.hourSelected.length === 0) {
+    $scope.getTimeString = function () {
+        if ($scope.hourSelected.length === 0) {
             return '';
         }
-    
+
         // Sắp xếp mảng dựa trên timeOfShiftId
-        var sortedShifts = $scope.hourSelected.slice().sort(function(a, b) {
+        var sortedShifts = $scope.hourSelected.slice().sort(function (a, b) {
             return a.timeOfShiftId - b.timeOfShiftId;
         });
-    
+
         // Lấy beginTime của đối tượng đầu tiên và endTime của đối tượng cuối cùng
         var beginTime = sortedShifts[0].beginTime;
         var endTime = sortedShifts[sortedShifts.length - 1].endTime;
-    
+
         return beginTime + ' - ' + endTime;
     };
-    $scope.resetForm = function() {
+    $scope.resetForm = function () {
 
         $('#formSymptom').val(null).trigger('change');
         // Đặt mô hình AngularJS về giá trị rỗng
@@ -1320,45 +1403,45 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
         $scope.formAppointmentRequestNote = []
         $scope.listShiftHours = []
         $scope.loadTreatmeantAndServiceByIssue();
-        $scope.hourLenghtSelected = 0;4
+        $scope.hourLenghtSelected = 0; 4
 
-        angular.forEach($scope.listServiceDB, function(service) {
+        angular.forEach($scope.listServiceDB, function (service) {
             service.selected = false
         });
-        
-        angular.forEach($scope.listShiftHours, function(hour) {
-                hour.selected = false
+
+        angular.forEach($scope.listShiftHours, function (hour) {
+            hour.selected = false
         })
- 
-        
+
+
         console.log($scope.showSymptoms);
-        
+
     }
 
-    $scope.changeHourSelected = function(hour) {
+    $scope.changeHourSelected = function (hour) {
         // Đổi trạng thái `selected` của đối tượng `hour`
-        if(hour.isValid){
+        if (hour.isValid) {
             return false;
         }
 
-        if($scope.hourSelected.length == $scope.getRecommendation() && !hour.selected){
+        if ($scope.hourSelected.length == $scope.getRecommendation() && !hour.selected) {
 
-        }else{
+        } else {
             hour.selected = !hour.selected;
-             // Cập nhật danh sách các giờ được chọn
-        $scope.hourSelected = $scope.listShiftHours.filter(function(hour) {
-            return hour.selected;
-        });
-        console.log($scope.hourSelected );
-        // Kiểm tra xem có bất kỳ giờ nào được chọn hay không
-        $scope.hasSelectedtHours = $scope.hourSelected.length > 0;
-        $scope.hourLenghtSelected = $scope.hourSelected.length;
+            // Cập nhật danh sách các giờ được chọn
+            $scope.hourSelected = $scope.listShiftHours.filter(function (hour) {
+                return hour.selected;
+            });
+            console.log($scope.hourSelected);
+            // Kiểm tra xem có bất kỳ giờ nào được chọn hay không
+            $scope.hasSelectedtHours = $scope.hourSelected.length > 0;
+            $scope.hourLenghtSelected = $scope.hourSelected.length;
         }
     };
-    
+
     //FastBookingForm>>
-    $scope.openFastBookingModal = function(){
-        
+    $scope.openFastBookingModal = function () {
+
         $('.select2-multi').select2({
             multiple: true,
             theme: 'bootstrap4',
@@ -1368,8 +1451,8 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
         $('#formSymptom').on('change', function () {
             $timeout(function () {
                 $scope.loadTreatmeantAndServiceByIssue()
-             });
-          });
+            });
+        });
 
         $scope.isFastBookingForm = true;
         var modalElement = document.getElementById('modalFastBookAppointment');
@@ -1377,36 +1460,36 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
         modal.show();
         $scope.formBookingFill()
     }
-    
-    $scope.leaveFastBookingModal = function(){
+
+    $scope.leaveFastBookingModal = function () {
         $scope.resetForm()
         $scope.isFastBookingForm = false;
     }
 
 
-    $scope.serviceChoose = function(serviceId) {
-        if(serviceId) {
+    $scope.serviceChoose = function (serviceId) {
+        if (serviceId) {
             console.log(serviceId);
-        
+
             // Lưu ID vào localStorage
             localStorage.setItem('selectedServiceId', serviceId);
-        
+
             // Chuyển trang đến /service/{serviceId} mà không tải lại trang
             $location.path('/service/' + serviceId);
         }
     };
-    
-    $scope.updateFilteredServices = function() {
-        let filteredList = $scope.listServiceDB.filter(function(service) {
+
+    $scope.updateFilteredServices = function () {
+        let filteredList = $scope.listServiceDB.filter(function (service) {
             // Kiểm tra nếu searchQuery khớp với serviceName hoặc price
             let searchQueryLower = $scope.searchQuery.toLowerCase();
             return service.serviceName.toLowerCase().includes(searchQueryLower) ||
-                   service.price.toString().includes($scope.searchQuery);
+                service.price.toString().includes($scope.searchQuery);
         });
-    
+
         // Cập nhật tổng số trang
         $scope.totalPages = Math.ceil(filteredList.length / $scope.pageSize);
-    
+
         // Phân trang kết quả tìm kiếm
         let start = ($scope.currentPage - 1) * $scope.pageSize;
         let end = start + $scope.pageSize;
@@ -1414,7 +1497,7 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
         // console.log($scope.filteredServices);
     };
 
-    $scope.setPage = function(page, event) {
+    $scope.setPage = function (page, event) {
         if (page >= 1 && page <= $scope.totalPages) {
             $scope.currentPage = page;
             $scope.updateFilteredServices();
@@ -1424,45 +1507,45 @@ app.controller('BookingController', function ($scope, $http,SocketService ,$root
         }
     };
 
-    $scope.prevPage = function(event) {
+    $scope.prevPage = function (event) {
         if ($scope.currentPage > 1) {
             $scope.setPage($scope.currentPage - 1, event);
         }
     };
 
-    $scope.nextPage = function(event) {
+    $scope.nextPage = function (event) {
         if ($scope.currentPage < $scope.totalPages) {
             $scope.setPage($scope.currentPage + 1, event);
         }
     };
-    $scope.findNameByPhoneNumber = function() {
+    $scope.findNameByPhoneNumber = function () {
         console.log($scope.phoneNumber);
-        
+
         $scope.phoneNumber = document.getElementById("formPhoneNumber").value;
 
-       if ($scope.phoneNumber.length >= 8 && $scope.phoneNumber.length <= 11) {
-           
-        
-             var patient = $scope.listPatient.find(p => { 
+        if ($scope.phoneNumber.length >= 8 && $scope.phoneNumber.length <= 11) {
+
+
+            var patient = $scope.listPatient.find(p => {
                 return p.phoneNumber == $scope.phoneNumber
             });
-             if(patient){
+            if (patient) {
                 $scope.fullName = patient.fullName;
-             }
-       }else{
+            }
+        } else {
             $scope.fullName = "";
-       }
+        }
     }
 
-    $scope.closeConfirmForm = function(){
+    $scope.closeConfirmForm = function () {
         $scope.showConfirmForm = true;
     }
 
-    
 
 
 
-    $scope.selectSpecialty(specialtyId) 
+
+    $scope.selectSpecialty(specialtyId)
     $scope.getListDoctor()
     $scope.getListSpecialty()
     $scope.init()
