@@ -5,126 +5,43 @@ app.controller('BookingController', function ($scope, $http, SocketService, $roo
     $scope.isLogin = localStorage.getItem("isLogin") ? localStorage.getItem("isLogin") : false;
     var specialtyId = 0;
 
-    $scope.doctorId = 1;
-    $scope.daySelected = "2025-05-15";
-    $scope.foundServices = [
-        { id: 1, name: "Teeth Cleaning", duration: 30, price: 300000 },
-        { id: 2, name: "Cavity Filling", duration: 45, price: 500000 }
-    ];
-    $scope.hourLenghtSelected = 75;
-    $scope.hasSelectedService = true;
-    $scope.hasSelectedtHours = true;
-    $scope.hourSelected = ["09:00", "09:30", "10:00"];
-    $scope.isEnoughHour = true;
-    $scope.isFastBookingForm = false;
-    $scope.issueIds = [1, 3];
-    $scope.listSelectedService = [
-        { id: 1, name: "Teeth Cleaning", duration: 30, price: 300000 },
-        { id: 2, name: "Cavity Filling", duration: 45, price: 500000 }
-    ];
-    $scope.listDoctorUnavailabilityByDoctorDB = [
-        { doctorId: 1, date: "2025-05-16", hours: ["13:00", "14:00"] }
-    ];
-    $scope.listDoctorUnavailabilityByDate = [
-        { hour: "14:00", reason: "Break time" }
-    ];
-    $scope.listDoctorScheduleByDate = [
-        { hour: "08:00", available: true },
-        { hour: "08:30", available: true },
-        { hour: "09:00", available: false }
-    ];
+    $scope.doctorId = -1;
+    $scope.daySelected = "";
+    $scope.foundServices = []
+    $scope.hourLenghtSelected = 0;
+    $scope.hasSelectedService = false; // Biến để kiểm tra xem có dịch vụ nào được chọn
+    $scope.hasSelectedtHours = false;
+    $scope.hourSelected = []
+    $scope.isEnoughHour = false;
+    $scope.isFastBookingForm = false; // Biến để kiểm tra xem có phải là form đặt lịch nhanh không
+    $scope.issueIds = [];
+    $scope.listSelectedService = [];
+    $scope.listDoctorUnavailabilityByDoctorDB = [];
+    $scope.listDoctorUnavailabilityByDate = []
+    $scope.listDoctorScheduleByDate = []
     $scope.selectAll = false;
     $scope.selectAllEnable = true;
-    $scope.listServiceSelected = [
-        { id: 1, name: "Teeth Cleaning", duration: 30, price: 300000 }
-    ];
-    $scope.listShiftHours = ["08:00", "08:30", "09:00", "09:30", "10:00"];
-    $scope.selectedShiftHour = ["09:00", "09:30"];
-    $scope.getListDoctorScheduleByDoctorId = [
-        {
-            doctorScheduleId: 1,
-            shift: { name: "Buổi sáng" }, // Morning
-            startTime: "08:00",
-            endTime: "12:00"
-        },
-        {
-            doctorScheduleId: 2,
-            shift: { name: "Buổi chiều" }, // Afternoon
-            startTime: "13:00",
-            endTime: "17:00"
-        },
-        {
-            doctorScheduleId: 3,
-            shift: { name: "Buổi tối" }, // Evening
-            startTime: "18:00",
-            endTime: "21:00"
-        }
-    ];
-
-    $scope.selectedShift = null;
-    $scope.hasSelectedService = true; // Phải bật biến này để không bị ng-disabled
-
-    $scope.servicePage = true;
+    $scope.listServiceSelected = []
+    $scope.listShiftHours = []
+    $scope.selectedShiftHour = [];
+    $scope.selectedShift = null
+    $scope.servicePage = false;
     $scope.showConfirmForm = true;
-    $scope.symtomTrue = true;
-    $scope.showSymptoms = true;
-    $scope.totalPrice = 800000;
-    $scope.totalTime = 75;
-    $scope.patientAdding = [
-        { id: 1, name: "Nguyen Van A", phone: "0901234567" }
-    ];
-    $scope.patientIdLogin = 1;
-    $scope.patientLogin = { id: 1, name: "Nguyen Van A", phone: "0901234567" };
-    $scope.listServiceDB = [
-        { id: 1, serviceName: "Cạo vôi răng", timeEstimate: 30, price: 200000 },
-        { id: 2, serviceName: "Trám răng thẩm mỹ", timeEstimate: 45, price: 400000 },
-        { id: 3, serviceName: "Tư vấn niềng răng", timeEstimate: 60, price: 500000 },
-        { id: 4, serviceName: "Nhổ răng sữa", timeEstimate: 20, price: 100000 },
-        { id: 5, serviceName: "Nhổ răng khôn", timeEstimate: 60, price: 800000 },
-        { id: 6, serviceName: "Chụp X-quang răng", timeEstimate: 15, price: 150000 },
-        { id: 7, serviceName: "Tẩy trắng răng", timeEstimate: 45, price: 1000000 },
-        { id: 8, serviceName: "Bọc răng sứ", timeEstimate: 90, price: 2000000 },
-        { id: 9, serviceName: "Lấy tủy răng", timeEstimate: 60, price: 700000 },
-        { id: 10, serviceName: "Gắn đá răng", timeEstimate: 30, price: 500000 },
-        { id: 11, serviceName: "Chỉnh nha niềng răng", timeEstimate: 60, price: 3000000 },
-        { id: 12, serviceName: "Cạo vôi và đánh bóng răng", timeEstimate: 40, price: 300000 },
-        { id: 13, serviceName: "Điều trị viêm nha chu", timeEstimate: 60, price: 600000 },
-        { id: 14, serviceName: "Tái khám sau điều trị", timeEstimate: 20, price: 50000 },
-        { id: 15, serviceName: "Gắn mão răng tạm", timeEstimate: 25, price: 250000 },
-        { id: 16, serviceName: "Phẫu thuật nướu", timeEstimate: 90, price: 1200000 },
-        { id: 17, serviceName: "Tái tạo xương hàm", timeEstimate: 120, price: 2500000 },
-        { id: 18, serviceName: "Trồng răng Implant", timeEstimate: 120, price: 10000000 },
-        { id: 19, serviceName: "Tẩy trắng răng bằng laser", timeEstimate: 60, price: 1500000 },
-        { id: 20, serviceName: "Niềng răng mắc cài kim loại", timeEstimate: 60, price: 25000000 },
-        { id: 21, serviceName: "Niềng răng mắc cài sứ", timeEstimate: 60, price: 30000000 },
-        { id: 22, serviceName: "Niềng răng trong suốt", timeEstimate: 60, price: 45000000 },
-        { id: 23, serviceName: "Tạo hình răng thẩm mỹ", timeEstimate: 45, price: 1200000 },
-        { id: 24, serviceName: "Khám răng tổng quát", timeEstimate: 20, price: 50000 },
-        { id: 25, serviceName: "Điều trị sâu răng", timeEstimate: 30, price: 300000 },
-        { id: 26, serviceName: "Làm sạch chân răng", timeEstimate: 40, price: 350000 },
-        { id: 27, serviceName: "Chữa viêm tủy", timeEstimate: 60, price: 800000 },
-        { id: 28, serviceName: "Bọc mão răng toàn sứ", timeEstimate: 90, price: 2500000 },
-        { id: 29, serviceName: "Gắn cầu răng sứ", timeEstimate: 90, price: 3000000 },
-        { id: 30, serviceName: "Khám và tư vấn điều trị", timeEstimate: 15, price: 0 }
-    ];
-
-    $scope.filteredServices = angular.copy($scope.listServiceDB);
-    $scope.listAppointmentByDate = [
-        {
-            id: 101,
-            date: "2025-05-15",
-            patientName: "Nguyen Van A",
-            services: ["Teeth Cleaning", "Cavity Filling"],
-            status: "Đang chờ xử lí"
-        }
-    ];
-    $scope.searchQuery = "";
+    $scope.symtomTrue = false;
+    $scope.showSymptoms = false
+    $scope.totalPrice = 0;
+    $scope.totalTime = 0;
+    $scope.patientAdding = [];
+    $scope.patientIdLogin = -1;
+    $scope.patientLogin = []
+    $scope.listServiceDB = [];
+    $scope.filteredServices = [];
+    $scope.listAppointmentByDate = [];
+    $scope.searchQuery = ""; // Search input model
     $scope.currentPage = 1;
-    $scope.pageSize = 6;
+    $scope.pageSize = 6; // Number of items per page
     $scope.isAllowedFastBooking = true;
-    $scope.phoneNumber = "0901234567";
-
-
+    $scope.phoneNumber = ""; // Khởi tạo biến nếu chưa được khởi tạo
 
     function normalizeVietnameseString(str) {
         return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
