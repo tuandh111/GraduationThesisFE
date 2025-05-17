@@ -16,10 +16,11 @@ app.controller('AdminListDistributionSupplies', function ($scope, $http, $rootSc
         $scope.note = ''
         $scope.taxCode = ''
     }
-
+    console.log("AdminListDistributionSupplies")
     $scope.listDistributionSupplies = () => {
         $http.get(url + '/distribution-supplies-except-deleted', { headers: headers }).then(response => {
             $scope.listDistributionSuppliesFormDB = response.data
+            console.log(response.data)
             if ($.fn.DataTable.isDataTable('#dataTable-list-service')) {
                 $('#dataTable-list-service').DataTable().clear().destroy();
             }
@@ -57,6 +58,7 @@ app.controller('AdminListDistributionSupplies', function ($scope, $http, $rootSc
 
     $scope.loadDistributionSupplies = () => {
         $http.get(url + '/distribution-supplies-except-deleted', { headers: headers }).then(response => {
+            console.log(response.data)
             $scope.listDistributionSuppliesFormDB = response.data
             $('#dataTable-list-service').DataTable().clear().destroy();
             $(document).ready(function () {
@@ -166,14 +168,14 @@ app.controller('AdminListDistributionSupplies', function ($scope, $http, $rootSc
                 text: 'Thêm nhà phân phối thành công !',
                 type: 'success',
                 timeout: 3000
-            }).show() ;
+            }).show();
             $scope.clearFormDistributionSupplies();
         }).catch(error => {
             new Noty({
                 text: 'Thêm nhà phân phối thất bại. Vui lòng thử lại!',
                 type: 'error',
                 timeout: 3000
-            }).show() ;
+            }).show();
             console.log("error", error);
         })
     }
@@ -196,14 +198,14 @@ app.controller('AdminListDistributionSupplies', function ($scope, $http, $rootSc
                         text: 'Xóa nhà phân phối thành công !',
                         type: 'success',
                         timeout: 3000
-                    }).show() ;
+                    }).show();
                     $scope.loadDistributionSupplies();
                 }).catch(error => {
                     new Noty({
                         text: 'Xóa nhà phân phối thất bại. Vui lòng thử lại!',
                         type: 'error',
                         timeout: 3000
-                    }).show() ;
+                    }).show();
                     console.log("error", error);
                 })
             }
@@ -247,14 +249,14 @@ app.controller('AdminListDistributionSupplies', function ($scope, $http, $rootSc
                 text: 'Cập nhật nhà phân phối thành công !',
                 type: 'success',
                 timeout: 3000
-            }).show() ;
+            }).show();
             $scope.loadDistributionSupplies();
         }).catch(error => {
             new Noty({
                 text: 'Cập nhật nhà phân phối thất bại. Vui lòng thử lại!',
                 type: 'error',
                 timeout: 3000
-            }).show() ;
+            }).show();
             console.log("error", error);
         })
     }

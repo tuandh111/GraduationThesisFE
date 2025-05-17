@@ -4,69 +4,74 @@
 	<!--================ End Header Menu Area =================-->
 
 	<section class="page-title bg-1">
-	<div class="overlay"></div>
-	<div class="container">
-		<div class="row">
-		<div class="col-md-12">
-			<div class="block text-center">
-			<span class="text-white">Đội ngũ bác sĩ</span>
-			<h1 class="text-capitalize mb-5 text-lg">Chuyên ngành các bác sĩ</h1>
+		<div class="overlay"></div>
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="block text-center">
+						<span class="text-white">Đội ngũ bác sĩ</span>
+						<h1 class="text-capitalize mb-5 text-lg">Chuyên ngành các bác sĩ</h1>
+					</div>
+				</div>
 			</div>
 		</div>
-		</div>
-	</div>
 	</section>
 
 
 	<!-- portfolio -->
 	<section class="section doctors">
-	<div class="container">
-		<div class="row justify-content-center">
+		<div class="container">
+			<div class="row justify-content-center">
 				<div class="col-lg-6 text-center">
 					<div class="section-title">
 						<h2>Đội ngũ bác sĩ</h2>
 						<div class="divider mx-auto my-4"></div>
-						<p>Chúng tôi cung cấp một loạt các dịch vụ sáng tạo. Tuy nhiên, tối đa hóa các phương pháp và phương pháp, bằng cách làm cho các yêu cầu này thành hiện thực. Chúng tôi cam kết thực hiện nhiệm vụ của mình một cách xuất sắc. </p>
+						<p>Chúng tôi cung cấp một loạt các dịch vụ sáng tạo. Tuy nhiên, tối đa hóa các phương pháp và
+							phương pháp, bằng cách làm cho các yêu cầu này thành hiện thực. Chúng tôi cam kết thực hiện
+							nhiệm vụ của mình một cách xuất sắc. </p>
 					</div>
 				</div>
 			</div>
 
-		<div class="col-12 text-center mb-5">
+			<div class="col-12 text-center mb-5">
 				<div class="booking-scrolling-wrapper-flexbox">
 					<!-- Thanh cuộn ngang -->
-					<div class="booking-specialty-item" ng-click="selectSpecialty(0)" ng-class="{ 'selected-specialty': selectedSpecialtyId === 0 }">
+					<div class="booking-specialty-item" ng-click="selectSpecialty(0)"
+						ng-class="{ 'selected-specialty': selectedSpecialtyId === 0 }">
 						Chọn tất cả
 					</div>
-					<div class="booking-specialty-item" ng-repeat="s in listSpecialtyDB" ng-click="selectSpecialty(s.specialtyId)" ng-class="{ 'selected-specialty': selectedSpecialtyId === s.specialtyId }">
+					<div class="booking-specialty-item" ng-repeat="s in listSpecialtyDB"
+						ng-click="selectSpecialty(s.specialtyId)"
+						ng-class="{ 'selected-specialty': selectedSpecialtyId === s.specialtyId }">
 						{{ s.specialtyName }}
 					</div>
 				</div>
-		</div>
+			</div>
 
-		<div class="row shuffle-wrapper portfolio-gallery booking-scrolling-wrapper-flexbox">
-			<div class="col-lg-3 col-sm-6 col-md-6 mb-4 shuffle-item" ng-repeat="d in listDoctorsDB">
-				<a class="position-relative doctor-inner-box" href="#!/doctor-single/{{d.doctorId}}">
-					<div class="doctor-profile">
-						<div class="doctor-img">
-							<!-- <img ng-src="{{d.image || 'https://inkythuatso.com/uploads/thumbnails/800/2023/03/10-anh-dai-dien-trang-inkythuatso-03-15-27-10.jpg'}}" 
+			<div class="row shuffle-wrapper portfolio-gallery booking-scrolling-wrapper-flexbox">
+				<div class="col-lg-3 col-sm-6 col-md-6 mb-4 shuffle-item" ng-repeat="d in listDoctorsDB">
+					<a class="position-relative doctor-inner-box" href="#!/doctor-single/{{d.doctorId}}">
+						<div class="doctor-profile">
+							<div class="doctor-img" style="height: 200px; overflow: hidden;">
+								<!-- <img ng-src="{{d.image || 'https://inkythuatso.com/uploads/thumbnails/800/2023/03/10-anh-dai-dien-trang-inkythuatso-03-15-27-10.jpg'}}" 
 								 alt="doctor-image" 
 								 class="img-fluid w-100"
 								 onerror="this.src='https://inkythuatso.com/uploads/thumbnails/800/2023/03/10-anh-dai-dien-trang-inkythuatso-03-15-27-10.jpg'" > -->
-								 <img ng-src="{{urlImgDoctor(d.image)||'https://inkythuatso.com/uploads/thumbnails/800/2023/03/10-anh-dai-dien-trang-inkythuatso-03-15-27-10.jpg'}}" 
-								 alt="doctor-image" 
-								 class="img-fluid w-100"
-								 onerror="this.src='https://inkythuatso.com/uploads/thumbnails/800/2023/03/10-anh-dai-dien-trang-inkythuatso-03-15-27-10.jpg'" > 
+								<img ng-src="{{d.image||'https://inkythuatso.com/uploads/thumbnails/800/2023/03/10-anh-dai-dien-trang-inkythuatso-03-15-27-10.jpg'}}"
+									alt="doctor-image" class="img-fluid w-100"
+									onerror="this.src='https://inkythuatso.com/uploads/thumbnails/800/2023/03/10-anh-dai-dien-trang-inkythuatso-03-15-27-10.jpg'">
+							</div>
 						</div>
-					</div>
-					<div class="content mt-3">
-						<h4 class="mb-0"><a href="doctor-single.html">{{d.fullName}}</a></h4>
-						<p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{d.specialty.specialtyName}}</p>
-					</div> 
-				</a>
-				
+						<div class="content mt-3">
+							<h4 class="mb-0"><a href="doctor-single.html">{{d.fullName}}</a></h4>
+							<p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+								{{d.specialty.specialtyName}}</p>
+						</div>
+					</a>
+
+				</div>
 			</div>
-		</div>		
-	</div>
+		</div>
 	</section>
 	<!-- /portfolio -->
 	<section class="section cta-page">
@@ -75,8 +80,10 @@
 				<div class="col-lg-7">
 					<div class="cta-content">
 						<div class="divider mb-4"></div>
-						<h2 class="mb-5 text-lg">Chúng tôi hân hạnh mang đến cho bạn <span class="title-color">cơ hội có được sức khỏe tốt</span></h2>
-						<a href="#!/" class="btn btn-main-2 btn-round-full">Đặt lịch hẹn<i class="icofont-simple-right ml-2"></i></a>
+						<h2 class="mb-5 text-lg">Chúng tôi hân hạnh mang đến cho bạn <span class="title-color">cơ hội có
+								được sức khỏe tốt</span></h2>
+						<a href="#!/" class="btn btn-main-2 btn-round-full">Đặt lịch hẹn<i
+								class="icofont-simple-right ml-2"></i></a>
 					</div>
 				</div>
 			</div>

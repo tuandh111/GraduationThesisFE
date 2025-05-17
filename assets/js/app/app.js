@@ -255,7 +255,7 @@ app
             }
 
             // Connect only if not already connected
-            socket = new SockJS('http://localhost:8081/ws');
+            socket = new SockJS('https://tooth-teeth-dental-clinic-production.up.railway.app/ws');
             stompClient = Stomp.over(socket);
 
             stompClient.connect({}, function (frame) {

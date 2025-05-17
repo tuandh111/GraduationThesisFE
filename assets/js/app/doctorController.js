@@ -6,66 +6,7 @@ app.controller('DoctorController', function ($scope, $http, $rootScope, $locatio
     $scope.listAppointmentByDoctor = []
     $scope.maxTypeName = null;
     $scope.listDoctorsDB = [
-        {
-            doctorId: 1,
-            fullName: "BS. Nguyễn Thị Mai",
-            image: "https://randomuser.me/api/portraits/women/21.jpg",
-            specialty: { specialtyName: "Nha khoa tổng quát" }
-        },
-        {
-            doctorId: 2,
-            fullName: "BS. Trần Văn Dũng",
-            image: "https://randomuser.me/api/portraits/men/45.jpg",
-            specialty: { specialtyName: "Chỉnh nha niềng răng" }
-        },
-        {
-            doctorId: 3,
-            fullName: "BS. Lê Thị Bích Ngọc",
-            image: "https://randomuser.me/api/portraits/women/32.jpg",
-            specialty: { specialtyName: "Nha khoa thẩm mỹ" }
-        },
-        {
-            doctorId: 4,
-            fullName: "BS. Phạm Minh Hoàng",
-            image: "https://randomuser.me/api/portraits/men/34.jpg",
-            specialty: { specialtyName: "Cấy ghép Implant" }
-        },
-        {
-            doctorId: 5,
-            fullName: "BS. Vũ Thị Hạnh",
-            image: "https://randomuser.me/api/portraits/women/41.jpg",
-            specialty: { specialtyName: "Phẫu thuật răng miệng" }
-        },
-        {
-            doctorId: 6,
-            fullName: "BS. Đinh Văn Quang",
-            image: "https://randomuser.me/api/portraits/men/54.jpg",
-            specialty: { specialtyName: "Nha chu học" }
-        },
-        {
-            doctorId: 7,
-            fullName: "BS. Nguyễn Thị Hồng",
-            image: "https://randomuser.me/api/portraits/women/56.jpg",
-            specialty: { specialtyName: "Nội nha – chữa tủy" }
-        },
-        {
-            doctorId: 8,
-            fullName: "BS. Bùi Thanh Tùng",
-            image: "https://randomuser.me/api/portraits/men/61.jpg",
-            specialty: { specialtyName: "Nha khoa trẻ em" }
-        },
-        {
-            doctorId: 9,
-            fullName: "BS. Hoàng Thị Diễm",
-            image: "https://randomuser.me/api/portraits/women/67.jpg",
-            specialty: { specialtyName: "Tẩy trắng răng" }
-        },
-        {
-            doctorId: 10,
-            fullName: "BS. Lâm Văn Khánh",
-            image: "https://randomuser.me/api/portraits/men/69.jpg",
-            specialty: { specialtyName: "Bọc răng sứ thẩm mỹ" }
-        }
+
     ];
     $scope.init = function () {
         var currentUrl = $location.url();
