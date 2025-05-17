@@ -218,7 +218,7 @@ app
     })
     .service('API', function () {
         // const baseUrl = 'https://graduationthesis-production.up.railway.app/api/v1/auth';
-        const baseUrl = 'http://localhost:8081/api/v1/auth';
+        const baseUrl = 'https://tooth-teeth-dental-clinic-production.up.railway.app/api/v1/auth';
         return {
             getBaseUrl: function () {
                 return baseUrl;
