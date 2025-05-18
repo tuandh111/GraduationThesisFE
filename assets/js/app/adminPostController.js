@@ -191,6 +191,15 @@ app.controller('AdminPostController', function ($scope, $http, $rootScope, $loca
             cancelButtonText: 'Hủy'
         }).then((result) => {
             if (result.isConfirmed) {
+                let token = localStorage.getItem('token'); // Lấy token từ localStorage
+                if (!token) {
+                    new Noty({
+                        text: 'Không tìm thấy token. Vui lòng đăng nhập lại!',
+                        type: 'error',
+                        timeout: 3000
+                    }).show();
+                    return;
+                }
                 let params = {
                     title: $scope.postTitle,
                     body: quill.root.innerHTML,

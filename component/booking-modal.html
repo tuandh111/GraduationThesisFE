@@ -252,16 +252,24 @@
 
                     <div class="col-lg-12 mb-2">
                         <div class="d-flex flex-column flex-lg-row gap-2">
-                            <button type="button" class="btn btn-success btn-create-appoinment w-100 w-lg-auto"
-                                ng-click="showConfirmModal()"
+                            <!-- Nút Lưu -->
+                            <button type="button" class="btn btn-success w-100 w-lg-auto" ng-click="showConfirmModal()"
                                 ng-disabled="!hasSelectedService || !fullName || !phoneNumber || !selectedDate || showformShift && hourLenghtSelected != getRecommendation()">
                                 <i class="bi bi-clipboard2-fill"></i> Lưu lại
                             </button>
-                            <button type="button" class="btn btn-danger w-100 w-lg-auto" ng-click="resetForm()">
+
+                            <!-- Nút Làm trống -->
+                            <button type="button" class="btn btn-warning w-100 w-lg-auto" ng-click="resetForm()">
                                 <i class="bi bi-backspace-fill"></i> Làm trống
+                            </button>
+
+                            <!-- Nút Đóng -->
+                            <button type="button" class="btn btn-secondary w-100 w-lg-auto" data-dismiss="modal">
+                                <i class="bi bi-x-circle-fill"></i> Đóng
                             </button>
                         </div>
                     </div>
+
 
                 </form>
             </div>
