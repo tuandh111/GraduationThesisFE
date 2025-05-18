@@ -58,26 +58,25 @@
             </div>
         </div>
     </section>
-    <section class="main-page">
-        <div class="row main-page-booking">
-            <div class="col-10 main-page-booking-card" ng-show="booleanDoctorChoosen">
-                <div class="doctor-card-image-parent">
+    <section class="main-page mt-5">
+        <div class="container">
+            <div class="row main-page-booking">
+                <!-- Thông tin bác sĩ -->
+                <div class="col-12" style="margin-top: 200px;" ng-show="booleanDoctorChoosen">
+
                     <img ng-src="{{doctorModel.image || 'https://inkythuatso.com/uploads/thumbnails/800/2023/03/10-anh-dai-dien-trang-inkythuatso-03-15-27-10.jpg'}}"
-                        alt="doctor-image" class="doctor-card-image"
+                        alt="doctor-image" class="booking-doctor-image rounded-circle"
                         onerror="this.src='https://inkythuatso.com/uploads/thumbnails/800/2023/03/10-anh-dai-dien-trang-inkythuatso-03-15-27-10.jpg'">
+                    <p style="font-weight: bolder; text-align: center; margin-top: 10px;">{{ doctor.fullName }}
+
                 </div>
-                <div class="row doctor-card-details">
-                    <div class="col-12 doctor-card-details-specialty">
-                        <strong class="doctor-specialtyName">
-                            CK: {{doctorModel.specialty.specialtyName}}
-                        </strong>
-                    </div>
-                    <div class="col-12 doctor-card-details-name">
-                        <p>Bác Sĩ: {{doctorModel.fullName}}</p>
-                    </div>
+                <p>CK: {{doctorModel.specialty.specialtyName}}</p>
+                <p>Bác Sĩ: {{doctorModel.fullName}}</p>
+                <!-- Lịch đặt khám -->
+                <div class="col-12 col-lg-12 mt-3 mt-lg-12">
+                    <div id="calendar-book-appointment" class="w-100"></div>
                 </div>
             </div>
-            <div class="col-8 mt-5" id='calendar-book-appointment'></div>
         </div>
     </section>
     <div class="modal fade" id="modalBookAppointment" tabindex="-1">
@@ -278,14 +277,18 @@
                                 </div>
                             </div>
                         </div>
-
                         <div class="col-lg-12 mb-2">
-                            <button type="button" class="btn btn-success btn-create-appoinment"
-                                ng-click="showConfirmModal()" ng-disabled="!hasSelectedService"><i
-                                    class="bi bi-clipboard2-fill"></i> Lưu lại</button>
-                            <button type="button" class="btn btn-danger" ng-click="resetForm()"><i
-                                    class="bi bi-backspace-fill"></i> Làm trống</button>
+                            <div class="d-flex flex-column flex-lg-row gap-2">
+                                <button type="button" class="btn btn-success btn-create-appoinment w-100 w-lg-auto"
+                                    ng-click="showConfirmModal()" ng-disabled="!hasSelectedService">
+                                    <i class="bi bi-clipboard2-fill"></i> Lưu lại
+                                </button>
+                                <button type="button" class="btn btn-danger w-100 w-lg-auto" ng-click="resetForm()">
+                                    <i class="bi bi-backspace-fill"></i> Làm trống
+                                </button>
+                            </div>
                         </div>
+
                     </form>
                 </div>
             </div>

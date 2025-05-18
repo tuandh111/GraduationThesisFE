@@ -3,17 +3,17 @@
 	<header class="header_area" ng-include="'component/header.html'"></header>
 	<!--================ End Header Menu Area =================-->
 	<section class="page-title bg-1">
-	<div class="overlay"></div>
-	<div class="container">
-		<div class="row">
-		<div class="col-md-12">
-			<div class="block text-center">
-			<span class="text-white">Thông tin bác sĩ</span>
-			<h1 class="text-capitalize mb-5 text-lg">{{doctorGot.fullName}}</h1>
+		<div class="overlay"></div>
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="block text-center">
+						<span class="text-white">Thông tin bác sĩ</span>
+						<h1 class="text-capitalize mb-5 text-lg">{{doctorGot.fullName}}</h1>
+					</div>
+				</div>
 			</div>
 		</div>
-		</div>
-	</div>
 	</section>
 
 
@@ -23,17 +23,16 @@
 				<div class="col-lg-4 col-md-6">
 					<div class="doctor-img-block">
 						<div class="doctor-img">
-							<img ng-src="{{urlImgDoctor(doctorGot.image)||'https://inkythuatso.com/uploads/thumbnails/800/2023/03/10-anh-dai-dien-trang-inkythuatso-03-15-27-10.jpg'}}" 
-								 alt="doctor-image" 
-								 class="img-fluid w-100"
-								 onerror="this.src='https://inkythuatso.com/uploads/thumbnails/800/2023/03/10-anh-dai-dien-trang-inkythuatso-03-15-27-10.jpg'" >
+							<img ng-src="{{doctorGot.image ||'https://inkythuatso.com/uploads/thumbnails/800/2023/03/10-anh-dai-dien-trang-inkythuatso-03-15-27-10.jpg'}}"
+								alt="doctor-image" class="img-fluid w-100"
+								onerror="this.src='https://inkythuatso.com/uploads/thumbnails/800/2023/03/10-anh-dai-dien-trang-inkythuatso-03-15-27-10.jpg'">
 							<!-- <img ng-src="{{doctorGot.image || 'https://inkythuatso.com/uploads/thumbnails/800/2023/03/10-anh-dai-dien-trang-inkythuatso-03-15-27-10.jpg'}}" 
 								 alt="doctor-image" 
 								 class="img-fluid w-100"
 								 onerror="this.src='https://inkythuatso.com/uploads/thumbnails/800/2023/03/10-anh-dai-dien-trang-inkythuatso-03-15-27-10.jpg'" > -->
 						</div>
 						<div class="info-block mt-4">
-							
+
 							<h4 class="mb-0">{{doctorGot.fullName}}</h4>
 							<p>{{doctorGot.specialty.specialtyName}}</p>
 
@@ -55,7 +54,8 @@
 						<p class="fs-4">Số cuộc hẹn với bác sĩ: {{lenghtAppointmnetOfDoctor}} </p>
 						<p class="fs-4">Loại dịch vụ được tin dùng nhất: {{maxTypeName}}</p>
 
-						<a href="#!/booking/{{doctorGot.doctorId}}" class="btn btn-main-2 btn-round-full mt-3">Đặt lịch với bác sĩ {{doctorGot.fullName}}<i class="icofont-simple-right ml-2  "></i></a>
+						<a href="#!/booking/{{doctorGot.doctorId}}" class="btn btn-main-2 btn-round-full mt-3">Đặt lịch
+							với bác sĩ {{doctorGot.fullName}}<i class="icofont-simple-right ml-2  "></i></a>
 					</div>
 				</div>
 			</div>
