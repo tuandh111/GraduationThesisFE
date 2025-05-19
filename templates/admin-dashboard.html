@@ -181,7 +181,8 @@
                             <div class="col-9">
                                 <div class="card shadow">
                                     <div class="card-header">
-                                        <strong class="card-title">Top 5 dịch vụ năm <span class="badge bg-primary">{{thisYear}}</span></strong>
+                                        <strong class="card-title">Top 5 dịch vụ năm <span
+                                                class="badge bg-primary">{{thisYear}}</span></strong>
                                         <!-- <a class="float-right small text-secondary" href="#!">View all</a> -->
                                     </div>
                                     <div class="card-body my-n2">
@@ -196,17 +197,20 @@
                                             </thead>
                                             <tbody>
                                                 <tr ng-repeat="top in listTop5ServiceDB">
-                                                    <td>{{(top[0].serviceName | initialCharacter)+"-"+top[0].serviceId}}</td>
+                                                    <td>{{(top[0].serviceName | initialCharacter)+"-"+top[0].serviceId}}
+                                                    </td>
                                                     <!-- <td>{{top[0].serviceId}}</td> -->
                                                     <td>{{top[0].serviceName}}</td>
                                                     <td>{{top[1]|formatPrice}}</td>
                                                     <td>
-                                                        <div class="percentage" ng-init="percent = getPercentageOfTop5Service(venueTotal,top[1])">
+                                                        <div class="percentage"
+                                                            ng-init="percent = getPercentageOfTop5Service(venueTotal,top[1])">
                                                             <div class="progress">
                                                                 <div class="progress-bar color-8" role="progressbar"
-                                                                    style="width: {{percent}}%; cursor:pointer;" aria-valuenow="60"
-                                                                    aria-valuemin="0" aria-valuemax="100"
-                                                                    ng-attr-title="{{percent}}%">{{percent}}%</div>
+                                                                    style="width: {{percent}}%; cursor:pointer;"
+                                                                    aria-valuenow="60" aria-valuemin="0"
+                                                                    aria-valuemax="100" ng-attr-title="{{percent}}%">
+                                                                    {{percent}}%</div>
                                                             </div>
                                                         </div>
                                                     </td>
