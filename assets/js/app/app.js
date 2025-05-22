@@ -218,6 +218,7 @@ app
     })
     .service('API', function () {
         // const baseUrl = 'https://graduationthesis-production.up.railway.app/api/v1/auth';
+        //const baseUrl = 'http://localhost:8080/api/v1/auth';
         const baseUrl = 'https://tooth-teeth-dental-clinic-production.up.railway.app/api/v1/auth';
         return {
             getBaseUrl: function () {
@@ -255,6 +256,7 @@ app
             }
 
             // Connect only if not already connected
+            //socket = new SockJS('http://localhost:8080/api/v1/auth/ws');
             socket = new SockJS('https://tooth-teeth-dental-clinic-production.up.railway.app/api/v1/auth/ws');
             stompClient = Stomp.over(socket);
 
